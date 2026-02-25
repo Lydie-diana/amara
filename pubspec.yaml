@@ -1,0 +1,63 @@
+name: amara_client
+description: "Amara - Livraison de nourriture africaine"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.8
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # Navigation
+  go_router: ^13.2.0
+
+  # State management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # HTTP + WebSocket pour Convex
+  dio: ^5.4.3
+  web_socket_channel: ^3.0.1
+
+  # UI
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.0.10
+  pinput: ^3.0.0
+  intl_phone_field: ^3.2.0
+  flutter_animate: ^4.5.0
+  cached_network_image: ^3.3.1
+
+  # Auth
+  google_sign_in: ^6.2.1
+
+  # Storage
+  flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.3.2
+
+  # Image picker
+  image_picker: ^1.1.2
+
+  # Utils
+  intl: ^0.20.2
+
+  # Internationalisation
+  flutter_localizations:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: ^2.4.9
+  riverpod_generator: ^2.3.9
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/lottie/

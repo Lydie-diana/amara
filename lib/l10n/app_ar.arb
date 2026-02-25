@@ -1,0 +1,105 @@
+{
+  "@@locale": "ar",
+
+  "appName": "أمارا",
+  "tagline": "النكهة الأفريقية، تُوصَّل إليك",
+  "splashLoading": "جارٍ التحميل...",
+
+  "onboardingSkip": "تخطي",
+  "onboardingNext": "التالي",
+  "onboardingStart": "ابدأ الآن",
+
+  "onboarding1Title": "المطبخ الأفريقي\nفي متناول يدك",
+  "onboarding1Desc": "اكتشف مئات الأطباق الأصيلة التي يعدّها أفضل المطاعم الأفريقية في مدينتك.",
+  "onboarding2Title": "توصيل سريع\nوموثوق",
+  "onboarding2Desc": "تتبّع طلبك في الوقت الفعلي واستقبل أطباقك الساخنة في أقل من 45 دقيقة.",
+  "onboarding3Title": "دفع سهل\nوآمن",
+  "onboarding3Desc": "Mobile Money أو بطاقة مصرفية أو نقداً — اختر طريقة الدفع المناسبة لك.",
+
+  "authWelcomeTo": "مرحباً بك في",
+  "authPhoneTitle": "أمارا 🍛",
+  "authPhoneSubtitle": "أدخل رقم هاتفك\nللمتابعة",
+  "authPhoneHint": "00 00 00 00 00",
+  "authPhoneSmsInfo": "سيتم إرسال رمز التحقق عبر الرسائل القصيرة إلى هذا الرقم.",
+  "authContinue": "متابعة",
+  "authOrWith": "أو المتابعة بـ",
+  "authGoogleButton": "المتابعة مع Google",
+
+  "otpTitle": "التحقق",
+  "otpSubtitle": "تم إرسال الرمز إلى\n{phone}",
+  "@otpSubtitle": {
+    "placeholders": {
+      "phone": { "type": "String" }
+    }
+  },
+  "otpResendIn": "إعادة إرسال خلال {seconds} ث",
+  "@otpResendIn": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+  "otpResend": "إعادة إرسال الرمز",
+  "otpVerify": "تحقق",
+  "otpError": "رمز غير صحيح، حاول مجدداً",
+  "otpResent": "تم إعادة إرسال الرمز!",
+
+  "profileTitle": "ملفك الشخصي",
+  "profileSubtitle": "أخبرنا كيف ننادي عليك",
+  "profileNameLabel": "الاسم الأول والأخير *",
+  "profileNameHint": "مثال: كوفي منساه",
+  "profileEmailLabel": "البريد الإلكتروني (اختياري)",
+  "profileEmailHint": "بريدك@example.com",
+  "profileSave": "هيا نبدأ! 🚀",
+  "profileNameRequired": "هذا الحقل مطلوب",
+  "profileNameTooShort": "الحد الأدنى حرفان",
+  "profileEmailInvalid": "بريد إلكتروني غير صالح",
+
+  "homeGreeting": "يوم سعيد، {name} 👋",
+  "@homeGreeting": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "homeLocation": "أبيدجان، كوت ديفوار",
+  "homeSearchHint": "ابحث عن مطعم أو طبق...",
+  "homeCuisines": "المطابخ",
+  "homePopular": "الأكثر شعبية قربك",
+  "homeNew": "وافدون جدد",
+  "homeSeeAll": "عرض الكل",
+
+  "categoryAll": "الكل",
+  "categoryStew": "يخنة",
+  "categoryGrill": "مشويات",
+  "categoryRice": "أرز",
+  "categorySalad": "سلطة",
+  "categoryPizza": "بيتزا",
+  "categoryBurger": "برغر",
+  "categoryDrink": "مشروب",
+  "categoryDessert": "حلوى",
+
+  "restaurantOpen": "مفتوح",
+  "restaurantClosed": "مغلق",
+  "restaurantFeatured": "⭐ مشهور",
+  "restaurantFreeDelivery": "مجاني",
+
+  "navHome": "الرئيسية",
+  "navExplore": "استكشاف",
+  "navOrders": "الطلبات",
+  "navProfile": "الملف",
+
+  "promoTag1": "عرض خاص",
+  "promoTitle1": "توصيل مجاني",
+  "promoSubtitle1": "على طلبك الأول",
+  "promoTag2": "جديد",
+  "promoTitle2": "مطبخ أفريقي",
+  "promoSubtitle2": "الأصالة في متناولك",
+  "promoTag3": "خصم",
+  "promoTitle3": "-20% الليلة",
+  "promoSubtitle3": "مطاعم شريكة مختارة",
+
+  "pageNotFound": "الصفحة غير موجودة",
+
+  "errorRequired": "هذا الحقل مطلوب",
+  "errorNetwork": "خطأ في الشبكة، حاول مجدداً",
+  "errorGeneric": "حدث خطأ ما"
+}

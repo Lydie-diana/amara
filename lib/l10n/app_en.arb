@@ -1,0 +1,105 @@
+{
+  "@@locale": "en",
+
+  "appName": "Amara",
+  "tagline": "African flavors, delivered to you",
+  "splashLoading": "Loading...",
+
+  "onboardingSkip": "Skip",
+  "onboardingNext": "Next",
+  "onboardingStart": "Get Started",
+
+  "onboarding1Title": "African cuisine\nat your fingertips",
+  "onboarding1Desc": "Discover hundreds of authentic dishes prepared by the best African restaurants in your city.",
+  "onboarding2Title": "Fast & reliable\ndelivery",
+  "onboarding2Desc": "Track your order in real time and receive your hot dishes directly at your door in less than 45 min.",
+  "onboarding3Title": "Simple &\nsecure payment",
+  "onboarding3Desc": "Mobile Money, bank card or cash — choose the payment method that suits you best.",
+
+  "authWelcomeTo": "Welcome to",
+  "authPhoneTitle": "Amara 🍛",
+  "authPhoneSubtitle": "Enter your phone number\nto continue",
+  "authPhoneHint": "00 00 00 00 00",
+  "authPhoneSmsInfo": "A verification code will be sent by SMS to this number.",
+  "authContinue": "Continue",
+  "authOrWith": "or continue with",
+  "authGoogleButton": "Continue with Google",
+
+  "otpTitle": "Verification",
+  "otpSubtitle": "Code sent to\n{phone}",
+  "@otpSubtitle": {
+    "placeholders": {
+      "phone": { "type": "String" }
+    }
+  },
+  "otpResendIn": "Resend in {seconds}s",
+  "@otpResendIn": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+  "otpResend": "Resend code",
+  "otpVerify": "Verify",
+  "otpError": "Incorrect code, please try again",
+  "otpResent": "Code resent!",
+
+  "profileTitle": "Your profile",
+  "profileSubtitle": "Tell us what to call you",
+  "profileNameLabel": "First and last name *",
+  "profileNameHint": "e.g. Kofi Mensah",
+  "profileEmailLabel": "Email (optional)",
+  "profileEmailHint": "your@email.com",
+  "profileSave": "Let's go! 🚀",
+  "profileNameRequired": "This field is required",
+  "profileNameTooShort": "Minimum 2 characters",
+  "profileEmailInvalid": "Invalid email",
+
+  "homeGreeting": "Good day, {name} 👋",
+  "@homeGreeting": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "homeLocation": "Abidjan, Côte d'Ivoire",
+  "homeSearchHint": "Search a restaurant, a dish...",
+  "homeCuisines": "Cuisines",
+  "homePopular": "Popular near you",
+  "homeNew": "New arrivals",
+  "homeSeeAll": "See all",
+
+  "categoryAll": "All",
+  "categoryStew": "Stew",
+  "categoryGrill": "Grills",
+  "categoryRice": "Rice",
+  "categorySalad": "Salad",
+  "categoryPizza": "Pizza",
+  "categoryBurger": "Burger",
+  "categoryDrink": "Drink",
+  "categoryDessert": "Dessert",
+
+  "restaurantOpen": "Open",
+  "restaurantClosed": "Closed",
+  "restaurantFeatured": "⭐ Popular",
+  "restaurantFreeDelivery": "Free",
+
+  "navHome": "Home",
+  "navExplore": "Explore",
+  "navOrders": "Orders",
+  "navProfile": "Profile",
+
+  "promoTag1": "SPECIAL OFFER",
+  "promoTitle1": "Free delivery",
+  "promoSubtitle1": "On your 1st order",
+  "promoTag2": "NEW",
+  "promoTitle2": "African cuisine",
+  "promoSubtitle2": "Authenticity at your fingertips",
+  "promoTag3": "PROMO",
+  "promoTitle3": "-20% tonight",
+  "promoSubtitle3": "Selected partner restaurants",
+
+  "pageNotFound": "Page not found",
+
+  "errorRequired": "This field is required",
+  "errorNetwork": "Network error, please try again",
+  "errorGeneric": "An error occurred"
+}

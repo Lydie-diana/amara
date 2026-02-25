@@ -1,0 +1,110 @@
+{
+  "@@locale": "fr",
+  "@@author": "Amara Team",
+
+  "appName": "Amara",
+  "@appName": { "description": "Nom de l'application" },
+
+  "tagline": "La saveur africaine, livrée chez vous",
+  "@tagline": { "description": "Slogan de l'application" },
+
+  "splashLoading": "Chargement...",
+
+  "onboardingSkip": "Passer",
+  "onboardingNext": "Suivant",
+  "onboardingStart": "Commencer",
+
+  "onboarding1Title": "La cuisine africaine\nà portée de main",
+  "onboarding1Desc": "Découvrez des centaines de plats authentiques préparés par les meilleurs restaurants africains de votre ville.",
+  "onboarding2Title": "Livraison rapide\net fiable",
+  "onboarding2Desc": "Suivez votre commande en temps réel et recevez vos plats chauds directement à votre porte en moins de 45 min.",
+  "onboarding3Title": "Paiement simple\net sécurisé",
+  "onboarding3Desc": "Mobile Money, carte bancaire ou cash — choisissez le moyen de paiement qui vous convient.",
+
+  "authWelcomeTo": "Bienvenue sur",
+  "authPhoneTitle": "Amara 🍛",
+  "authPhoneSubtitle": "Entrez votre numéro de téléphone\npour continuer",
+  "authPhoneHint": "06 00 00 00 00",
+  "authPhoneSmsInfo": "Un code de vérification sera envoyé par SMS sur ce numéro.",
+  "authContinue": "Continuer",
+  "authOrWith": "ou continuer avec",
+  "authGoogleButton": "Continuer avec Google",
+
+  "otpTitle": "Vérification",
+  "otpSubtitle": "Code envoyé au\n{phone}",
+  "@otpSubtitle": {
+    "placeholders": {
+      "phone": { "type": "String" }
+    }
+  },
+  "otpResendIn": "Renvoyer dans {seconds}s",
+  "@otpResendIn": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+  "otpResend": "Renvoyer le code",
+  "otpVerify": "Vérifier",
+  "otpError": "Code incorrect, réessayez",
+  "otpResent": "Code renvoyé !",
+
+  "profileTitle": "Votre profil",
+  "profileSubtitle": "Dites-nous comment vous appeler",
+  "profileNameLabel": "Prénom et nom *",
+  "profileNameHint": "ex: Kofi Mensah",
+  "profileEmailLabel": "Email (optionnel)",
+  "profileEmailHint": "votre@email.com",
+  "profileSave": "C'est parti ! 🚀",
+  "profileNameRequired": "Ce champ est requis",
+  "profileNameTooShort": "Minimum 2 caractères",
+  "profileEmailInvalid": "Email invalide",
+
+  "homeGreeting": "Bonne journée, {name} 👋",
+  "@homeGreeting": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "homeLocation": "Abidjan, Côte d'Ivoire",
+  "homeSearchHint": "Chercher un restaurant, un plat...",
+  "homeCuisines": "Cuisines",
+  "homePopular": "Populaires près de vous",
+  "homeNew": "Nouveaux arrivants",
+  "homeSeeAll": "Voir tout",
+
+  "categoryAll": "Tout",
+  "categoryStew": "Ragoût",
+  "categoryGrill": "Grillades",
+  "categoryRice": "Riz",
+  "categorySalad": "Salade",
+  "categoryPizza": "Pizza",
+  "categoryBurger": "Burger",
+  "categoryDrink": "Boisson",
+  "categoryDessert": "Dessert",
+
+  "restaurantOpen": "Ouvert",
+  "restaurantClosed": "Fermé",
+  "restaurantFeatured": "⭐ Populaire",
+  "restaurantFreeDelivery": "Gratuit",
+
+  "navHome": "Accueil",
+  "navExplore": "Explorer",
+  "navOrders": "Commandes",
+  "navProfile": "Profil",
+
+  "promoTag1": "OFFRE SPÉCIALE",
+  "promoTitle1": "Livraison gratuite",
+  "promoSubtitle1": "Sur votre 1ère commande",
+  "promoTag2": "NOUVEAU",
+  "promoTitle2": "Cuisine africaine",
+  "promoSubtitle2": "Authenticité à portée de main",
+  "promoTag3": "PROMO",
+  "promoTitle3": "-20% ce soir",
+  "promoSubtitle3": "Restaurants partenaires sélectionnés",
+
+  "pageNotFound": "Page introuvable",
+
+  "errorRequired": "Ce champ est requis",
+  "errorNetwork": "Erreur réseau, réessayez",
+  "errorGeneric": "Une erreur est survenue"
+}
