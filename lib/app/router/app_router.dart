@@ -14,6 +14,7 @@ import '../../features/restaurant/restaurant_detail_screen.dart';
 import '../../features/cart/cart_screen.dart';
 import '../../features/checkout/checkout_screen.dart';
 import '../../features/order_confirmation/order_confirmation_screen.dart';
+import '../../features/order_tracking/order_tracking_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -108,6 +109,18 @@ final routerProvider = Provider<GoRouter>((ref) {
           return _buildPage(
             state: state,
             child: OrderConfirmationScreen(orderId: id),
+          );
+        },
+      ),
+
+      // Order tracking
+      GoRoute(
+        path: AppRoutes.orderTracking,
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          return _buildSlideUpPage(
+            state: state,
+            child: OrderTrackingScreen(orderId: id),
           );
         },
       ),

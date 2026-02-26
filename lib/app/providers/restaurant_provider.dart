@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/restaurant_model.dart';
 import '../services/convex_client.dart';
+import '../core/constants/app_images.dart';
 
 // ─── Mapping Convex → Restaurant Flutter ─────────────────────────────────────
 
@@ -34,12 +35,14 @@ Restaurant _restaurantFromConvex(Map<String, dynamic> d) {
       ? 'Gratuit'
       : '${deliveryFeeRaw.toStringAsFixed(0)} F';
 
+  final restaurantName = d['name'] as String? ?? '';
   return Restaurant(
     id: id,
-    name: d['name'] as String? ?? '',
+    name: restaurantName,
     description: d['description'] as String? ?? '',
     cuisine: cuisineList.join(', '),
     imageEmoji: _cuisineEmoji(cuisineList.firstOrNull ?? ''),
+    imageUrl: AmaraImages.restaurantImage(restaurantName),
     rating: (d['rating'] as num?)?.toDouble() ?? 0.0,
     reviewCount: (d['totalRatings'] as num?)?.toInt() ?? 0,
     deliveryTime: '${d['estimatedDeliveryTime'] ?? 30} min',
@@ -66,12 +69,15 @@ List<MenuCategory> _menuFromConvex(List<dynamic> items) {
   for (final raw in items) {
     final d = Map<String, dynamic>.from(raw as Map);
     final cat = d['category'] as String? ?? 'Autres';
+    final itemName = d['name'] as String? ?? '';
+    final itemTags = (d['tags'] as List?)?.cast<String>() ?? [];
     final item = MenuItem(
       id: d['_id'] as String? ?? '',
-      name: d['name'] as String? ?? '',
+      name: itemName,
       description: d['description'] as String? ?? '',
       price: (d['price'] as num?)?.toDouble() ?? 0,
-      imageEmoji: _tagEmoji((d['tags'] as List?)?.firstOrNull?.toString() ?? ''),
+      imageEmoji: _tagEmoji(itemTags.firstOrNull ?? ''),
+      imageUrl: AmaraImages.menuItemImage(itemName, itemTags),
       categoryId: cat,
       isPopular: false,
       likeCount: 0,
@@ -127,6 +133,7 @@ Restaurant _mockRestaurant(String id) {
       id: '1', name: 'Chez Mama Africa',
       description: 'La cuisine ivoirienne authentique, des recettes transmises de génération en génération.',
       cuisine: 'Cuisine Ivoirienne', imageEmoji: '🍲',
+      imageUrl: AmaraImages.chezMamaAfrica,
       rating: 4.8, reviewCount: 312, deliveryTime: '25-35 min', deliveryFee: 'Gratuit',
       isOpen: true, isFeatured: true, address: 'Cocody, Abidjan', phone: '+225 07 00 00 00',
       minOrder: 2000, tags: ['Africain', 'Ivoirien'], likePercent: 97, totalCustomers: 1842,
@@ -142,6 +149,7 @@ Restaurant _mockRestaurant(String id) {
       id: '2', name: 'Saveurs du Sahel',
       description: 'Voyage culinaire au cœur de l\'Afrique de l\'Ouest. Thiéboudienne, Yassa, Maafé.',
       cuisine: 'Cuisine Sénégalaise', imageEmoji: '🥘',
+      imageUrl: AmaraImages.saveursDuSahel,
       rating: 4.6, reviewCount: 187, deliveryTime: '30-45 min', deliveryFee: '500 F',
       isOpen: true, address: 'Plateau, Abidjan', phone: '+225 05 00 00 00',
       minOrder: 3000, tags: ['Sénégalais', 'Poisson', 'Riz'], likePercent: 94, totalCustomers: 972,
@@ -156,6 +164,7 @@ Restaurant _mockRestaurant(String id) {
       id: '3', name: 'Terroir Camerounais',
       description: 'Ndolé, Poulet DG, Eru — la richesse de la cuisine camerounaise.',
       cuisine: 'Cuisine Camerounaise', imageEmoji: '🍛',
+      imageUrl: AmaraImages.terroirCamerounais,
       rating: 4.7, reviewCount: 256, deliveryTime: '20-30 min', deliveryFee: 'Gratuit',
       isOpen: false, address: 'Marcory, Abidjan', phone: '+225 01 00 00 00',
       minOrder: 2500, tags: ['Camerounais', 'Ndolé'], likePercent: 96, totalCustomers: 1203,
@@ -167,6 +176,7 @@ Restaurant _mockRestaurant(String id) {
       id: '4', name: 'Lagos Kitchen',
       description: 'Jollof Rice, Egusi Soup, Suya — la street food nigériane à son meilleur.',
       cuisine: 'Cuisine Nigériane', imageEmoji: '🫕',
+      imageUrl: AmaraImages.lagosKitchen,
       rating: 4.5, reviewCount: 42, deliveryTime: '35-50 min', deliveryFee: '750 F',
       isOpen: true, address: 'Yopougon, Abidjan', phone: '+225 09 00 00 00',
       minOrder: 2000, tags: ['Nigérian', 'Épicé'], likePercent: 91, totalCustomers: 287,
@@ -181,6 +191,7 @@ Restaurant _mockRestaurant(String id) {
       id: '5', name: 'Marrakech Délices',
       description: 'Couscous, tagine, pastilla — la cuisine marocaine dans toute sa splendeur.',
       cuisine: 'Cuisine Marocaine', imageEmoji: '🍢',
+      imageUrl: AmaraImages.marrakechDelices,
       rating: 4.4, reviewCount: 28, deliveryTime: '25-40 min', deliveryFee: 'Gratuit',
       isOpen: true, address: 'Riviera, Abidjan', phone: '+225 08 00 00 00',
       minOrder: 3500, tags: ['Marocain', 'Couscous'], likePercent: 89, totalCustomers: 163,
@@ -192,6 +203,7 @@ Restaurant _mockRestaurant(String id) {
       id: '6', name: 'Addis Flavors',
       description: 'L\'injera et les wots éthiopiens, un voyage sensoriel unique.',
       cuisine: 'Cuisine Éthiopienne', imageEmoji: '🧆',
+      imageUrl: AmaraImages.addisEthiopian,
       rating: 4.6, reviewCount: 63, deliveryTime: '30-45 min', deliveryFee: '500 F',
       isOpen: true, address: 'Deux Plateaux, Abidjan', phone: '+225 06 00 00 00',
       minOrder: 2000, tags: ['Éthiopien', 'Végétarien'], likePercent: 93, totalCustomers: 418,
@@ -217,7 +229,7 @@ List<MenuCategory> _mockMenu(String restaurantId) {
         MenuItem(
           id: 'i1', name: 'Attiéké Poisson',
           description: 'Semoule de manioc avec poisson braisé, tomate et oignon frits.',
-          price: 2500, imageEmoji: '🐟', categoryId: 'cat1',
+          price: 2500, imageEmoji: '🐟', imageUrl: AmaraImages.attieke, categoryId: 'cat1',
           isPopular: true, likeCount: 248,
           optionGroups: [
             MenuItemOptionGroup(
@@ -233,13 +245,13 @@ List<MenuCategory> _mockMenu(String restaurantId) {
         MenuItem(
           id: 'i2', name: 'Kedjenou de Poulet',
           description: 'Ragoût de poulet mijoté aux épices locales, servi avec attiéké.',
-          price: 3500, imageEmoji: '🍗', categoryId: 'cat1',
+          price: 3500, imageEmoji: '🍗', imageUrl: AmaraImages.pouletBraise, categoryId: 'cat1',
           isPopular: true, isSpicy: true, likeCount: 201,
         ),
         MenuItem(
           id: 'i3', name: 'Foutou Banane + Sauce Graine',
           description: 'Foutou de banane plantain accompagné de la sauce aux graines de palme.',
-          price: 2000, imageEmoji: '🍌', categoryId: 'cat1', likeCount: 133,
+          price: 2000, imageEmoji: '🍌', imageUrl: AmaraImages.foutou, categoryId: 'cat1', likeCount: 133,
         ),
       ],
     ),
@@ -249,12 +261,12 @@ List<MenuCategory> _mockMenu(String restaurantId) {
         MenuItem(
           id: 'i4', name: 'Poulet Braisé',
           description: 'Demi-poulet mariné et braisé au feu de bois, servi avec alloco.',
-          price: 4000, imageEmoji: '🍗', categoryId: 'cat2', likeCount: 189,
+          price: 4000, imageEmoji: '🍗', imageUrl: AmaraImages.pouletBraise, categoryId: 'cat2', likeCount: 189,
         ),
         MenuItem(
           id: 'i5', name: 'Brochettes de Bœuf',
           description: '6 brochettes de bœuf marinées, avec pain et sauce pimentée.',
-          price: 2500, imageEmoji: '🍢', categoryId: 'cat2', isSpicy: true, likeCount: 112,
+          price: 2500, imageEmoji: '🍢', imageUrl: AmaraImages.brochettes, categoryId: 'cat2', isSpicy: true, likeCount: 112,
         ),
       ],
     ),
@@ -264,13 +276,13 @@ List<MenuCategory> _mockMenu(String restaurantId) {
         MenuItem(
           id: 'i9', name: 'Jus de Bissap',
           description: 'Boisson fraîche à base de fleurs d\'hibiscus.',
-          price: 800, imageEmoji: '🧃', categoryId: 'cat3',
+          price: 800, imageEmoji: '🧃', imageUrl: AmaraImages.jus, categoryId: 'cat3',
           isVegetarian: true, likeCount: 145, isPopular: true,
         ),
         MenuItem(
           id: 'i11', name: 'Eau minérale',
           description: 'Bouteille 50cl.', price: 300, imageEmoji: '💧',
-          categoryId: 'cat3', isVegetarian: true, likeCount: 210,
+          imageUrl: AmaraImages.jus, categoryId: 'cat3', isVegetarian: true, likeCount: 210,
         ),
       ],
     ),

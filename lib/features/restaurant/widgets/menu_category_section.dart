@@ -126,17 +126,40 @@ class _MenuItemTile extends ConsumerWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image emoji
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                color: AmaraColors.bgAlt,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child:
-                    Text(item.imageEmoji, style: const TextStyle(fontSize: 36)),
+            // Image plat
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                width: 72,
+                height: 72,
+                child: item.imageUrl != null
+                    ? Image.network(
+                        item.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: AmaraColors.bgAlt,
+                          child: Center(
+                            child: Text(item.imageEmoji,
+                                style: const TextStyle(fontSize: 32)),
+                          ),
+                        ),
+                        loadingBuilder: (_, child, progress) => progress == null
+                            ? child
+                            : Container(
+                                color: AmaraColors.bgAlt,
+                                child: Center(
+                                  child: Text(item.imageEmoji,
+                                      style: const TextStyle(fontSize: 32)),
+                                ),
+                              ),
+                      )
+                    : Container(
+                        color: AmaraColors.bgAlt,
+                        child: Center(
+                          child: Text(item.imageEmoji,
+                              style: const TextStyle(fontSize: 36)),
+                        ),
+                      ),
               ),
             ),
             const SizedBox(width: 14),

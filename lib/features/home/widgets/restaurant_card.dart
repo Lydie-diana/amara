@@ -5,6 +5,21 @@ import '../../../app/core/constants/app_text_styles.dart';
 import '../../../app/models/restaurant_model.dart';
 import '../../../app/router/app_routes.dart';
 
+// Distances simulées (identique à l'Explorer)
+const _mockDistances = {
+  '1': 0.8, '2': 1.2, '3': 2.5, '4': 3.1, '5': 4.0, '6': 5.3,
+};
+
+String _distanceLabel(String id) {
+  double d;
+  if (_mockDistances.containsKey(id)) {
+    d = _mockDistances[id]!;
+  } else {
+    d = 0.5 + (id.hashCode.abs() % 80) * 0.1;
+  }
+  return d < 1 ? '${(d * 1000).toInt()} m' : '${d.toStringAsFixed(1)} km';
+}
+
 class RestaurantCard extends StatelessWidget {
   final Restaurant restaurant;
   final bool compact;
@@ -21,10 +36,10 @@ class RestaurantCard extends StatelessWidget {
   }
 
   Widget _buildFull(BuildContext context) {
+    final isFree = restaurant.deliveryFee.toLowerCase().contains('gratuit');
+
     return GestureDetector(
-      onTap: () {
-        context.push('${AppRoutes.restaurantPath}/${restaurant.id}');
-      },
+      onTap: () => context.push('${AppRoutes.restaurantPath}/${restaurant.id}'),
       child: Container(
         decoration: BoxDecoration(
           color: AmaraColors.bgCard,
@@ -34,38 +49,112 @@ class RestaurantCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Image area
+            // ── Photo ───────────────────────────────────────────────
             ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-              child: Container(
-                height: 140,
-                color: _imageBgColor,
+              child: SizedBox(
+                height: 160,
+                width: double.infinity,
                 child: Stack(
+                  fit: StackFit.expand,
                   children: [
-                    Center(
-                      child: Text(
-                        restaurant.imageEmoji,
-                        style: const TextStyle(fontSize: 60),
+                    if (restaurant.imageUrl != null)
+                      Image.network(
+                        restaurant.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _EmojiPlaceholder(
+                            emoji: restaurant.imageEmoji, color: _bgColor),
+                        loadingBuilder: (_, child, progress) => progress == null
+                            ? child
+                            : _EmojiPlaceholder(
+                                emoji: restaurant.imageEmoji, color: _bgColor),
+                      )
+                    else
+                      _EmojiPlaceholder(
+                          emoji: restaurant.imageEmoji, color: _bgColor),
+                    // Gradient bas
+                    Positioned(
+                      bottom: 0, left: 0, right: 0,
+                      child: Container(
+                        height: 60,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.45),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
                       ),
                     ),
+                    // Distance (bas gauche)
+                    Positioned(
+                      bottom: 10, left: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.55),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.location_on_rounded,
+                                color: Colors.white, size: 11),
+                            const SizedBox(width: 3),
+                            Text(_distanceLabel(restaurant.id),
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600)),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // Statut (haut gauche)
                     Positioned(
                       top: 12, left: 12,
-                      child: _StatusBadge(isOpen: restaurant.isOpen),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: restaurant.isOpen
+                              ? AmaraColors.success
+                              : AmaraColors.muted,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 5, height: 5,
+                              decoration: const BoxDecoration(
+                                  color: Colors.white, shape: BoxShape.circle),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(restaurant.isOpen ? 'Ouvert' : 'Fermé',
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700)),
+                          ],
+                        ),
+                      ),
                     ),
+                    // Populaire (haut droit)
                     if (restaurant.isFeatured)
                       Positioned(
                         top: 12, right: 12,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: AmaraColors.primary,
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text('⭐ Populaire',
-                            style: AmaraTextStyles.caption.copyWith(
-                              color: Colors.white, fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                              style: AmaraTextStyles.caption.copyWith(
+                                  color: Colors.white, fontWeight: FontWeight.w700)),
                         ),
                       ),
                   ],
@@ -73,44 +162,64 @@ class RestaurantCard extends StatelessWidget {
               ),
             ),
 
-            // Content
+            // ── Infos ────────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
                       Expanded(
-                        child: Text(restaurant.name, style: AmaraTextStyles.h3,
-                          maxLines: 1, overflow: TextOverflow.ellipsis),
+                        child: Text(restaurant.name,
+                            style: AmaraTextStyles.labelSmall.copyWith(
+                                fontWeight: FontWeight.w800),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis),
                       ),
                       Row(
                         children: [
                           const Icon(Icons.star_rounded,
-                              color: Color(0xFFF39C12), size: 15),
+                              color: Color(0xFFFFC107), size: 14),
                           const SizedBox(width: 3),
                           Text(restaurant.rating.toStringAsFixed(1),
-                              style: AmaraTextStyles.labelMedium),
+                              style: AmaraTextStyles.caption.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: AmaraColors.textPrimary)),
                           Text(' (${restaurant.reviewCount})',
-                              style: AmaraTextStyles.caption),
+                              style: AmaraTextStyles.caption.copyWith(
+                                  color: AmaraColors.muted)),
                         ],
                       ),
                     ],
                   ),
                   const SizedBox(height: 3),
-                  Text(restaurant.cuisine, style: AmaraTextStyles.bodySmall),
-                  const SizedBox(height: 12),
+                  Text(restaurant.cuisine,
+                      style: AmaraTextStyles.caption.copyWith(
+                          color: AmaraColors.muted)),
+                  const SizedBox(height: 10),
+                  // Chips sans bordure
                   Row(
                     children: [
-                      _InfoChip(icon: Icons.access_time_rounded,
-                          label: restaurant.deliveryTime),
+                      _InfoPill(
+                        icon: Icons.access_time_rounded,
+                        label: restaurant.deliveryTime,
+                        color: const Color(0xFF1F172B),
+                      ),
                       const SizedBox(width: 8),
-                      _InfoChip(
+                      _InfoPill(
                         icon: Icons.delivery_dining_rounded,
                         label: restaurant.deliveryFee,
-                        isHighlighted: restaurant.deliveryFee == 'Gratuit',
+                        color: isFree ? AmaraColors.success : AmaraColors.primary,
                       ),
+                      if (restaurant.minOrder > 0) ...[
+                        const SizedBox(width: 8),
+                        _InfoPill(
+                          icon: Icons.shopping_bag_outlined,
+                          label: 'Min ${restaurant.minOrder.toStringAsFixed(0)} F',
+                          color: AmaraColors.muted,
+                        ),
+                      ],
                     ],
                   ),
                 ],
@@ -126,7 +235,7 @@ class RestaurantCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => context.push('${AppRoutes.restaurantPath}/${restaurant.id}'),
       child: SizedBox(
-        width: 176,
+        width: 180,
         child: Container(
           decoration: BoxDecoration(
             color: AmaraColors.bgCard,
@@ -138,44 +247,97 @@ class RestaurantCard extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                child: Container(
-                  height: 108,
-                  color: _imageBgColor,
-                  child: Center(
-                    child: Text(restaurant.imageEmoji,
-                        style: const TextStyle(fontSize: 44)),
+                child: SizedBox(
+                  height: 112,
+                  width: double.infinity,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (restaurant.imageUrl != null)
+                        Image.network(
+                          restaurant.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _EmojiPlaceholder(
+                              emoji: restaurant.imageEmoji, color: _bgColor),
+                          loadingBuilder: (_, child, progress) => progress == null
+                              ? child
+                              : _EmojiPlaceholder(
+                                  emoji: restaurant.imageEmoji, color: _bgColor),
+                        )
+                      else
+                        _EmojiPlaceholder(
+                            emoji: restaurant.imageEmoji, color: _bgColor),
+                      Positioned(
+                        bottom: 0, left: 0, right: 0,
+                        child: Container(
+                          height: 40,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [
+                                Colors.black.withValues(alpha: 0.4),
+                                Colors.transparent,
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 8, left: 10,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.55),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.location_on_rounded,
+                                  color: Colors.white, size: 10),
+                              const SizedBox(width: 2),
+                              Text(_distanceLabel(restaurant.id),
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(restaurant.name, style: AmaraTextStyles.labelMedium,
+                    Text(restaurant.name,
+                        style: AmaraTextStyles.labelMedium,
                         maxLines: 1, overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 2),
-                    Text(restaurant.cuisine, style: AmaraTextStyles.caption,
+                    Text(restaurant.cuisine,
+                        style: AmaraTextStyles.caption.copyWith(
+                            color: AmaraColors.muted),
                         maxLines: 1, overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
                         const Icon(Icons.star_rounded,
-                            color: Color(0xFFF39C12), size: 13),
+                            color: Color(0xFFFFC107), size: 12),
                         const SizedBox(width: 3),
                         Text(restaurant.rating.toStringAsFixed(1),
-                          style: AmaraTextStyles.caption.copyWith(
-                            color: AmaraColors.textPrimary, fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                            style: AmaraTextStyles.caption.copyWith(
+                                fontWeight: FontWeight.w700)),
                         const SizedBox(width: 6),
-                        const Icon(Icons.access_time_rounded,
-                            color: AmaraColors.muted, size: 12),
-                        const SizedBox(width: 3),
-                        Expanded(
-                          child: Text(restaurant.deliveryTime,
-                              style: AmaraTextStyles.caption,
-                              maxLines: 1, overflow: TextOverflow.ellipsis),
+                        _InfoPill(
+                          icon: Icons.access_time_rounded,
+                          label: restaurant.deliveryTime,
+                          color: const Color(0xFF1F172B),
+                          small: true,
                         ),
                       ],
                     ),
@@ -189,7 +351,7 @@ class RestaurantCard extends StatelessWidget {
     );
   }
 
-  Color get _imageBgColor {
+  Color get _bgColor {
     const colors = [
       Color(0xFFE8E0F5), Color(0xFFD4EDE3), Color(0xFFFCE4EC),
       Color(0xFFE3EDF9), Color(0xFFFFF3E0), Color(0xFFE0F4F4),
@@ -198,74 +360,57 @@ class RestaurantCard extends StatelessWidget {
   }
 }
 
-class _StatusBadge extends StatelessWidget {
-  final bool isOpen;
-  const _StatusBadge({required this.isOpen});
+class _EmojiPlaceholder extends StatelessWidget {
+  final String emoji;
+  final Color color;
+  const _EmojiPlaceholder({required this.emoji, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: isOpen ? AmaraColors.success : AmaraColors.muted,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 5, height: 5,
-            decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 4),
-          Text(isOpen ? 'Ouvert' : 'Fermé',
-            style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700),
-          ),
-        ],
-      ),
+      color: color,
+      child: Center(child: Text(emoji, style: const TextStyle(fontSize: 48))),
     );
   }
 }
 
-class _InfoChip extends StatelessWidget {
+// Pill sans bordure — fond coloré léger uniquement
+class _InfoPill extends StatelessWidget {
   final IconData icon;
   final String label;
-  final bool isHighlighted;
+  final Color color;
+  final bool small;
 
-  const _InfoChip({
+  const _InfoPill({
     required this.icon,
     required this.label,
-    this.isHighlighted = false,
+    required this.color,
+    this.small = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final fontSize = small ? 10.0 : 11.0;
+    final iconSize = small ? 11.0 : 12.0;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      padding: EdgeInsets.symmetric(
+          horizontal: small ? 6 : 8,
+          vertical: small ? 3 : 4),
       decoration: BoxDecoration(
-        color: isHighlighted
-            ? AmaraColors.success.withValues(alpha: 0.1)
-            : AmaraColors.bgAlt,
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: isHighlighted
-              ? AmaraColors.success.withValues(alpha: 0.3)
-              : AmaraColors.divider,
-        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12,
-              color: isHighlighted ? AmaraColors.success : AmaraColors.muted),
+          Icon(icon, size: iconSize, color: color),
           const SizedBox(width: 4),
           Text(label,
-            style: TextStyle(
-              color: isHighlighted ? AmaraColors.success : AmaraColors.muted,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+              style: TextStyle(
+                  color: color,
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w600)),
         ],
       ),
     );

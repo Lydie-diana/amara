@@ -475,16 +475,7 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen>
           GestureDetector(
             onTap: () {
               HapticFeedback.mediumImpact();
-              // TODO: naviguer vers le tracking en temps réel
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Suivi en temps réel bientôt disponible !'),
-                  backgroundColor: AmaraColors.dark,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                ),
-              );
+              context.go('/order/${widget.orderId}/tracking');
             },
             child: Container(
               width: double.infinity,

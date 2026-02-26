@@ -44,6 +44,7 @@ class Restaurant {
   final String description;
   final String cuisine;
   final String imageEmoji;
+  final String? imageUrl;
   final double rating;
   final int reviewCount;
   final String deliveryTime;
@@ -70,6 +71,7 @@ class Restaurant {
     required this.description,
     required this.cuisine,
     required this.imageEmoji,
+    this.imageUrl,
     required this.rating,
     required this.reviewCount,
     required this.deliveryTime,
@@ -179,6 +181,7 @@ class MenuItem {
   final String description;
   final double price;
   final String imageEmoji;
+  final String? imageUrl;
   final bool isAvailable;
   final bool isPopular;
   final bool isVegetarian;
@@ -193,6 +196,7 @@ class MenuItem {
     required this.description,
     required this.price,
     required this.imageEmoji,
+    this.imageUrl,
     required this.categoryId,
     this.isAvailable = true,
     this.isPopular = false,

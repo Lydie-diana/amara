@@ -248,18 +248,57 @@ class _RestaurantSliverAppBar extends StatelessWidget {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            // Fond coloré
-            Container(color: _bgColor),
+            // Photo réelle ou fond coloré + emoji
+            if (restaurant.imageUrl != null)
+              Image.network(
+                restaurant.imageUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(color: _bgColor,
+                  child: Center(child: Text(restaurant.imageEmoji,
+                      style: const TextStyle(fontSize: 90)))),
+                loadingBuilder: (_, child, progress) => progress == null
+                    ? child
+                    : Container(color: _bgColor,
+                        child: Center(child: Text(restaurant.imageEmoji,
+                            style: const TextStyle(fontSize: 90)))),
+              )
+            else
+              Container(color: _bgColor,
+                child: Center(child: Text(restaurant.imageEmoji,
+                    style: const TextStyle(fontSize: 90)))),
 
-            // Emoji centré
-            Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(height: topPadding + 16),
-                  Text(restaurant.imageEmoji,
-                      style: const TextStyle(fontSize: 90)),
-                ],
+            // Dégradé haut (pour lisibilité des boutons)
+            Positioned(
+              top: 0, left: 0, right: 0,
+              child: Container(
+                height: 100,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.45),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Dégradé bas (fondu vers fond app)
+            Positioned(
+              bottom: 0, left: 0, right: 0,
+              child: Container(
+                height: 70,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      AmaraColors.bg,
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
               ),
             ),
 
@@ -277,11 +316,11 @@ class _RestaurantSliverAppBar extends StatelessWidget {
                       width: 38,
                       height: 38,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.9),
+                        color: Colors.black.withValues(alpha: 0.35),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(Icons.arrow_back_ios_rounded,
-                          color: AmaraColors.textPrimary, size: 16),
+                          color: Colors.white, size: 16),
                     ),
                   ),
                   const Spacer(),
@@ -292,11 +331,11 @@ class _RestaurantSliverAppBar extends StatelessWidget {
                       width: 38,
                       height: 38,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.9),
+                        color: Colors.black.withValues(alpha: 0.35),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(Icons.share_rounded,
-                          color: AmaraColors.textPrimary, size: 16),
+                          color: Colors.white, size: 16),
                     ),
                   ),
                   const SizedBox(width: 8),
