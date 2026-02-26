@@ -41,6 +41,7 @@ class _MainShellState extends ConsumerState<MainShell> {
   Widget build(BuildContext context) {
     final currentIndex = ref.watch(shellIndexProvider);
     final cartTotal = ref.watch(cartProvider.select((c) => c.totalItems));
+    final activeOrders = ref.watch(activeOrdersCountProvider);
 
     return Scaffold(
       backgroundColor: AmaraColors.bg,
@@ -51,6 +52,7 @@ class _MainShellState extends ConsumerState<MainShell> {
       bottomNavigationBar: _BottomNav(
         currentIndex: currentIndex,
         cartCount: cartTotal,
+        activeOrdersCount: activeOrders,
         onTap: _onTap,
         onCartTap: () => context.push(AppRoutes.cart),
       ),
@@ -63,12 +65,14 @@ class _MainShellState extends ConsumerState<MainShell> {
 class _BottomNav extends StatelessWidget {
   final int currentIndex;
   final int cartCount;
+  final int activeOrdersCount;
   final ValueChanged<int> onTap;
   final VoidCallback onCartTap;
 
   const _BottomNav({
     required this.currentIndex,
     required this.cartCount,
+    required this.activeOrdersCount,
     required this.onTap,
     required this.onCartTap,
   });
@@ -118,6 +122,7 @@ class _BottomNav extends StatelessWidget {
                 index: 2,
                 currentIndex: currentIndex,
                 onTap: onTap,
+                badgeCount: activeOrdersCount,
               ),
               _NavItem(
                 icon: Icons.person_rounded,
@@ -211,6 +216,7 @@ class _NavItem extends StatelessWidget {
   final int index;
   final int currentIndex;
   final ValueChanged<int> onTap;
+  final int badgeCount;
 
   const _NavItem({
     required this.icon,
@@ -219,6 +225,7 @@ class _NavItem extends StatelessWidget {
     required this.index,
     required this.currentIndex,
     required this.onTap,
+    this.badgeCount = 0,
   });
 
   @override
@@ -243,10 +250,39 @@ class _NavItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            Icon(
-              isSelected ? icon : iconOutlined,
-              color: isSelected ? AmaraColors.primary : AmaraColors.muted,
-              size: 22,
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(
+                  isSelected ? icon : iconOutlined,
+                  color: isSelected ? AmaraColors.primary : AmaraColors.muted,
+                  size: 22,
+                ),
+                if (badgeCount > 0)
+                  Positioned(
+                    top: -4,
+                    right: -8,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: AmaraColors.primary,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                      child: Center(
+                        child: Text(
+                          badgeCount > 9 ? '9+' : '$badgeCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(height: 3),
             AnimatedDefaultTextStyle(

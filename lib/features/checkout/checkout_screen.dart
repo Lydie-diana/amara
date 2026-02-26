@@ -12,6 +12,7 @@ import '../../app/models/cart_model.dart';
 import '../../app/providers/cart_provider.dart';
 import '../../app/providers/auth_provider.dart';
 import '../../app/services/convex_client.dart';
+import '../orders/orders_screen.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   final String? restaurantId;
@@ -47,10 +48,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       TextEditingController(text: '+225 07 00 00 00');
 
   final List<Map<String, dynamic>> _paymentMethods = [
-    {'name': 'Mobile Money', 'icon': Icons.phone_android_rounded},
-    {'name': 'Wave', 'icon': Icons.waves_rounded},
-    {'name': 'Cash', 'icon': Icons.payments_rounded},
-    {'name': 'Carte bancaire', 'icon': Icons.credit_card_rounded},
+    {'name': 'Mobile Money', 'value': 'mobile_money', 'icon': Icons.phone_android_rounded},
+    {'name': 'Wave', 'value': 'mobile_money', 'icon': Icons.waves_rounded},
+    {'name': 'Cash', 'value': 'cash', 'icon': Icons.payments_rounded},
+    {'name': 'Carte bancaire', 'value': 'card', 'icon': Icons.credit_card_rounded},
   ];
 
   // Suggestions d'adresses (Afrique)
@@ -224,6 +225,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         'name': ci.item.name,
         'quantity': ci.quantity,
         'unitPrice': ci.item.price,
+        if (ci.item.imageUrl != null) 'imageUrl': ci.item.imageUrl,
       }).toList();
 
       final targetRestaurantId = widget.restaurantId ?? cart.restaurantId;
@@ -242,7 +244,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     _instructionsController.text.trim(),
                 ].join(' — ')
               : 'À emporter',
-          paymentMethod: _selectedPayment,
+          paymentMethod: _paymentMethods
+              .firstWhere((m) => m['name'] == _selectedPayment)['value'] as String,
           deliveryLatitude: _deliveryLatLng.latitude,
           deliveryLongitude: _deliveryLatLng.longitude,
         );
@@ -260,7 +263,24 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         } else {
           ref.read(cartProvider.notifier).clear();
         }
-        context.pushReplacement('/order/$orderId/confirmation');
+        // Rafraîchir la liste des commandes
+        ref.invalidate(myOrdersProvider);
+
+        context.go(
+          '/order/$orderId/confirmation',
+          extra: {
+            'restaurantName': cart.restaurantName ?? 'Restaurant',
+            'items': cart.items
+                .map((ci) => {
+                      'name': ci.item.name,
+                      'imageUrl': ci.item.imageUrl,
+                      'imageEmoji': ci.item.imageEmoji,
+                      'quantity': ci.quantity,
+                      'unitPrice': ci.unitPrice,
+                    })
+                .toList(),
+          },
+        );
       }
     } catch (e) {
       if (mounted) {

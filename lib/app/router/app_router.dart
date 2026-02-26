@@ -122,9 +122,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.orderConfirmation,
         pageBuilder: (context, state) {
           final id = state.pathParameters['id'] ?? 'ORD000';
+          final extra = state.extra as Map<String, dynamic>?;
           return _buildPage(
             state: state,
-            child: OrderConfirmationScreen(orderId: id),
+            child: OrderConfirmationScreen(
+              orderId: id,
+              restaurantName: extra?['restaurantName'] as String? ?? 'Restaurant',
+              orderItems: (extra?['items'] as List<dynamic>?)
+                      ?.cast<Map<String, dynamic>>() ??
+                  [],
+            ),
           );
         },
       ),

@@ -177,6 +177,15 @@ class ConvexClient {
     final data = await get('/api/order', params: {'id': orderId});
     return Map<String, dynamic>.from(data as Map);
   }
+
+  /// Annuler une commande (client, seulement si pending)
+  Future<void> cancelOrder(String orderId, {String? reason}) async {
+    await post('/api/order/status', body: {
+      'orderId': orderId,
+      'status': 'cancelled',
+      if (reason != null) 'reason': reason,
+    });
+  }
 }
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
