@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,19 +36,30 @@ extension _SortLabel on _SortOption {
   }
 }
 
-// Distances simulées par restaurant (en km)
-const _mockDistances = {
-  '1': 0.8, '2': 1.2, '3': 2.5, '4': 3.1, '5': 4.0, '6': 5.3,
-};
+// Position par défaut (Cocody, Abidjan) — sera remplacée par GPS réel plus tard
+double _userLat = 5.3600;
+double _userLng = -3.9800;
 
-double _distanceFor(String id) {
-  if (_mockDistances.containsKey(id)) return _mockDistances[id]!;
-  final hash = id.hashCode.abs() % 80;
-  return 0.5 + hash * 0.1;
+/// Calcul distance Haversine entre l'utilisateur et un restaurant
+double _distanceFor(Restaurant r) {
+  if (r.latitude == null || r.longitude == null) return 99.0;
+  const earthRadius = 6371.0; // km
+  final dLat = _toRad(r.latitude! - _userLat);
+  final dLng = _toRad(r.longitude! - _userLng);
+  final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+      math.cos(_toRad(_userLat)) *
+          math.cos(_toRad(r.latitude!)) *
+          math.sin(dLng / 2) *
+          math.sin(dLng / 2);
+  final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+  return earthRadius * c;
 }
 
-String _distanceLabel(String id) {
-  final d = _distanceFor(id);
+double _toRad(double deg) => deg * math.pi / 180;
+
+String _distanceLabel(Restaurant r) {
+  final d = _distanceFor(r);
+  if (d >= 99) return '';
   return d < 1 ? '${(d * 1000).toInt()} m' : '${d.toStringAsFixed(1)} km';
 }
 
@@ -84,7 +97,7 @@ final _filteredProvider = Provider.family<AsyncValue<List<Restaurant>>, String>(
         case _SortOption.rating:
           r.sort((a, b) => b.rating.compareTo(a.rating));
         case _SortOption.distance:
-          r.sort((a, b) => _distanceFor(a.id).compareTo(_distanceFor(b.id)));
+          r.sort((a, b) => _distanceFor(a).compareTo(_distanceFor(b)));
         case _SortOption.deliveryTime:
           r.sort((a, b) => a.deliveryTime.compareTo(b.deliveryTime));
         case _SortOption.price:
@@ -476,7 +489,7 @@ class _NearbyList extends ConsumerWidget {
       error: (_, __) => const SizedBox.shrink(),
       data: (list) {
         final nearby = [...list]
-          ..sort((a, b) => _distanceFor(a.id).compareTo(_distanceFor(b.id)));
+          ..sort((a, b) => _distanceFor(a).compareTo(_distanceFor(b)));
         return ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -542,7 +555,7 @@ class _RestaurantCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final distance = _distanceLabel(restaurant.id);
+    final distance = _distanceLabel(restaurant);
     final isFree = restaurant.deliveryFee.toLowerCase().contains('gratuit');
 
     return GestureDetector(

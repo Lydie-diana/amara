@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
 import '../../../app/models/restaurant_model.dart';
+import '../../../app/providers/favorites_provider.dart';
 import '../../../app/router/app_routes.dart';
 
 // Distances simulées (identique à l'Explorer)
@@ -157,6 +160,35 @@ class RestaurantCard extends StatelessWidget {
                                   color: Colors.white, fontWeight: FontWeight.w700)),
                         ),
                       ),
+                    // Favoris (haut droit, sous le badge populaire)
+                    Positioned(
+                      top: restaurant.isFeatured ? 40 : 12,
+                      right: 12,
+                      child: Consumer(
+                        builder: (context, ref, _) {
+                          final isFav = ref.watch(isFavoriteProvider(restaurant.id));
+                          return GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              ref.read(favoritesProvider.notifier).toggleFavorite(restaurant.id);
+                            },
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.9),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                                color: isFav ? AmaraColors.primary : AmaraColors.textSecondary,
+                                size: 16,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),

@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/convex_client.dart';
 
 // ─── Modèle utilisateur ───────────────────────────────────────────────────────
@@ -11,6 +13,7 @@ class AppUser {
   final String phone;
   final String role;
   final String? imageUrl;
+  final int? createdAt;
 
   const AppUser({
     required this.id,
@@ -19,6 +22,7 @@ class AppUser {
     required this.phone,
     required this.role,
     this.imageUrl,
+    this.createdAt,
   });
 
   factory AppUser.fromJson(Map<String, dynamic> json) {
@@ -29,6 +33,7 @@ class AppUser {
       phone: json['phone'] as String? ?? '',
       role: json['role'] as String? ?? 'client',
       imageUrl: json['imageUrl'] as String?,
+      createdAt: (json['createdAt'] as num?)?.toInt(),
     );
   }
 }
@@ -60,11 +65,55 @@ class AuthState {
   }
 }
 
+// ─── Token storage avec fallback SharedPreferences ───────────────────────────
+
+class _TokenStorage {
+  static const _tokenKey = 'amara_session_token';
+  static const _fallbackKey = 'amara_session_token_fb';
+
+  final _secure = const FlutterSecureStorage(
+    iOptions: IOSOptions(accessibility: KeychainAccessibility.first_unlock),
+  );
+
+  bool _usesFallback = false;
+
+  Future<String?> read() async {
+    try {
+      return await _secure.read(key: _tokenKey);
+    } catch (e) {
+      debugPrint('[TokenStorage] Keychain read failed, using fallback: $e');
+      _usesFallback = true;
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(_fallbackKey);
+    }
+  }
+
+  Future<void> write(String token) async {
+    try {
+      await _secure.write(key: _tokenKey, value: token);
+    } catch (e) {
+      debugPrint('[TokenStorage] Keychain write failed, using fallback: $e');
+      _usesFallback = true;
+    }
+    if (_usesFallback) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_fallbackKey, token);
+    }
+  }
+
+  Future<void> delete() async {
+    try {
+      await _secure.delete(key: _tokenKey);
+    } catch (_) {}
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_fallbackKey);
+  }
+}
+
 // ─── Notifier ─────────────────────────────────────────────────────────────────
 
 class AuthNotifier extends Notifier<AuthState> {
-  static const _tokenKey = 'amara_session_token';
-  final _storage = const FlutterSecureStorage();
+  final _storage = _TokenStorage();
 
   @override
   AuthState build() {
@@ -75,7 +124,7 @@ class AuthNotifier extends Notifier<AuthState> {
   /// Initialise la session depuis le stockage sécurisé
   Future<void> _init() async {
     try {
-      final token = await _storage.read(key: _tokenKey);
+      final token = await _storage.read();
       if (token == null) {
         state = const AuthState(status: AuthStatus.unauthenticated);
         return;
@@ -85,7 +134,7 @@ class AuthNotifier extends Notifier<AuthState> {
       client.setToken(token);
       final userData = await client.me();
       if (userData == null) {
-        await _storage.delete(key: _tokenKey);
+        await _storage.delete();
         client.setToken(null);
         state = const AuthState(status: AuthStatus.unauthenticated);
         return;
@@ -116,7 +165,7 @@ class AuthNotifier extends Notifier<AuthState> {
         password: password,
       );
       final token = result['token'] as String;
-      await _storage.write(key: _tokenKey, value: token);
+      await _storage.write(token);
       client.setToken(token);
       final userData = await client.me();
       state = AuthState(
@@ -141,7 +190,7 @@ class AuthNotifier extends Notifier<AuthState> {
       final client = ref.read(convexClientProvider);
       final result = await client.login(email: email, password: password);
       final token = result['token'] as String;
-      await _storage.write(key: _tokenKey, value: token);
+      await _storage.write(token);
       client.setToken(token);
       final userData = await client.me();
       state = AuthState(
@@ -156,13 +205,29 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
+  /// Mise à jour du profil
+  Future<String?> updateProfile({String? name, String? phone, String? imageUrl}) async {
+    try {
+      final client = ref.read(convexClientProvider);
+      final userData = await client.updateProfile(
+        name: name,
+        phone: phone,
+        imageUrl: imageUrl,
+      );
+      state = state.copyWith(user: AppUser.fromJson(userData));
+      return null;
+    } catch (e) {
+      return _extractError(e);
+    }
+  }
+
   /// Déconnexion
   Future<void> logout() async {
     try {
       final client = ref.read(convexClientProvider);
       await client.logout();
     } catch (_) {}
-    await _storage.delete(key: _tokenKey);
+    await _storage.delete();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 

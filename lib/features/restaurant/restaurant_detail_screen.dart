@@ -8,6 +8,7 @@ import '../../app/core/constants/app_colors.dart';
 
 import '../../app/core/constants/app_text_styles.dart';
 import '../../app/models/restaurant_model.dart';
+import '../../app/providers/favorites_provider.dart';
 import '../../app/providers/restaurant_provider.dart';
 import 'widgets/menu_category_section.dart';
 import 'widgets/restaurant_info_header.dart';
@@ -329,18 +330,29 @@ class _RestaurantSliverAppBar extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   // Favoris
-                  GestureDetector(
-                    onTap: () => HapticFeedback.lightImpact(),
-                    child: Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.favorite_border_rounded,
-                          color: AmaraColors.textPrimary, size: 16),
-                    ),
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final isFav = ref.watch(isFavoriteProvider(restaurant.id));
+                      return GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          ref.read(favoritesProvider.notifier).toggleFavorite(restaurant.id);
+                        },
+                        child: Container(
+                          width: 38,
+                          height: 38,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                            color: isFav ? AmaraColors.primary : AmaraColors.textPrimary,
+                            size: 16,
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

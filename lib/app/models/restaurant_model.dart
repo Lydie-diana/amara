@@ -64,6 +64,8 @@ class Restaurant {
   final List<ServiceMode> serviceModes; // livraison / emporter / sur place
   final List<DaySchedule> schedule;
   final List<RestaurantPromo> promos;
+  final double? latitude;
+  final double? longitude;
 
   const Restaurant({
     required this.id,
@@ -89,6 +91,8 @@ class Restaurant {
     this.serviceModes = const [ServiceMode.delivery, ServiceMode.takeaway],
     this.schedule = const [],
     this.promos = const [],
+    this.latitude,
+    this.longitude,
   });
 
   factory Restaurant.fromJson(Map<String, dynamic> json) {

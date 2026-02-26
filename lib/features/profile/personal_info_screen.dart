@@ -20,6 +20,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
   late TextEditingController _phoneController;
   DateTime? _birthDate;
   bool _isEditing = false;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -107,9 +108,30 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
         centerTitle: true,
         actions: [
           TextButton(
-            onPressed: () {
+            onPressed: _isSaving ? null : () async {
               HapticFeedback.selectionClick();
               if (_isEditing) {
+                setState(() => _isSaving = true);
+                final error = await ref.read(authProvider.notifier).updateProfile(
+                  name: _nameController.text.trim(),
+                  phone: _phoneController.text.trim(),
+                );
+                if (!mounted) return;
+                setState(() => _isSaving = false);
+                if (error != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(error,
+                          style: AmaraTextStyles.bodyMedium
+                              .copyWith(color: Colors.white)),
+                      backgroundColor: AmaraColors.error,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                    ),
+                  );
+                  return;
+                }
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Profil mis à jour',
@@ -124,13 +146,22 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
               }
               setState(() => _isEditing = !_isEditing);
             },
-            child: Text(
-              _isEditing ? 'Enregistrer' : 'Modifier',
-              style: AmaraTextStyles.labelMedium.copyWith(
-                color: AmaraColors.primary,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+            child: _isSaving
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AmaraColors.primary,
+                    ),
+                  )
+                : Text(
+                    _isEditing ? 'Enregistrer' : 'Modifier',
+                    style: AmaraTextStyles.labelMedium.copyWith(
+                      color: AmaraColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
           ),
         ],
       ),
@@ -176,7 +207,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
             const SizedBox(height: 20),
             _buildTapField(
               label: 'Membre depuis',
-              value: 'Membre Amara',
+              value: _memberSince(user?.createdAt),
               icon: Icons.calendar_today_outlined,
               showAction: false,
             ),
@@ -346,6 +377,16 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
         ),
       ],
     );
+  }
+
+  String _memberSince(int? createdAt) {
+    if (createdAt == null) return 'Membre Amara';
+    final date = DateTime.fromMillisecondsSinceEpoch(createdAt);
+    final months = [
+      '', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
+    ];
+    return '${months[date.month]} ${date.year}';
   }
 
   String _getInitials(String name) {

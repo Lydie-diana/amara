@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/providers/auth_provider.dart';
 import '../../app/router/app_routes.dart';
 import '../../app/services/convex_client.dart';
 import '../shell/main_shell.dart';
@@ -140,6 +141,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
           order: order,
           orderId: widget.orderId,
           onBack: _goBack,
+          clientName: ref.watch(currentUserProvider)?.name ?? 'Client',
         ),
       ),
     );
@@ -152,11 +154,13 @@ class _TrackingBody extends StatelessWidget {
   final Map<String, dynamic> order;
   final String orderId;
   final VoidCallback onBack;
+  final String clientName;
 
   const _TrackingBody({
     required this.order,
     required this.orderId,
     required this.onBack,
+    required this.clientName,
   });
 
   String get _status => order['status'] as String? ?? 'pending';
@@ -192,7 +196,7 @@ class _TrackingBody extends StatelessWidget {
               Expanded(
                 child: _InfoChip(
                   label: 'Nom du destinataire',
-                  value: 'Client Amara',
+                  value: clientName,
                 ),
               ),
               const SizedBox(width: 12),

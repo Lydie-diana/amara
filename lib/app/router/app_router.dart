@@ -7,8 +7,8 @@ import 'app_routes.dart';
 import '../../features/splash/splash_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/auth/phone/phone_screen.dart';
-import '../../features/auth/otp/otp_screen.dart';
-import '../../features/auth/profile/profile_setup_screen.dart';
+// OTP et ProfileSetup retirés du flow — OTP avait pin==123456 (faille sécurité)
+// ProfileSetup ne sauvegardait rien. À réintégrer quand le backend sera prêt.
 import '../../features/shell/main_shell.dart';
 import '../../features/restaurant/restaurant_detail_screen.dart';
 import '../../features/cart/cart_screen.dart';
@@ -49,23 +49,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           child: const PhoneScreen(),
         ),
       ),
-      GoRoute(
-        path: AppRoutes.authOtp,
-        pageBuilder: (context, state) {
-          final phoneNumber = state.uri.queryParameters['phone'] ?? '';
-          return _buildSlideUpPage(
-            state: state,
-            child: OtpScreen(phoneNumber: phoneNumber),
-          );
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.authProfile,
-        pageBuilder: (context, state) => _buildSlideUpPage(
-          state: state,
-          child: const ProfileSetupScreen(),
-        ),
-      ),
+      // Routes OTP et ProfileSetup désactivées (voir commentaire imports)
 
       // Main app
       GoRoute(

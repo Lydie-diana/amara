@@ -118,6 +118,65 @@ class ConvexClient {
     }
   }
 
+  /// Mise à jour du profil utilisateur
+  Future<Map<String, dynamic>> updateProfile({
+    String? name,
+    String? phone,
+    String? imageUrl,
+  }) async {
+    final data = await post('/api/auth/update-profile', body: {
+      if (name != null) 'name': name,
+      if (phone != null) 'phone': phone,
+      if (imageUrl != null) 'imageUrl': imageUrl,
+    });
+    return Map<String, dynamic>.from(data as Map);
+  }
+
+  // ─── FAVORIS ─────────────────────────────────────────────────────────────
+
+  /// Liste des IDs de restaurants favoris
+  Future<List<String>> getFavorites() async {
+    final data = await get('/api/favorites');
+    return List<String>.from(data as List);
+  }
+
+  /// Toggle favori → retourne {isFavorite: bool}
+  Future<bool> toggleFavorite(String restaurantId) async {
+    final data = await post('/api/favorites/toggle', body: {
+      'restaurantId': restaurantId,
+    });
+    final result = Map<String, dynamic>.from(data as Map);
+    return result['isFavorite'] as bool;
+  }
+
+  // ─── PROMOTIONS ──────────────────────────────────────────────────────────
+
+  /// Banners promotionnels actifs (optionnel: filtrés par ville)
+  Future<List<dynamic>> getPromotions({String? city}) async {
+    final data = await get('/api/promotions', params: {
+      if (city != null) 'city': city,
+    });
+    return List<dynamic>.from(data as List);
+  }
+
+  // ─── CATÉGORIES CUISINE ─────────────────────────────────────────────────
+
+  /// Catégories cuisine actives
+  Future<List<dynamic>> getCategories() async {
+    final data = await get('/api/categories');
+    return List<dynamic>.from(data as List);
+  }
+
+  // ─── SUGGESTIONS D'ADRESSES ──────────────────────────────────────────────
+
+  /// Suggestions d'adresses (optionnel: filtrées par ville)
+  Future<List<dynamic>> getAddressSuggestions({String? city}) async {
+    final data = await get('/api/addresses', params: {
+      if (city != null) 'city': city,
+    });
+    return List<dynamic>.from(data as List);
+  }
+
   // ─── RESTAURANTS ──────────────────────────────────────────────────────────
 
   /// Liste des restaurants d'une ville

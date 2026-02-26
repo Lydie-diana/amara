@@ -1,109 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/providers/address_provider.dart';
+import '../../app/providers/address_suggestions_provider.dart';
 
-class MyAddressesScreen extends StatefulWidget {
+class MyAddressesScreen extends ConsumerWidget {
   const MyAddressesScreen({super.key});
 
   @override
-  State<MyAddressesScreen> createState() => _MyAddressesScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final addresses = ref.watch(addressProvider);
 
-class _MyAddressesScreenState extends State<MyAddressesScreen> {
-  final List<_Address> _addresses = [
-    _Address(
-      label: 'Maison',
-      icon: Icons.home_rounded,
-      address: 'Cocody Riviera, Abidjan',
-      complement: 'Résidence Les Palmiers, Apt 12',
-      isDefault: true,
-    ),
-    _Address(
-      label: 'Bureau',
-      icon: Icons.work_rounded,
-      address: 'Plateau, Abidjan',
-      complement: '3ème étage, Immeuble CCIA',
-      isDefault: false,
-    ),
-  ];
-
-  // ── Liste d'adresses pour l'autocomplétion (Afrique) ──────────────────
-  static const List<Map<String, dynamic>> _addressSuggestions = [
-    // Cameroun — Douala
-    {'address': 'Akwa, Douala', 'lat': 4.0510, 'lng': 9.7040},
-    {'address': 'Bonanjo, Douala', 'lat': 4.0430, 'lng': 9.6940},
-    {'address': 'Bonapriso, Douala', 'lat': 4.0200, 'lng': 9.6920},
-    {'address': 'Deïdo, Douala', 'lat': 4.0600, 'lng': 9.7100},
-    {'address': 'Bali, Douala', 'lat': 4.0350, 'lng': 9.6850},
-    {'address': 'Makepe, Douala', 'lat': 4.0700, 'lng': 9.7350},
-    {'address': 'Kotto, Douala', 'lat': 4.0650, 'lng': 9.7500},
-    {'address': 'Logbessou, Douala', 'lat': 4.0800, 'lng': 9.7600},
-    {'address': 'Ndokotti, Douala', 'lat': 4.0550, 'lng': 9.7250},
-    {'address': 'New Bell, Douala', 'lat': 4.0380, 'lng': 9.7150},
-    {'address': 'Bonabéri, Douala', 'lat': 4.0700, 'lng': 9.6700},
-    {'address': 'Bessengue, Douala', 'lat': 4.0450, 'lng': 9.7200},
-    // Cameroun — Yaoundé
-    {'address': 'Centre Administratif, Yaoundé', 'lat': 3.8667, 'lng': 11.5167},
-    {'address': 'Bastos, Yaoundé', 'lat': 3.8800, 'lng': 11.5100},
-    {'address': 'Nlongkak, Yaoundé', 'lat': 3.8750, 'lng': 11.5200},
-    {'address': 'Mvog-Mbi, Yaoundé', 'lat': 3.8550, 'lng': 11.5250},
-    {'address': 'Tsinga, Yaoundé', 'lat': 3.8850, 'lng': 11.5050},
-    {'address': 'Mvan, Yaoundé', 'lat': 3.8350, 'lng': 11.5100},
-    {'address': 'Biyem-Assi, Yaoundé', 'lat': 3.8450, 'lng': 11.4850},
-    {'address': 'Essos, Yaoundé', 'lat': 3.8700, 'lng': 11.5350},
-    // Cameroun — Autres
-    {'address': 'Centre, Bafoussam', 'lat': 5.4737, 'lng': 10.4176},
-    {'address': 'Centre, Bamenda', 'lat': 5.9631, 'lng': 10.1591},
-    {'address': 'Centre, Kribi', 'lat': 2.9400, 'lng': 9.9080},
-    {'address': 'Centre, Limbé', 'lat': 4.0230, 'lng': 9.2150},
-    // Côte d'Ivoire — Abidjan
-    {'address': 'Cocody Riviera, Abidjan', 'lat': 5.3580, 'lng': -3.9710},
-    {'address': 'Cocody Angré, Abidjan', 'lat': 5.3770, 'lng': -3.9870},
-    {'address': 'Cocody 2 Plateaux, Abidjan', 'lat': 5.3510, 'lng': -3.9930},
-    {'address': 'Plateau, Abidjan', 'lat': 5.3200, 'lng': -4.0150},
-    {'address': 'Marcory, Abidjan', 'lat': 5.3050, 'lng': -3.9870},
-    {'address': 'Treichville, Abidjan', 'lat': 5.3010, 'lng': -4.0060},
-    {'address': 'Yopougon, Abidjan', 'lat': 5.3370, 'lng': -4.0660},
-    {'address': 'Abobo, Abidjan', 'lat': 5.4180, 'lng': -4.0200},
-    {'address': 'Koumassi, Abidjan', 'lat': 5.2950, 'lng': -3.9570},
-    {'address': 'Adjamé, Abidjan', 'lat': 5.3580, 'lng': -4.0280},
-    // Sénégal — Dakar
-    {'address': 'Plateau, Dakar', 'lat': 14.6693, 'lng': -17.4380},
-    {'address': 'Médina, Dakar', 'lat': 14.6720, 'lng': -17.4490},
-    {'address': 'Almadies, Dakar', 'lat': 14.7350, 'lng': -17.5100},
-    {'address': 'Mermoz, Dakar', 'lat': 14.7050, 'lng': -17.4780},
-    {'address': 'Ouakam, Dakar', 'lat': 14.7250, 'lng': -17.4900},
-    // Mali — Bamako
-    {'address': 'Badalabougou, Bamako', 'lat': 12.6150, 'lng': -7.9900},
-    {'address': 'Hamdallaye, Bamako', 'lat': 12.6250, 'lng': -8.0050},
-    {'address': 'ACI 2000, Bamako', 'lat': 12.6100, 'lng': -8.0200},
-    // Guinée — Conakry
-    {'address': 'Kaloum, Conakry', 'lat': 9.5092, 'lng': -13.7122},
-    {'address': 'Ratoma, Conakry', 'lat': 9.6250, 'lng': -13.6250},
-    // Burkina Faso
-    {'address': 'Ouaga 2000, Ouagadougou', 'lat': 12.3350, 'lng': -1.4850},
-    {'address': 'Centre, Ouagadougou', 'lat': 12.3714, 'lng': -1.5197},
-    // Bénin — Cotonou
-    {'address': 'Cadjèhoun, Cotonou', 'lat': 6.3653, 'lng': 2.3924},
-    {'address': 'Ganhi, Cotonou', 'lat': 6.3600, 'lng': 2.4250},
-    // Togo — Lomé
-    {'address': 'Tokoin, Lomé', 'lat': 6.1600, 'lng': 1.2150},
-    {'address': 'Bè, Lomé', 'lat': 6.1400, 'lng': 1.2350},
-    // Gabon — Libreville
-    {'address': 'Centre-ville, Libreville', 'lat': 0.3924, 'lng': 9.4536},
-    // Congo — Brazzaville
-    {'address': 'Centre-ville, Brazzaville', 'lat': -4.2634, 'lng': 15.2429},
-    // RD Congo — Kinshasa
-    {'address': 'Gombe, Kinshasa', 'lat': -4.3050, 'lng': 15.3100},
-    // Nigeria — Lagos
-    {'address': 'Victoria Island, Lagos', 'lat': 6.4281, 'lng': 3.4219},
-    {'address': 'Lekki, Lagos', 'lat': 6.4698, 'lng': 3.5852},
-  ];
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AmaraColors.bg,
       appBar: AppBar(
@@ -120,36 +30,31 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
         ),
         centerTitle: true,
       ),
-      body: _addresses.isEmpty
+      body: addresses.isEmpty
           ? _buildEmpty()
           : ListView.separated(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 100),
               physics: const BouncingScrollPhysics(),
-              itemCount: _addresses.length,
+              itemCount: addresses.length,
               separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
-                final addr = _addresses[index];
+                final addr = addresses[index];
                 return _AddressCard(
                   address: addr,
                   onSetDefault: () {
                     HapticFeedback.selectionClick();
-                    setState(() {
-                      for (var a in _addresses) {
-                        a.isDefault = false;
-                      }
-                      addr.isDefault = true;
-                    });
+                    ref.read(addressProvider.notifier).setDefault(addr.id);
                   },
-                  onEdit: () => _showAddEditSheet(editIndex: index),
+                  onEdit: () => _showAddEditSheet(context, ref, editAddress: addr),
                   onDelete: () {
                     HapticFeedback.mediumImpact();
-                    setState(() => _addresses.removeAt(index));
+                    ref.read(addressProvider.notifier).remove(addr.id);
                   },
                 );
               },
             ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddEditSheet(),
+        onPressed: () => _showAddEditSheet(context, ref),
         backgroundColor: AmaraColors.primary,
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: Text('Ajouter',
@@ -197,18 +102,20 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
 
   // ── Bottom sheet ajout / modification ──────────────────────────────────
 
-  void _showAddEditSheet({int? editIndex}) {
-    final isEdit = editIndex != null;
-    final existing = isEdit ? _addresses[editIndex] : null;
+  void _showAddEditSheet(BuildContext context, WidgetRef ref, {SavedAddress? editAddress}) {
+    final isEdit = editAddress != null;
+    final suggestions = ref.read(addressSuggestionsProvider).valueOrNull ?? [];
 
     final labelCtrl =
-        TextEditingController(text: existing?.label ?? '');
+        TextEditingController(text: editAddress?.label ?? '');
     final addressCtrl =
-        TextEditingController(text: existing?.address ?? '');
+        TextEditingController(text: editAddress?.address ?? '');
     final complementCtrl =
-        TextEditingController(text: existing?.complement ?? '');
+        TextEditingController(text: editAddress?.complement ?? '');
 
     List<Map<String, dynamic>> filtered = [];
+    double? selectedLat = editAddress?.lat;
+    double? selectedLng = editAddress?.lng;
 
     showModalBottomSheet(
       context: context,
@@ -224,7 +131,7 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
               }
               final q = query.toLowerCase();
               setSheetState(() {
-                filtered = _addressSuggestions
+                filtered = suggestions
                     .where((s) =>
                         (s['address'] as String).toLowerCase().contains(q))
                     .toList();
@@ -309,6 +216,8 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
                               onTap: () {
                                 addressCtrl.text =
                                     s['address'] as String;
+                                selectedLat = (s['lat'] as num?)?.toDouble();
+                                selectedLng = (s['lng'] as num?)?.toDouble();
                                 setSheetState(() => filtered = []);
                               },
                               child: Padding(
@@ -362,24 +271,26 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
                               addressCtrl.text.isEmpty) {
                             return;
                           }
-                          setState(() {
-                            if (isEdit) {
-                              _addresses[editIndex].label =
-                                  labelCtrl.text;
-                              _addresses[editIndex].address =
-                                  addressCtrl.text;
-                              _addresses[editIndex].complement =
-                                  complementCtrl.text;
-                            } else {
-                              _addresses.add(_Address(
-                                label: labelCtrl.text,
-                                icon: Icons.location_on_rounded,
-                                address: addressCtrl.text,
-                                complement: complementCtrl.text,
-                                isDefault: _addresses.isEmpty,
-                              ));
-                            }
-                          });
+                          final notifier = ref.read(addressProvider.notifier);
+                          if (isEdit) {
+                            notifier.update(
+                              editAddress.id,
+                              label: labelCtrl.text,
+                              address: addressCtrl.text,
+                              complement: complementCtrl.text,
+                              lat: selectedLat,
+                              lng: selectedLng,
+                            );
+                          } else {
+                            notifier.add(SavedAddress(
+                              id: DateTime.now().millisecondsSinceEpoch.toString(),
+                              label: labelCtrl.text,
+                              address: addressCtrl.text,
+                              complement: complementCtrl.text,
+                              lat: selectedLat,
+                              lng: selectedLng,
+                            ));
+                          }
                           Navigator.of(ctx).pop();
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -473,28 +384,10 @@ class _MyAddressesScreenState extends State<MyAddressesScreen> {
   }
 }
 
-// ─── Modèle adresse ─────────────────────────────────────────────────────────────
-
-class _Address {
-  String label;
-  final IconData icon;
-  String address;
-  String complement;
-  bool isDefault;
-
-  _Address({
-    required this.label,
-    required this.icon,
-    required this.address,
-    this.complement = '',
-    required this.isDefault,
-  });
-}
-
 // ─── Carte adresse ──────────────────────────────────────────────────────────────
 
 class _AddressCard extends StatelessWidget {
-  final _Address address;
+  final SavedAddress address;
   final VoidCallback onSetDefault;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
