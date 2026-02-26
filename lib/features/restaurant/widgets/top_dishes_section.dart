@@ -13,12 +13,14 @@ class TopDishesSection extends StatelessWidget {
   final List<MenuItem> items;
   final String restaurantId;
   final String restaurantName;
+  final String? restaurantImageUrl;
 
   const TopDishesSection({
     super.key,
     required this.items,
     required this.restaurantId,
     required this.restaurantName,
+    this.restaurantImageUrl,
   });
 
   @override
@@ -57,6 +59,7 @@ class TopDishesSection extends StatelessWidget {
                 rank: index + 1,
                 restaurantId: restaurantId,
                 restaurantName: restaurantName,
+                restaurantImageUrl: restaurantImageUrl,
                 companions: items.where((i) => i.id != items[index].id).take(4).toList(),
               ),
             ),
@@ -72,6 +75,7 @@ class _TopDishCard extends ConsumerWidget {
   final int rank;
   final String restaurantId;
   final String restaurantName;
+  final String? restaurantImageUrl;
   final List<MenuItem> companions;
 
   const _TopDishCard({
@@ -79,6 +83,7 @@ class _TopDishCard extends ConsumerWidget {
     required this.rank,
     required this.restaurantId,
     required this.restaurantName,
+    this.restaurantImageUrl,
     this.companions = const [],
   });
 
@@ -88,6 +93,7 @@ class _TopDishCard extends ConsumerWidget {
         item: item,
         restaurantId: restaurantId,
         restaurantName: restaurantName,
+        restaurantImageUrl: restaurantImageUrl,
         companions: companions,
       ),
     ));

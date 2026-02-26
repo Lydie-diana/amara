@@ -12,6 +12,7 @@ class MenuItemDetailScreen extends ConsumerStatefulWidget {
   final MenuItem item;
   final String restaurantId;
   final String restaurantName;
+  final String? restaurantImageUrl;
   final List<MenuItem> companions; // plats suggérés du même restaurant
 
   const MenuItemDetailScreen({
@@ -19,6 +20,7 @@ class MenuItemDetailScreen extends ConsumerStatefulWidget {
     required this.item,
     required this.restaurantId,
     required this.restaurantName,
+    this.restaurantImageUrl,
     this.companions = const [],
   });
 
@@ -99,6 +101,7 @@ class _MenuItemDetailScreenState extends ConsumerState<MenuItemDetailScreen> {
           widget.item,
           widget.restaurantId,
           widget.restaurantName,
+          restaurantImageUrl: widget.restaurantImageUrl,
           selectedOptions: opts,
           extraPrice: _extraPrice,
           note: _noteController.text.trim().isEmpty
@@ -345,6 +348,7 @@ class _MenuItemDetailScreenState extends ConsumerState<MenuItemDetailScreen> {
               companions: widget.companions,
               restaurantId: widget.restaurantId,
               restaurantName: widget.restaurantName,
+              restaurantImageUrl: widget.restaurantImageUrl,
             ),
 
           // ── Groupes d'options / accompagnements ──────────────────────────
@@ -487,11 +491,13 @@ class _CompanionSection extends ConsumerWidget {
   final List<MenuItem> companions;
   final String restaurantId;
   final String restaurantName;
+  final String? restaurantImageUrl;
 
   const _CompanionSection({
     required this.companions,
     required this.restaurantId,
     required this.restaurantName,
+    this.restaurantImageUrl,
   });
 
   @override
@@ -536,6 +542,7 @@ class _CompanionSection extends ConsumerWidget {
                         companion,
                         restaurantId,
                         restaurantName,
+                        restaurantImageUrl: restaurantImageUrl,
                       );
                 },
                 child: Container(

@@ -13,6 +13,7 @@ class MenuCategorySection extends ConsumerWidget {
   final MenuCategory category;
   final String restaurantId;
   final String restaurantName;
+  final String? restaurantImageUrl;
   final List<MenuItem> allItems;
   final int animationDelay;
 
@@ -21,6 +22,7 @@ class MenuCategorySection extends ConsumerWidget {
     required this.category,
     required this.restaurantId,
     required this.restaurantName,
+    this.restaurantImageUrl,
     this.allItems = const [],
     this.animationDelay = 0,
   });
@@ -43,6 +45,7 @@ class MenuCategorySection extends ConsumerWidget {
             item: item,
             restaurantId: restaurantId,
             restaurantName: restaurantName,
+            restaurantImageUrl: restaurantImageUrl,
             companions: companions,
           )
               .animate()
@@ -63,12 +66,14 @@ class _MenuItemTile extends ConsumerWidget {
   final MenuItem item;
   final String restaurantId;
   final String restaurantName;
+  final String? restaurantImageUrl;
   final List<MenuItem> companions;
 
   const _MenuItemTile({
     required this.item,
     required this.restaurantId,
     required this.restaurantName,
+    this.restaurantImageUrl,
     this.companions = const [],
   });
 
@@ -79,6 +84,7 @@ class _MenuItemTile extends ConsumerWidget {
           item: item,
           restaurantId: restaurantId,
           restaurantName: restaurantName,
+          restaurantImageUrl: restaurantImageUrl,
           companions: companions,
         ),
       ),

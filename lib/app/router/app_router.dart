@@ -12,6 +12,7 @@ import '../../features/auth/profile/profile_setup_screen.dart';
 import '../../features/shell/main_shell.dart';
 import '../../features/restaurant/restaurant_detail_screen.dart';
 import '../../features/cart/cart_screen.dart';
+import '../../features/cart/cart_detail_screen.dart';
 import '../../features/checkout/checkout_screen.dart';
 import '../../features/order_confirmation/order_confirmation_screen.dart';
 import '../../features/order_tracking/order_tracking_screen.dart';
@@ -83,7 +84,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
 
-      // Cart
+      // Cart (liste des paniers)
       GoRoute(
         path: AppRoutes.cart,
         pageBuilder: (context, state) => _buildSlideUpPage(
@@ -92,13 +93,28 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
 
-      // Checkout
+      // Cart detail (détail panier d'un restaurant)
+      GoRoute(
+        path: AppRoutes.cartDetail,
+        pageBuilder: (context, state) {
+          final restaurantId = state.pathParameters['restaurantId'] ?? '';
+          return _buildSlideUpPage(
+            state: state,
+            child: CartDetailScreen(restaurantId: restaurantId),
+          );
+        },
+      ),
+
+      // Checkout (optionnel: ?restaurantId=xxx pour filtrer par restaurant)
       GoRoute(
         path: AppRoutes.checkout,
-        pageBuilder: (context, state) => _buildSlideUpPage(
-          state: state,
-          child: const CheckoutScreen(),
-        ),
+        pageBuilder: (context, state) {
+          final restaurantId = state.uri.queryParameters['restaurantId'];
+          return _buildSlideUpPage(
+            state: state,
+            child: CheckoutScreen(restaurantId: restaurantId),
+          );
+        },
       ),
 
       // Order confirmation

@@ -21,6 +21,8 @@ class AppRoutes {
 
   // Cart & Checkout
   static const String cart = '/cart';
+  static const String cartDetail = '/cart/:restaurantId';
+  static const String cartDetailPath = '/cart';
   static const String checkout = '/checkout';
   static const String orderConfirmation = '/order/:id/confirmation';
   static const String orderConfirmationPath = '/order';

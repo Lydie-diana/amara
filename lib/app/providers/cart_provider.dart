@@ -12,6 +12,7 @@ class CartNotifier extends Notifier<CartState> {
     MenuItem item,
     String restaurantId,
     String restaurantName, {
+    String? restaurantImageUrl,
     Map<String, List<String>> selectedOptions = const {},
     double extraPrice = 0,
     String? note,
@@ -28,6 +29,7 @@ class CartNotifier extends Notifier<CartState> {
             quantity: quantity,
             restaurantId: restaurantId,
             restaurantName: restaurantName,
+            restaurantImageUrl: restaurantImageUrl,
             selectedOptions: selectedOptions,
             extraPrice: extraPrice,
             note: note,
@@ -54,6 +56,7 @@ class CartNotifier extends Notifier<CartState> {
             quantity: quantity,
             restaurantId: restaurantId,
             restaurantName: restaurantName,
+            restaurantImageUrl: restaurantImageUrl,
             note: note,
           ),
         ],

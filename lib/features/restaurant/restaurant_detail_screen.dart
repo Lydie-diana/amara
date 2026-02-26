@@ -133,6 +133,7 @@ class _RestaurantDetailScreenState
               items: topItems,
               restaurantId: restaurant.id,
               restaurantName: restaurant.name,
+              restaurantImageUrl: restaurant.imageUrl,
             ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
           ),
 
@@ -195,6 +196,7 @@ class _RestaurantDetailScreenState
                 category: entry.value,
                 restaurantId: restaurant.id,
                 restaurantName: restaurant.name,
+                restaurantImageUrl: restaurant.imageUrl,
                 allItems: allItems,
                 animationDelay: entry.key * 80,
               ),

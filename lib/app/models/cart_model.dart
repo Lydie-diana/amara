@@ -7,6 +7,7 @@ class CartItem {
   final String? note;
   final String restaurantId;
   final String restaurantName;
+  final String? restaurantImageUrl;
   final Map<String, List<String>> selectedOptions; // groupId → optionIds
   final double extraPrice; // total des suppléments
 
@@ -15,6 +16,7 @@ class CartItem {
     required this.quantity,
     required this.restaurantId,
     required this.restaurantName,
+    this.restaurantImageUrl,
     this.note,
     this.selectedOptions = const {},
     this.extraPrice = 0,
@@ -26,6 +28,7 @@ class CartItem {
       quantity: quantity ?? this.quantity,
       restaurantId: restaurantId,
       restaurantName: restaurantName,
+      restaurantImageUrl: restaurantImageUrl,
       note: note ?? this.note,
       selectedOptions: selectedOptions,
       extraPrice: extraPrice,
@@ -48,6 +51,9 @@ class CartRestaurantGroup {
     required this.restaurantName,
     required this.items,
   });
+
+  String? get restaurantImageUrl =>
+      items.isNotEmpty ? items.first.restaurantImageUrl : null;
 
   double get subtotal => items.fold(0.0, (sum, e) => sum + e.subtotal);
   double get deliveryFee => 500.0;
