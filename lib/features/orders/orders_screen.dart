@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
 import '../../app/providers/auth_provider.dart';
+import '../../app/providers/restaurant_provider.dart';
 import '../../app/services/convex_client.dart';
+import '../menu_item/menu_item_detail_screen.dart';
 
 // ─── Provider commandes ───────────────────────────────────────────────────────
 
-final myOrdersProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final myOrdersProvider =
+    FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final auth = ref.watch(authProvider);
   if (!auth.isAuthenticated) return [];
   try {
@@ -22,7 +26,21 @@ final myOrdersProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async 
   }
 });
 
-// ─── Écran commandes ──────────────────────────────────────────────────────────
+// ─── Provider : nombre de commandes actives (en cours) ───────────────────────
+
+final activeOrdersCountProvider = Provider<int>((ref) {
+  final ordersAsync = ref.watch(myOrdersProvider);
+  return ordersAsync.when(
+    data: (orders) => orders.where((o) {
+      final status = o['status'] as String? ?? '';
+      return status != 'delivered' && status != 'cancelled';
+    }).length,
+    loading: () => 0,
+    error: (_, __) => 0,
+  );
+});
+
+// ─── Ecran commandes ──────────────────────────────────────────────────────────
 
 class OrdersScreen extends ConsumerWidget {
   const OrdersScreen({super.key});
@@ -33,41 +51,757 @@ class OrdersScreen extends ConsumerWidget {
     final ordersAsync = ref.watch(myOrdersProvider);
 
     return Scaffold(
-      backgroundColor: AmaraColors.bg,
+      backgroundColor: Colors.white,
       body: SafeArea(
+        child: !auth.isAuthenticated
+            ? const _NotLoggedIn()
+            : ordersAsync.when(
+                loading: () => const Center(
+                  child:
+                      CircularProgressIndicator(color: AmaraColors.primary),
+                ),
+                error: (e, _) => _ErrorState(error: e.toString()),
+                data: (orders) => orders.isEmpty
+                    ? const _EmptyOrders()
+                    : _OrdersBody(orders: orders),
+              ),
+      ),
+    );
+  }
+}
+
+// ─── Corps principal avec tabs ───────────────────────────────────────────────
+
+class _OrdersBody extends ConsumerStatefulWidget {
+  final List<Map<String, dynamic>> orders;
+  const _OrdersBody({required this.orders});
+
+  @override
+  ConsumerState<_OrdersBody> createState() => _OrdersBodyState();
+}
+
+class _OrdersBodyState extends ConsumerState<_OrdersBody>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Map<String, List<Map<String, dynamic>>> _groupByRestaurant(
+      List<Map<String, dynamic>> orders) {
+    final grouped = <String, List<Map<String, dynamic>>>{};
+    for (final order in orders) {
+      final rid = order['restaurantId'] as String? ?? 'unknown';
+      grouped.putIfAbsent(rid, () => []);
+      grouped[rid]!.add(order);
+    }
+    return grouped;
+  }
+
+  List<Map<String, dynamic>> _allUniqueItems(
+      List<Map<String, dynamic>> orders) {
+    final seen = <String>{};
+    final items = <Map<String, dynamic>>[];
+    for (final order in orders) {
+      final orderItems = order['items'] as List? ?? [];
+      for (final item in orderItems) {
+        final d = Map<String, dynamic>.from(item as Map);
+        final name = d['name'] as String? ?? '';
+        if (name.isNotEmpty && seen.add(name)) {
+          items.add({...d, 'restaurantId': order['restaurantId']});
+        }
+      }
+    }
+    return items;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final grouped = _groupByRestaurant(widget.orders);
+
+    return Column(
+      children: [
+        // Header — meme taille que Explorer
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+          child: Row(
+            children: [
+              Text(
+                'Commandes',
+                style: AmaraTextStyles.h2.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Tabs avec couleur primary
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: BoxDecoration(
+            color: AmaraColors.bgAlt,
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: TabBar(
+            controller: _tabController,
+            indicator: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(11),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            indicatorSize: TabBarIndicatorSize.tab,
+            dividerColor: Colors.transparent,
+            labelColor: AmaraColors.textPrimary,
+            unselectedLabelColor: AmaraColors.textSecondary,
+            labelStyle: AmaraTextStyles.labelSmall.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+            unselectedLabelStyle: AmaraTextStyles.labelSmall.copyWith(
+              fontWeight: FontWeight.w500,
+            ),
+            padding: const EdgeInsets.all(4),
+            tabs: const [
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.shopping_bag_outlined, size: 15),
+                    SizedBox(width: 5),
+                    Text('Anciens articles'),
+                  ],
+                ),
+              ),
+              Tab(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.receipt_long_outlined, size: 15),
+                    SizedBox(width: 5),
+                    Text('Commandes'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 8),
+
+        // Tab content
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _PastItemsTab(
+                grouped: grouped,
+                orders: widget.orders,
+                allUniqueItems: _allUniqueItems,
+              ),
+              _PastOrdersTab(orders: widget.orders),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Tab 1 : Anciens articles ────────────────────────────────────────────────
+
+class _PastItemsTab extends ConsumerWidget {
+  final Map<String, List<Map<String, dynamic>>> grouped;
+  final List<Map<String, dynamic>> orders;
+  final List<Map<String, dynamic>> Function(List<Map<String, dynamic>>)
+      allUniqueItems;
+
+  const _PastItemsTab({
+    required this.grouped,
+    required this.orders,
+    required this.allUniqueItems,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final entries = grouped.entries.toList();
+
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 24),
+      physics: const BouncingScrollPhysics(),
+      itemCount: entries.length,
+      itemBuilder: (context, index) {
+        final restaurantId = entries[index].key;
+        final restaurantOrders = entries[index].value;
+        final items = allUniqueItems(restaurantOrders);
+
+        return _RestaurantSection(
+          restaurantId: restaurantId,
+          orders: restaurantOrders,
+          items: items,
+        );
+      },
+    );
+  }
+}
+
+// ─── Section restaurant ──────────────────────────────────────────────────────
+
+class _RestaurantSection extends ConsumerWidget {
+  final String restaurantId;
+  final List<Map<String, dynamic>> orders;
+  final List<Map<String, dynamic>> items;
+
+  const _RestaurantSection({
+    required this.restaurantId,
+    required this.orders,
+    required this.items,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final restaurantAsync = ref.watch(restaurantDetailProvider(restaurantId));
+    final restaurant = restaurantAsync.valueOrNull;
+    final restaurantName = restaurant?.name ?? 'Restaurant';
+    final restaurantImage = restaurant?.imageUrl;
+    final deliveryFee = restaurant?.deliveryFee ?? '';
+    final deliveryTime = restaurant?.deliveryTime ?? '';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Restaurant header
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+          child: Row(
+            children: [
+              // Restaurant image
+              ClipOval(
+                child: SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: restaurantImage != null
+                      ? Image.network(
+                          restaurantImage,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Container(
+                            color: AmaraColors.primary.withValues(alpha: 0.1),
+                            child: const Icon(Icons.restaurant_rounded,
+                                color: AmaraColors.primary, size: 22),
+                          ),
+                        )
+                      : Container(
+                          color: AmaraColors.primary.withValues(alpha: 0.1),
+                          child: const Icon(Icons.restaurant_rounded,
+                              color: AmaraColors.primary, size: 22),
+                        ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Name + info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      restaurantName,
+                      style: AmaraTextStyles.labelLarge.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: AmaraColors.textPrimary,
+                      ),
+                    ),
+                    if (deliveryFee.isNotEmpty || deliveryTime.isNotEmpty)
+                      Text(
+                        'Frais de livraison : $deliveryFee • $deliveryTime',
+                        style: AmaraTextStyles.caption.copyWith(
+                          color: AmaraColors.textSecondary,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              // Arrow button
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  context.push('/restaurant/$restaurantId');
+                },
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: AmaraColors.bg,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: AmaraColors.divider),
+                  ),
+                  child: const Icon(Icons.arrow_forward_rounded,
+                      color: AmaraColors.textPrimary, size: 18),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Horizontal items scroll
+        SizedBox(
+          height: 200,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            itemCount: items.length,
+            itemBuilder: (context, index) {
+              return _ItemCard(
+                item: items[index],
+                restaurantId: restaurantId,
+              );
+            },
+          ),
+        ),
+
+        // Divider
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Divider(color: AmaraColors.divider, height: 24),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Carte article (horizontal scroll) ───────────────────────────────────────
+
+class _ItemCard extends ConsumerWidget {
+  final Map<String, dynamic> item;
+  final String restaurantId;
+
+  const _ItemCard({required this.item, required this.restaurantId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final name = item['name'] as String? ?? '';
+    final unitPrice = (item['unitPrice'] as num?)?.toDouble() ?? 0;
+    final orderImageUrl = item['imageUrl'] as String?;
+    final menuItemId = item['menuItemId'] as String?;
+
+    final menuAsync = ref.watch(restaurantMenuProvider(restaurantId));
+
+    // Resolve image: use order imageUrl first, fallback to menu item imageUrl
+    String? resolvedImageUrl = orderImageUrl;
+    final categories = menuAsync.valueOrNull;
+    final allItems = categories?.expand((c) => c.items).toList();
+    if ((resolvedImageUrl == null || resolvedImageUrl.isEmpty) &&
+        allItems != null &&
+        menuItemId != null) {
+      final found = allItems.where((m) => m.id == menuItemId);
+      if (found.isNotEmpty) {
+        resolvedImageUrl = found.first.imageUrl;
+      }
+    }
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        if (allItems != null && menuItemId != null) {
+          final found = allItems.where((m) => m.id == menuItemId);
+          if (found.isNotEmpty) {
+            final restaurant =
+                ref.read(restaurantDetailProvider(restaurantId)).valueOrNull;
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => MenuItemDetailScreen(
+                item: found.first,
+                restaurantId: restaurantId,
+                restaurantName: restaurant?.name ?? 'Restaurant',
+                restaurantImageUrl: restaurant?.imageUrl,
+                companions: allItems
+                    .where((m) => m.id != menuItemId)
+                    .take(4)
+                    .toList(),
+              ),
+            ));
+            return;
+          }
+        }
+        context.push('/restaurant/$restaurantId');
+      },
+      child: Container(
+        width: 140,
+        margin: const EdgeInsets.only(right: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
-              child: Text('Mes commandes', style: AmaraTextStyles.h2),
-            ).animate().fadeIn(duration: 300.ms),
+            // Image avec bouton +
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: SizedBox(
+                    width: 140,
+                    height: 120,
+                    child: resolvedImageUrl != null && resolvedImageUrl.isNotEmpty
+                        ? Image.network(
+                            resolvedImageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _placeholderImage(),
+                          )
+                        : _placeholderImage(),
+                  ),
+                ),
+                // Bouton +
+                Positioned(
+                  bottom: 8,
+                  right: 8,
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.12),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.add_rounded,
+                        color: AmaraColors.textPrimary, size: 18),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            // Name
+            Text(
+              name,
+              style: AmaraTextStyles.labelSmall.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AmaraColors.textPrimary,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+            // Price
+            Text(
+              '${unitPrice.toStringAsFixed(0)} F',
+              style: AmaraTextStyles.caption.copyWith(
+                color: AmaraColors.primary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: Text('Retrouvez l\'historique de vos commandes',
-                style: AmaraTextStyles.bodySmall.copyWith(
-                  color: AmaraColors.textSecondary,
+  Widget _placeholderImage() {
+    return Container(
+      color: AmaraColors.primary.withValues(alpha: 0.06),
+      child: const Center(
+        child: Icon(Icons.restaurant_menu_rounded,
+            color: AmaraColors.primary, size: 32),
+      ),
+    );
+  }
+}
+
+// ─── Tab 2 : Anciennes commandes ──────────────────────────────────────────────
+
+class _PastOrdersTab extends StatelessWidget {
+  final List<Map<String, dynamic>> orders;
+  const _PastOrdersTab({required this.orders});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+      physics: const BouncingScrollPhysics(),
+      itemCount: orders.length,
+      itemBuilder: (context, index) {
+        return _OrderTile(order: orders[index]);
+      },
+    );
+  }
+}
+
+// ─── Tuile commande ──────────────────────────────────────────────────────────
+
+class _OrderTile extends ConsumerWidget {
+  final Map<String, dynamic> order;
+  const _OrderTile({required this.order});
+
+  String get _status => order['status'] as String? ?? '';
+
+  String get _statusLabel {
+    return switch (_status) {
+      'pending' => 'En attente',
+      'confirmed' => 'Confirmee',
+      'preparing' => 'En preparation',
+      'ready' => 'Prete',
+      'picked_up' => 'Recuperee',
+      'delivering' => 'En livraison',
+      'delivered' => 'Livree',
+      'cancelled' => 'Annulee',
+      _ => 'Inconnue',
+    };
+  }
+
+  Color get _statusColor {
+    return switch (_status) {
+      'delivered' => AmaraColors.success,
+      'cancelled' => AmaraColors.error,
+      'delivering' || 'picked_up' => AmaraColors.primary,
+      _ => AmaraColors.warning,
+    };
+  }
+
+  String get _formattedTotal {
+    final total = (order['total'] as num?)?.toDouble() ?? 0;
+    return '${total.toStringAsFixed(0)} F';
+  }
+
+  String get _formattedDate {
+    final ts = order['createdAt'] as num?;
+    if (ts == null) return '';
+    final dt = DateTime.fromMillisecondsSinceEpoch(ts.toInt());
+    final now = DateTime.now();
+    final diff = now.difference(dt);
+    if (diff.inDays == 0) return 'Aujourd\'hui';
+    if (diff.inDays == 1) return 'Hier';
+    return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
+  }
+
+  int get _itemCount {
+    final items = order['items'] as List?;
+    if (items == null) return 0;
+    return items.fold<int>(
+        0, (sum, item) => sum + ((item['quantity'] as num?)?.toInt() ?? 1));
+  }
+
+  bool get _canCancel => _status == 'pending';
+
+  void _showCancelDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Annuler la commande ?',
+            style: AmaraTextStyles.h3.copyWith(fontWeight: FontWeight.w700)),
+        content: Text(
+          'Le restaurant n\'a pas encore accepte votre commande. Voulez-vous l\'annuler ?',
+          style: AmaraTextStyles.bodySmall
+              .copyWith(color: AmaraColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Non',
+                style: TextStyle(
+                    color: AmaraColors.textSecondary,
+                    fontWeight: FontWeight.w600)),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              final orderId = order['_id'] as String? ?? '';
+              if (orderId.isEmpty) return;
+              try {
+                final client = ref.read(convexClientProvider);
+                await client.cancelOrder(orderId,
+                    reason: 'Annulee par le client');
+                ref.invalidate(myOrdersProvider);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Commande annulee'),
+                      backgroundColor: AmaraColors.success,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Erreur : $e'),
+                      backgroundColor: AmaraColors.error,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                    ),
+                  );
+                }
+              }
+            },
+            child: Text('Oui, annuler',
+                style: TextStyle(
+                    color: AmaraColors.error, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final orderId = order['_id'] as String? ?? '';
+    final restaurantId = order['restaurantId'] as String? ?? '';
+    final restaurantAsync =
+        ref.watch(restaurantDetailProvider(restaurantId));
+    final restaurant = restaurantAsync.valueOrNull;
+    final restaurantName = restaurant?.name ?? 'Restaurant';
+    final restaurantImage = restaurant?.imageUrl;
+
+    return GestureDetector(
+      onTap: () {
+        if (orderId.isNotEmpty) {
+          HapticFeedback.lightImpact();
+          context.push('/order/$orderId/tracking');
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: _canCancel
+                ? AmaraColors.warning.withValues(alpha: 0.3)
+                : AmaraColors.divider,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                // Restaurant image
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: SizedBox(
+                    width: 50,
+                    height: 50,
+                    child: restaurantImage != null
+                        ? Image.network(
+                            restaurantImage,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              color:
+                                  AmaraColors.primary.withValues(alpha: 0.1),
+                              child: const Icon(Icons.receipt_long_rounded,
+                                  color: AmaraColors.primary, size: 22),
+                            ),
+                          )
+                        : Container(
+                            color:
+                                AmaraColors.primary.withValues(alpha: 0.1),
+                            child: const Icon(Icons.receipt_long_rounded,
+                                color: AmaraColors.primary, size: 22),
+                          ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        restaurantName,
+                        style: AmaraTextStyles.labelMedium.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AmaraColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        '$_itemCount article${_itemCount > 1 ? 's' : ''} • $_formattedTotal • $_formattedDate',
+                        style: AmaraTextStyles.caption.copyWith(
+                          color: AmaraColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Status badge
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _statusColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    _statusLabel,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: _statusColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            // Bouton annuler si pending
+            if (_canCancel) ...[
+              const SizedBox(height: 10),
+              GestureDetector(
+                onTap: () => _showCancelDialog(context, ref),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AmaraColors.error.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: AmaraColors.error.withValues(alpha: 0.2)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.close_rounded,
+                          color: AmaraColors.error, size: 16),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Annuler la commande',
+                        style: AmaraTextStyles.labelSmall.copyWith(
+                          color: AmaraColors.error,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ).animate().fadeIn(delay: 100.ms, duration: 300.ms),
-
-            // Contenu
-            Expanded(
-              child: !auth.isAuthenticated
-                  ? _NotLoggedIn()
-                  : ordersAsync.when(
-                      loading: () => const Center(
-                        child: CircularProgressIndicator(
-                            color: AmaraColors.primary),
-                      ),
-                      error: (e, _) => _ErrorState(error: e.toString()),
-                      data: (orders) => orders.isEmpty
-                          ? _EmptyOrders()
-                          : _OrdersList(orders: orders),
-                    ),
-            ),
+            ],
           ],
         ),
       ),
@@ -75,9 +809,11 @@ class OrdersScreen extends ConsumerWidget {
   }
 }
 
-// ─── Non connecté ─────────────────────────────────────────────────────────────
+// ─── Non connecte ─────────────────────────────────────────────────────────────
 
 class _NotLoggedIn extends StatelessWidget {
+  const _NotLoggedIn();
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -86,20 +822,27 @@ class _NotLoggedIn extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('🔐', style: TextStyle(fontSize: 56))
-                .animate()
-                .scale(duration: 400.ms, curve: Curves.easeOutBack),
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AmaraColors.primary.withValues(alpha: 0.08),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.lock_outline_rounded,
+                  size: 36, color: AmaraColors.primary),
+            ),
             const SizedBox(height: 20),
-            Text('Connexion requise', style: AmaraTextStyles.h3)
-                .animate()
-                .fadeIn(delay: 100.ms),
+            Text('Connexion requise',
+                style: AmaraTextStyles.h3
+                    .copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Text(
               'Connectez-vous pour voir vos commandes',
               style: AmaraTextStyles.bodySmall
                   .copyWith(color: AmaraColors.textSecondary),
               textAlign: TextAlign.center,
-            ).animate().fadeIn(delay: 150.ms),
+            ),
           ],
         ),
       ),
@@ -110,6 +853,8 @@ class _NotLoggedIn extends StatelessWidget {
 // ─── Aucune commande ──────────────────────────────────────────────────────────
 
 class _EmptyOrders extends StatelessWidget {
+  const _EmptyOrders();
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -118,20 +863,27 @@ class _EmptyOrders extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('📦', style: TextStyle(fontSize: 56))
-                .animate()
-                .scale(duration: 400.ms, curve: Curves.easeOutBack),
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: AmaraColors.primary.withValues(alpha: 0.08),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.shopping_bag_outlined,
+                  size: 36, color: AmaraColors.primary),
+            ),
             const SizedBox(height: 20),
-            Text('Aucune commande', style: AmaraTextStyles.h3)
-                .animate()
-                .fadeIn(delay: 100.ms),
+            Text('Aucune commande',
+                style: AmaraTextStyles.h3
+                    .copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Text(
-              'Vos futures commandes apparaîtront ici',
+              'Vos futures commandes apparaitront ici',
               style: AmaraTextStyles.bodySmall
                   .copyWith(color: AmaraColors.textSecondary),
               textAlign: TextAlign.center,
-            ).animate().fadeIn(delay: 150.ms),
+            ),
           ],
         ),
       ),
@@ -153,204 +905,18 @@ class _ErrorState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.wifi_off_rounded, size: 48, color: AmaraColors.muted),
+            const Icon(Icons.wifi_off_rounded,
+                size: 48, color: AmaraColors.muted),
             const SizedBox(height: 16),
             Text('Erreur de connexion', style: AmaraTextStyles.h3),
             const SizedBox(height: 8),
             Text(error,
-              style: AmaraTextStyles.bodySmall
-                  .copyWith(color: AmaraColors.textSecondary),
-              textAlign: TextAlign.center,
-            ),
+                style: AmaraTextStyles.bodySmall
+                    .copyWith(color: AmaraColors.textSecondary),
+                textAlign: TextAlign.center),
           ],
         ),
       ),
     );
-  }
-}
-
-// ─── Liste des commandes ──────────────────────────────────────────────────────
-
-class _OrdersList extends StatelessWidget {
-  final List<Map<String, dynamic>> orders;
-  const _OrdersList({required this.orders});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-      physics: const BouncingScrollPhysics(),
-      itemCount: orders.length,
-      itemBuilder: (context, index) {
-        return _OrderTile(order: orders[index])
-            .animate()
-            .fadeIn(delay: Duration(milliseconds: index * 60), duration: 300.ms)
-            .slideY(begin: 0.1, end: 0);
-      },
-    );
-  }
-}
-
-// ─── Tuile commande ───────────────────────────────────────────────────────────
-
-class _OrderTile extends StatelessWidget {
-  final Map<String, dynamic> order;
-  const _OrderTile({required this.order});
-
-  String get _statusLabel {
-    return switch (order['status'] as String? ?? '') {
-      'pending' => 'En attente',
-      'confirmed' => 'Confirmée',
-      'preparing' => 'En préparation',
-      'ready' => 'Prête',
-      'picked_up' => 'Récupérée',
-      'delivering' => 'En livraison',
-      'delivered' => 'Livrée',
-      'cancelled' => 'Annulée',
-      _ => 'Inconnue',
-    };
-  }
-
-  Color get _statusColor {
-    return switch (order['status'] as String? ?? '') {
-      'delivered' => AmaraColors.success,
-      'cancelled' => AmaraColors.error,
-      'delivering' || 'picked_up' => AmaraColors.primary,
-      _ => AmaraColors.warning,
-    };
-  }
-
-  String get _formattedTotal {
-    final total = (order['total'] as num?)?.toDouble() ?? 0;
-    return '${total.toStringAsFixed(0)} F';
-  }
-
-  String get _formattedDate {
-    final ts = order['createdAt'] as int?;
-    if (ts == null) return '';
-    final dt = DateTime.fromMillisecondsSinceEpoch(ts);
-    final now = DateTime.now();
-    final diff = now.difference(dt);
-    if (diff.inDays == 0) return 'Aujourd\'hui';
-    if (diff.inDays == 1) return 'Hier';
-    return '${dt.day}/${dt.month}/${dt.year}';
-  }
-
-  int get _itemCount {
-    final items = order['items'] as List?;
-    if (items == null) return 0;
-    return items.fold<int>(
-        0, (sum, item) => sum + ((item['quantity'] as num?)?.toInt() ?? 1));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AmaraColors.bgCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AmaraColors.divider),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              // Icône commande
-              Container(
-                width: 42, height: 42,
-                decoration: BoxDecoration(
-                  color: AmaraColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.receipt_long_rounded,
-                    color: AmaraColors.primary, size: 20),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Commande #${(order['_id'] as String?)?.substring(0, 8) ?? '...'}',
-                      style: AmaraTextStyles.labelMedium
-                          .copyWith(fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '$_itemCount article${_itemCount > 1 ? 's' : ''} · $_formattedDate',
-                      style: AmaraTextStyles.caption.copyWith(
-                        color: AmaraColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // Status badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _statusColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: _statusColor.withValues(alpha: 0.3)),
-                ),
-                child: Text(
-                  _statusLabel,
-                  style: AmaraTextStyles.caption.copyWith(
-                    color: _statusColor,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          Container(height: 1, color: AmaraColors.divider),
-
-          const SizedBox(height: 12),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Méthode de paiement
-              Row(
-                children: [
-                  const Icon(Icons.payment_rounded,
-                      size: 14, color: AmaraColors.muted),
-                  const SizedBox(width: 5),
-                  Text(
-                    _paymentLabel(order['paymentMethod'] as String? ?? ''),
-                    style: AmaraTextStyles.caption.copyWith(
-                      color: AmaraColors.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
-              // Total
-              Text(
-                _formattedTotal,
-                style: AmaraTextStyles.labelMedium.copyWith(
-                  color: AmaraColors.primary,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _paymentLabel(String method) {
-    return switch (method) {
-      'mobile_money' => 'Mobile Money',
-      'card' => 'Carte bancaire',
-      'cash' => 'Espèces',
-      _ => method,
-    };
   }
 }
