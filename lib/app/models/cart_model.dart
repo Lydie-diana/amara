@@ -1,14 +1,18 @@
 import 'restaurant_model.dart';
 
-/// Un article dans le panier.
+/// Un article dans le panier, avec son restaurant d'origine.
 class CartItem {
   final MenuItem item;
   final int quantity;
   final String? note;
+  final String restaurantId;
+  final String restaurantName;
 
   const CartItem({
     required this.item,
     required this.quantity,
+    required this.restaurantId,
+    required this.restaurantName,
     this.note,
   });
 
@@ -16,6 +20,8 @@ class CartItem {
     return CartItem(
       item: item,
       quantity: quantity ?? this.quantity,
+      restaurantId: restaurantId,
+      restaurantName: restaurantName,
       note: note ?? this.note,
     );
   }
@@ -24,35 +30,45 @@ class CartItem {
   String get formattedSubtotal => '${subtotal.toStringAsFixed(0)} F';
 }
 
-/// État complet du panier.
+/// Groupe d'articles d'un même restaurant dans le panier.
+class CartRestaurantGroup {
+  final String restaurantId;
+  final String restaurantName;
+  final List<CartItem> items;
+
+  const CartRestaurantGroup({
+    required this.restaurantId,
+    required this.restaurantName,
+    required this.items,
+  });
+
+  double get subtotal => items.fold(0.0, (sum, e) => sum + e.subtotal);
+  double get deliveryFee => 500.0;
+  double get total => subtotal + deliveryFee;
+  int get totalItems => items.fold(0, (sum, e) => sum + e.quantity);
+}
+
+/// État complet du panier (multi-restaurant).
 class CartState {
-  final String? restaurantId;
-  final String? restaurantName;
   final List<CartItem> items;
 
   const CartState({
-    this.restaurantId,
-    this.restaurantName,
     this.items = const [],
   });
 
-  CartState copyWith({
-    String? restaurantId,
-    String? restaurantName,
-    List<CartItem>? items,
-  }) {
-    return CartState(
-      restaurantId: restaurantId ?? this.restaurantId,
-      restaurantName: restaurantName ?? this.restaurantName,
-      items: items ?? this.items,
-    );
+  CartState copyWith({List<CartItem>? items}) {
+    return CartState(items: items ?? this.items);
   }
 
   int get totalItems => items.fold(0, (sum, e) => sum + e.quantity);
 
   double get subtotal => items.fold(0.0, (sum, e) => sum + e.subtotal);
 
-  double get deliveryFee => subtotal > 0 ? 500.0 : 0.0;
+  /// Frais de livraison par restaurant unique (500 F / restaurant)
+  double get deliveryFee {
+    final restaurantCount = items.map((e) => e.restaurantId).toSet().length;
+    return restaurantCount * 500.0;
+  }
 
   double get total => subtotal + deliveryFee;
 
@@ -63,6 +79,22 @@ class CartState {
 
   bool get isEmpty => items.isEmpty;
 
+  /// Groupes par restaurant
+  List<CartRestaurantGroup> get groups {
+    final map = <String, List<CartItem>>{};
+    for (final item in items) {
+      map.putIfAbsent(item.restaurantId, () => []).add(item);
+    }
+    return map.entries.map((e) {
+      final first = e.value.first;
+      return CartRestaurantGroup(
+        restaurantId: e.key,
+        restaurantName: first.restaurantName,
+        items: e.value,
+      );
+    }).toList();
+  }
+
   CartItem? itemFor(String itemId) {
     try {
       return items.firstWhere((e) => e.item.id == itemId);
@@ -72,4 +104,8 @@ class CartState {
   }
 
   int quantityFor(String itemId) => itemFor(itemId)?.quantity ?? 0;
+
+  // Compat legacy — premier restaurant du panier
+  String? get restaurantId => items.isNotEmpty ? items.first.restaurantId : null;
+  String? get restaurantName => items.isNotEmpty ? items.first.restaurantName : null;
 }

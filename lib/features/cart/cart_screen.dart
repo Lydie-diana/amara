@@ -18,37 +18,90 @@ class CartScreen extends ConsumerWidget {
     final cart = ref.watch(cartProvider);
 
     return Scaffold(
-      backgroundColor: AmaraColors.bg,
-      appBar: AppBar(
-        backgroundColor: AmaraColors.bg,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_rounded,
-              color: AmaraColors.textPrimary, size: 20),
-          onPressed: () => context.pop(),
-        ),
-        title: Text('Mon panier', style: AmaraTextStyles.h3),
-        actions: [
+      backgroundColor: AmaraColors.bgAlt,
+      body: Column(
+        children: [
+          // ── Header ────────────────────────────────────────────────────
+          _CartHeader(cart: cart),
+
+          // ── Contenu ───────────────────────────────────────────────────
+          Expanded(
+            child: cart.isEmpty
+                ? const _EmptyCart()
+                : _FilledCart(cart: cart),
+          ),
+
+          // ── Barre commander ───────────────────────────────────────────
+          if (!cart.isEmpty) _CheckoutBar(cart: cart),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Header ───────────────────────────────────────────────────────────────────
+
+class _CartHeader extends ConsumerWidget {
+  final CartState cart;
+  const _CartHeader({required this.cart});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final top = MediaQuery.of(context).padding.top;
+    return Container(
+      color: AmaraColors.primary,
+      padding: EdgeInsets.fromLTRB(20, top + 16, 20, 20),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => context.pop(),
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.18),
+                borderRadius: BorderRadius.circular(11),
+              ),
+              child: const Icon(Icons.arrow_back_ios_rounded,
+                  color: Colors.white, size: 16),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Mon panier',
+                    style: AmaraTextStyles.h3
+                        .copyWith(color: Colors.white, fontWeight: FontWeight.w800)),
+                if (!cart.isEmpty)
+                  Text(
+                    '${cart.totalItems} article${cart.totalItems > 1 ? 's' : ''} · ${cart.groups.length} restaurant${cart.groups.length > 1 ? 's' : ''}',
+                    style: AmaraTextStyles.caption
+                        .copyWith(color: Colors.white.withValues(alpha: 0.7)),
+                  ),
+              ],
+            ),
+          ),
           if (!cart.isEmpty)
-            TextButton(
-              onPressed: () {
+            GestureDetector(
+              onTap: () {
                 HapticFeedback.lightImpact();
                 ref.read(cartProvider.notifier).clear();
               },
-              child: Text(
-                'Vider',
-                style: AmaraTextStyles.labelSmall.copyWith(
-                  color: AmaraColors.error,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                child: Text('Vider',
+                    style: AmaraTextStyles.caption.copyWith(
+                        color: Colors.white, fontWeight: FontWeight.w700)),
               ),
             ),
         ],
       ),
-      body: cart.isEmpty ? const _EmptyCart() : _FilledCart(cart: cart),
-      bottomNavigationBar: cart.isEmpty
-          ? null
-          : _CheckoutBar(cart: cart),
     );
   }
 }
@@ -64,36 +117,40 @@ class _EmptyCart extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('🛒', style: TextStyle(fontSize: 64))
+          const Text('🛒', style: TextStyle(fontSize: 72))
               .animate()
               .scale(duration: 400.ms, curve: Curves.easeOutBack),
-          const SizedBox(height: 20),
-          Text(
-            'Votre panier est vide',
-            style: AmaraTextStyles.h3,
-          ).animate().fadeIn(delay: 100.ms),
+          const SizedBox(height: 24),
+          Text('Votre panier est vide',
+                  style: AmaraTextStyles.h3.copyWith(fontWeight: FontWeight.w800))
+              .animate()
+              .fadeIn(delay: 100.ms),
           const SizedBox(height: 8),
           Text(
-            'Ajoutez des plats depuis un restaurant',
-            style: AmaraTextStyles.bodySmall.copyWith(
-              color: AmaraColors.textSecondary,
-            ),
+            'Ajoutez des plats depuis un restaurant\npour commencer votre commande',
+            style: AmaraTextStyles.bodySmall
+                .copyWith(color: AmaraColors.textSecondary, height: 1.5),
+            textAlign: TextAlign.center,
           ).animate().fadeIn(delay: 150.ms),
           const SizedBox(height: 32),
           GestureDetector(
             onTap: () => context.pop(),
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 28, vertical: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
               decoration: BoxDecoration(
                 color: AmaraColors.primary,
                 borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: AmaraColors.primary.withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              child: Text(
-                'Explorer les restaurants',
-                style: AmaraTextStyles.labelMedium
-                    .copyWith(color: Colors.white),
-              ),
+              child: Text('Explorer les restaurants',
+                  style: AmaraTextStyles.labelMedium
+                      .copyWith(color: Colors.white)),
             ),
           ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2, end: 0),
         ],
@@ -110,58 +167,154 @@ class _FilledCart extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final groups = cart.groups;
+
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       physics: const BouncingScrollPhysics(),
       children: [
-        // Nom du restaurant
+        // Groupes par restaurant
+        ...groups.asMap().entries.map((entry) {
+          final idx = entry.key;
+          final group = entry.value;
+          return _RestaurantGroup(group: group)
+              .animate()
+              .fadeIn(delay: Duration(milliseconds: idx * 80), duration: 300.ms)
+              .slideY(begin: 0.06, end: 0);
+        }),
+
+        const SizedBox(height: 16),
+
+        // Récapitulatif prix
+        _PriceSummary(cart: cart)
+            .animate()
+            .fadeIn(delay: 200.ms, duration: 300.ms),
+
+        const SizedBox(height: 8),
+
+        // Info livraison
         Container(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          margin: const EdgeInsets.only(bottom: 16),
+          margin: const EdgeInsets.only(top: 10),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: AmaraColors.bgCard,
+            color: AmaraColors.success.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AmaraColors.divider),
+            border: Border.all(
+                color: AmaraColors.success.withValues(alpha: 0.2)),
           ),
           child: Row(
             children: [
-              const Icon(
-                Icons.storefront_rounded,
-                color: AmaraColors.primary,
-                size: 20,
-              ),
+              const Icon(Icons.delivery_dining_rounded,
+                  color: AmaraColors.success, size: 18),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  cart.restaurantName ?? '',
-                  style: AmaraTextStyles.labelMedium,
+                  'Livraison estimée : 25–40 min',
+                  style: AmaraTextStyles.caption.copyWith(
+                      color: AmaraColors.success,
+                      fontWeight: FontWeight.w600),
                 ),
               ),
             ],
           ),
-        ).animate().fadeIn(duration: 300.ms),
-
-        // Articles
-        ...cart.items.asMap().entries.map((entry) {
-          final index = entry.key;
-          final cartItem = entry.value;
-          return _CartItemTile(
-            cartItem: cartItem,
-          )
-              .animate()
-              .fadeIn(
-                delay: Duration(milliseconds: index * 60),
-                duration: 300.ms,
-              )
-              .slideX(begin: 0.05, end: 0);
-        }),
-
-        const SizedBox(height: 24),
-
-        // Récapitulatif prix
-        _PriceSummary(cart: cart),
+        ).animate().fadeIn(delay: 280.ms),
       ],
+    );
+  }
+}
+
+// ─── Groupe restaurant ────────────────────────────────────────────────────────
+
+class _RestaurantGroup extends ConsumerWidget {
+  final CartRestaurantGroup group;
+  const _RestaurantGroup({required this.group});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // En-tête restaurant
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
+            child: Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: AmaraColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.storefront_rounded,
+                      color: AmaraColors.primary, size: 16),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(group.restaurantName,
+                      style: AmaraTextStyles.labelSmall
+                          .copyWith(fontWeight: FontWeight.w800)),
+                ),
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    ref.read(cartProvider.notifier).removeRestaurant(group.restaurantId);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: AmaraColors.error.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text('Retirer',
+                        style: AmaraTextStyles.caption.copyWith(
+                            color: AmaraColors.error,
+                            fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Container(height: 1, color: AmaraColors.divider, margin: const EdgeInsets.symmetric(horizontal: 16)),
+
+          // Articles
+          ...group.items.map((cartItem) => _CartItemTile(cartItem: cartItem)),
+
+          // Sous-total restaurant
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 14),
+            child: Row(
+              children: [
+                const Icon(Icons.delivery_dining_rounded,
+                    size: 13, color: AmaraColors.muted),
+                const SizedBox(width: 4),
+                Text('Livraison',
+                    style: AmaraTextStyles.caption
+                        .copyWith(color: AmaraColors.muted)),
+                const Spacer(),
+                Text('500 F',
+                    style: AmaraTextStyles.caption.copyWith(
+                        color: AmaraColors.muted,
+                        fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -176,76 +329,82 @@ class _CartItemTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final item = cartItem.item;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AmaraColors.bgCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AmaraColors.divider),
-      ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
       child: Row(
         children: [
-          // Emoji
+          // Emoji / image
           Container(
-            width: 60,
-            height: 60,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
               color: AmaraColors.bgAlt,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
-              child: Text(
-                item.imageEmoji,
-                style: const TextStyle(fontSize: 30),
-              ),
+              child: item.imageUrl != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.network(item.imageUrl!,
+                          width: 52,
+                          height: 52,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => Text(item.imageEmoji,
+                              style: const TextStyle(fontSize: 26))),
+                    )
+                  : Text(item.imageEmoji,
+                      style: const TextStyle(fontSize: 26)),
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
 
-          // Nom + prix
+          // Nom + prix unitaire
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.name,
-                  style: AmaraTextStyles.labelMedium.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  cartItem.formattedSubtotal,
-                  style: AmaraTextStyles.labelSmall.copyWith(
-                    color: AmaraColors.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                Text(item.name,
+                    style: AmaraTextStyles.bodySmall
+                        .copyWith(fontWeight: FontWeight.w700),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 3),
+                Text(item.formattedPrice,
+                    style: AmaraTextStyles.caption
+                        .copyWith(color: AmaraColors.muted)),
               ],
             ),
           ),
 
-          // Contrôle quantité
-          _QuantityControl(
-            quantity: cartItem.quantity,
-            onDecrement: () {
-              HapticFeedback.lightImpact();
-              ref.read(cartProvider.notifier).removeItem(item.id);
-            },
-            onIncrement: () {
-              HapticFeedback.lightImpact();
-              // On doit passer restaurantId et restaurantName pour addItem
-              // Le cart les connaît déjà, donc on récupère depuis l'état
-              final cartState = ref.read(cartProvider);
-              ref.read(cartProvider.notifier).addItem(
-                    item,
-                    cartState.restaurantId ?? '',
-                    cartState.restaurantName ?? '',
-                  );
-            },
+          const SizedBox(width: 10),
+
+          // Contrôle quantité + prix total
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              _QuantityControl(
+                quantity: cartItem.quantity,
+                onDecrement: () {
+                  HapticFeedback.lightImpact();
+                  ref.read(cartProvider.notifier).removeItem(item.id);
+                },
+                onIncrement: () {
+                  HapticFeedback.lightImpact();
+                  ref.read(cartProvider.notifier).addItem(
+                        item,
+                        cartItem.restaurantId,
+                        cartItem.restaurantName,
+                      );
+                },
+              ),
+              const SizedBox(height: 4),
+              Text(
+                cartItem.formattedSubtotal,
+                style: AmaraTextStyles.caption.copyWith(
+                    color: AmaraColors.primary,
+                    fontWeight: FontWeight.w700),
+              ),
+            ],
           ),
         ],
       ),
@@ -264,28 +423,34 @@ class _PriceSummary extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AmaraColors.bgCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AmaraColors.divider),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Récapitulatif', style: AmaraTextStyles.labelMedium),
+          Text('Récapitulatif',
+              style: AmaraTextStyles.labelSmall
+                  .copyWith(fontWeight: FontWeight.w800)),
           const SizedBox(height: 14),
-          _Row(label: 'Sous-total', value: cart.formattedSubtotal),
+          _SummaryRow(label: 'Sous-total', value: cart.formattedSubtotal),
           const SizedBox(height: 8),
-          _Row(
-            label: 'Livraison',
+          _SummaryRow(
+            label: 'Livraison (${cart.groups.length} restaurant${cart.groups.length > 1 ? 's' : ''})',
             value: cart.formattedDeliveryFee,
-            valueColor: cart.deliveryFee == 0
-                ? AmaraColors.success
-                : AmaraColors.textPrimary,
+            valueColor: AmaraColors.textPrimary,
           ),
           const SizedBox(height: 14),
           Container(height: 1, color: AmaraColors.divider),
           const SizedBox(height: 14),
-          _Row(
+          _SummaryRow(
             label: 'Total',
             value: cart.formattedTotal,
             bold: true,
@@ -296,13 +461,13 @@ class _PriceSummary extends StatelessWidget {
   }
 }
 
-class _Row extends StatelessWidget {
+class _SummaryRow extends StatelessWidget {
   final String label;
   final String value;
   final bool bold;
   final Color? valueColor;
 
-  const _Row({
+  const _SummaryRow({
     required this.label,
     required this.value,
     this.bold = false,
@@ -318,21 +483,18 @@ class _Row extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Text(
-            label,
+          child: Text(label,
+              style: style.copyWith(
+                  color: bold
+                      ? AmaraColors.textPrimary
+                      : AmaraColors.textSecondary)),
+        ),
+        Text(value,
             style: style.copyWith(
-              color: bold ? AmaraColors.textPrimary : AmaraColors.textSecondary,
-            ),
-          ),
-        ),
-        Text(
-          value,
-          style: style.copyWith(
-            color: valueColor ??
-                (bold ? AmaraColors.primary : AmaraColors.textPrimary),
-            fontWeight: bold ? FontWeight.w800 : FontWeight.w600,
-          ),
-        ),
+              color: valueColor ??
+                  (bold ? AmaraColors.primary : AmaraColors.textPrimary),
+              fontWeight: bold ? FontWeight.w800 : FontWeight.w600,
+            )),
       ],
     );
   }
@@ -348,10 +510,17 @@ class _CheckoutBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.fromLTRB(
-          20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
+          20, 14, 20, MediaQuery.of(context).padding.bottom + 14),
       decoration: BoxDecoration(
-        color: AmaraColors.bgCard,
+        color: Colors.white,
         border: Border(top: BorderSide(color: AmaraColors.divider)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, -4),
+          ),
+        ],
       ),
       child: GestureDetector(
         onTap: () {
@@ -363,21 +532,36 @@ class _CheckoutBar extends StatelessWidget {
           decoration: BoxDecoration(
             color: AmaraColors.primary,
             borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: AmaraColors.primary.withValues(alpha: 0.35),
+                blurRadius: 14,
+                offset: const Offset(0, 5),
+              ),
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.credit_card_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
+              const Icon(Icons.shopping_bag_rounded,
+                  color: Colors.white, size: 20),
               const SizedBox(width: 10),
               Text(
                 'Commander · ${cart.formattedTotal}',
                 style: AmaraTextStyles.labelMedium.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
+                    color: Colors.white, fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(width: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${cart.totalItems}',
+                  style: AmaraTextStyles.caption.copyWith(
+                      color: Colors.white, fontWeight: FontWeight.w800),
                 ),
               ),
             ],
@@ -403,52 +587,50 @@ class _QuantityControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AmaraColors.primary.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: AmaraColors.primary.withValues(alpha: 0.3),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _QBtn(
+          icon: Icons.remove_rounded,
+          onTap: onDecrement,
+          outlined: true,
         ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _Btn(icon: Icons.remove_rounded, onTap: onDecrement),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Text(
-              '$quantity',
-              style: AmaraTextStyles.labelMedium.copyWith(
-                color: AmaraColors.primary,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-          ),
-          _Btn(icon: Icons.add_rounded, onTap: onIncrement),
-        ],
-      ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Text('$quantity',
+              style: AmaraTextStyles.labelSmall.copyWith(
+                  color: AmaraColors.textPrimary,
+                  fontWeight: FontWeight.w800)),
+        ),
+        _QBtn(icon: Icons.add_rounded, onTap: onIncrement),
+      ],
     );
   }
 }
 
-class _Btn extends StatelessWidget {
+class _QBtn extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
-  const _Btn({required this.icon, required this.onTap});
+  final bool outlined;
+  const _QBtn({required this.icon, required this.onTap, this.outlined = false});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 32,
-        height: 32,
+        width: 28,
+        height: 28,
         decoration: BoxDecoration(
-          color: AmaraColors.primary,
+          color: outlined ? Colors.transparent : AmaraColors.primary,
           borderRadius: BorderRadius.circular(8),
+          border: outlined
+              ? Border.all(color: AmaraColors.divider, width: 1.5)
+              : null,
         ),
-        child: Icon(icon, color: Colors.white, size: 16),
+        child: Icon(icon,
+            color: outlined ? AmaraColors.textSecondary : Colors.white,
+            size: 14),
       ),
     );
   }

@@ -2,24 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/cart_model.dart';
 import '../models/restaurant_model.dart';
 
-/// Notifier gérant l'état du panier.
+/// Notifier gérant l'état du panier (multi-restaurant).
 class CartNotifier extends Notifier<CartState> {
   @override
   CartState build() => const CartState();
 
-  /// Ajouter un item au panier.
-  /// Si l'item vient d'un autre restaurant, on vide d'abord le panier.
+  /// Ajouter un item au panier. Les items de restaurants différents coexistent.
   void addItem(MenuItem item, String restaurantId, String restaurantName) {
-    // Changement de restaurant → vide le panier
-    if (state.restaurantId != null && state.restaurantId != restaurantId) {
-      state = CartState(
-        restaurantId: restaurantId,
-        restaurantName: restaurantName,
-        items: [CartItem(item: item, quantity: 1)],
-      );
-      return;
-    }
-
     final existing = state.itemFor(item.id);
     if (existing != null) {
       // Incrémente la quantité
@@ -30,9 +19,15 @@ class CartNotifier extends Notifier<CartState> {
       state = state.copyWith(items: updated);
     } else {
       state = state.copyWith(
-        restaurantId: restaurantId,
-        restaurantName: restaurantName,
-        items: [...state.items, CartItem(item: item, quantity: 1)],
+        items: [
+          ...state.items,
+          CartItem(
+            item: item,
+            quantity: 1,
+            restaurantId: restaurantId,
+            restaurantName: restaurantName,
+          ),
+        ],
       );
     }
   }
@@ -44,9 +39,7 @@ class CartNotifier extends Notifier<CartState> {
 
     if (existing.quantity <= 1) {
       final updated = state.items.where((e) => e.item.id != itemId).toList();
-      state = updated.isEmpty
-          ? const CartState()
-          : state.copyWith(items: updated);
+      state = updated.isEmpty ? const CartState() : state.copyWith(items: updated);
     } else {
       final updated = state.items.map((e) {
         if (e.item.id == itemId) return e.copyWith(quantity: e.quantity - 1);
@@ -54,6 +47,12 @@ class CartNotifier extends Notifier<CartState> {
       }).toList();
       state = state.copyWith(items: updated);
     }
+  }
+
+  /// Supprimer tous les items d'un restaurant.
+  void removeRestaurant(String restaurantId) {
+    final updated = state.items.where((e) => e.restaurantId != restaurantId).toList();
+    state = updated.isEmpty ? const CartState() : state.copyWith(items: updated);
   }
 
   /// Vider entièrement le panier.

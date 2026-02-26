@@ -7,7 +7,6 @@ import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
 import '../../app/models/restaurant_model.dart';
 import '../../app/providers/cart_provider.dart';
-import '../../app/router/app_routes.dart';
 
 class MenuItemDetailScreen extends ConsumerStatefulWidget {
   final MenuItem item;
@@ -94,40 +93,7 @@ class _MenuItemDetailScreenState extends ConsumerState<MenuItemDetailScreen> {
             widget.restaurantName,
           );
     }
-    // Afficher snackbar puis retour
-    if (mounted) {
-      context.pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Text(widget.item.imageEmoji,
-                  style: const TextStyle(fontSize: 20)),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  '${widget.item.name} ajouté au panier !',
-                  style: AmaraTextStyles.bodySmall
-                      .copyWith(color: Colors.white),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: AmaraColors.dark,
-          behavior: SnackBarBehavior.floating,
-          margin:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14)),
-          duration: const Duration(seconds: 2),
-          action: SnackBarAction(
-            label: 'Voir panier',
-            textColor: AmaraColors.primary,
-            onPressed: () => context.push(AppRoutes.cart),
-          ),
-        ),
-      );
-    }
+    if (mounted) context.pop();
   }
 
   @override
