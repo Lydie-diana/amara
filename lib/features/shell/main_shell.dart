@@ -12,6 +12,9 @@ import '../search/search_screen.dart';
 import '../orders/orders_screen.dart';
 import '../profile/profile_screen.dart';
 
+// Provider global pour l'index du shell (permet navigation cross-tab)
+final shellIndexProvider = StateProvider<int>((ref) => 0);
+
 class MainShell extends ConsumerStatefulWidget {
   const MainShell({super.key});
 
@@ -20,8 +23,6 @@ class MainShell extends ConsumerStatefulWidget {
 }
 
 class _MainShellState extends ConsumerState<MainShell> {
-  int _currentIndex = 0;
-
   final List<Widget> _screens = const [
     HomeScreen(),
     SearchScreen(),
@@ -30,23 +31,25 @@ class _MainShellState extends ConsumerState<MainShell> {
   ];
 
   void _onTap(int index) {
-    if (index == _currentIndex) return;
+    final current = ref.read(shellIndexProvider);
+    if (index == current) return;
     HapticFeedback.lightImpact();
-    setState(() => _currentIndex = index);
+    ref.read(shellIndexProvider.notifier).state = index;
   }
 
   @override
   Widget build(BuildContext context) {
+    final currentIndex = ref.watch(shellIndexProvider);
     final cartTotal = ref.watch(cartProvider.select((c) => c.totalItems));
 
     return Scaffold(
       backgroundColor: AmaraColors.bg,
       body: IndexedStack(
-        index: _currentIndex,
+        index: currentIndex,
         children: _screens,
       ),
       bottomNavigationBar: _BottomNav(
-        currentIndex: _currentIndex,
+        currentIndex: currentIndex,
         cartCount: cartTotal,
         onTap: _onTap,
         onCartTap: () => context.push(AppRoutes.cart),

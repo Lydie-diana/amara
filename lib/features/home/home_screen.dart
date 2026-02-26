@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
 import '../../app/providers/restaurant_provider.dart';
+import '../shell/main_shell.dart';
 import 'widgets/home_header.dart';
 import 'widgets/promo_banner.dart';
 import 'widgets/category_list.dart';
@@ -30,15 +31,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // Header rouge + search bar flottante
+          // Header rouge
           SliverToBoxAdapter(
-            child: _HomeHeaderWithSearch()
+            child: HomeHeader()
                 .animate()
                 .fadeIn(duration: 400.ms),
           ),
-
-          // Espace pour la search bar flottante
-          const SliverToBoxAdapter(child: _SearchBarSpacer()),
 
           // Promo banners
           SliverToBoxAdapter(
@@ -60,7 +58,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: SectionHeader(title: 'Cuisines', subtitle: 'Voir tout'),
+                    child: SectionHeader(
+                      title: 'Cuisines',
+                      subtitle: 'Voir tout',
+                      onSubtitleTap: () => ref.read(shellIndexProvider.notifier).state = 1,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   const CategoryList(),
@@ -74,7 +76,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
               child: SectionHeader(
-                  title: 'Populaires près de vous', subtitle: 'Voir tout'),
+                title: 'Populaires près de vous',
+                subtitle: 'Voir tout',
+                onSubtitleTap: () => ref.read(shellIndexProvider.notifier).state = 1,
+              ),
             ).animate().fadeIn(delay: 350.ms, duration: 400.ms),
           ),
 
@@ -127,7 +132,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                       child: SectionHeader(
-                          title: 'Nouveaux arrivants', subtitle: 'Voir tout'),
+                        title: 'Nouveaux arrivants',
+                        subtitle: 'Voir tout',
+                        onSubtitleTap: () => ref.read(shellIndexProvider.notifier).state = 1,
+                      ),
                     ).animate().fadeIn(delay: 500.ms, duration: 400.ms),
                   ),
                   SliverToBoxAdapter(
@@ -166,75 +174,3 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-// ─── Header rouge + Search flottante ─────────────────────────────────────────
-
-class _HomeHeaderWithSearch extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        const HomeHeader(),
-        Positioned(
-          bottom: -26,
-          left: 20,
-          right: 20,
-          child: _SearchBar(),
-        ),
-      ],
-    );
-  }
-}
-
-class _SearchBarSpacer extends StatelessWidget {
-  const _SearchBarSpacer();
-
-  @override
-  Widget build(BuildContext context) => const SizedBox(height: 26);
-}
-
-class _SearchBar extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {},
-      child: Container(
-        height: 52,
-        decoration: BoxDecoration(
-          color: AmaraColors.bgCard,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AmaraColors.divider),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            const SizedBox(width: 16),
-            const Icon(Icons.search_rounded, color: AmaraColors.primary, size: 22),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Chercher un restaurant, un plat...',
-                style: AmaraTextStyles.bodyMedium.copyWith(color: AmaraColors.muted),
-              ),
-            ),
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-              decoration: BoxDecoration(
-                color: AmaraColors.primary,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.tune_rounded, color: Colors.white, size: 16),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

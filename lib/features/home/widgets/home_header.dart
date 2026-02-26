@@ -3,14 +3,15 @@ import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
 
 class HomeHeader extends StatelessWidget {
-  const HomeHeader({super.key});
+  final Widget? searchBar;
+  const HomeHeader({super.key, this.searchBar});
 
   @override
   Widget build(BuildContext context) {
     final top = MediaQuery.of(context).padding.top;
     return Container(
       color: AmaraColors.primary,
-      padding: EdgeInsets.fromLTRB(20, top + 16, 20, 28),
+      padding: EdgeInsets.fromLTRB(20, top + 16, 20, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -137,6 +138,10 @@ class HomeHeader extends StatelessWidget {
               height: 1.3,
             ),
           ),
+          if (searchBar != null) ...[
+            const SizedBox(height: 16),
+            searchBar!,
+          ],
         ],
       ),
     );
