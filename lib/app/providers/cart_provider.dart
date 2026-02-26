@@ -8,7 +8,35 @@ class CartNotifier extends Notifier<CartState> {
   CartState build() => const CartState();
 
   /// Ajouter un item au panier. Les items de restaurants différents coexistent.
-  void addItem(MenuItem item, String restaurantId, String restaurantName) {
+  void addItem(
+    MenuItem item,
+    String restaurantId,
+    String restaurantName, {
+    Map<String, List<String>> selectedOptions = const {},
+    double extraPrice = 0,
+    String? note,
+    int quantity = 1,
+  }) {
+    // Avec options personnalisées, on ajoute toujours un nouvel entry
+    // (deux "mêmes plats" avec des options différentes = deux lignes)
+    if (selectedOptions.isNotEmpty) {
+      state = state.copyWith(
+        items: [
+          ...state.items,
+          CartItem(
+            item: item,
+            quantity: quantity,
+            restaurantId: restaurantId,
+            restaurantName: restaurantName,
+            selectedOptions: selectedOptions,
+            extraPrice: extraPrice,
+            note: note,
+          ),
+        ],
+      );
+      return;
+    }
+
     final existing = state.itemFor(item.id);
     if (existing != null) {
       // Incrémente la quantité
@@ -23,9 +51,10 @@ class CartNotifier extends Notifier<CartState> {
           ...state.items,
           CartItem(
             item: item,
-            quantity: 1,
+            quantity: quantity,
             restaurantId: restaurantId,
             restaurantName: restaurantName,
+            note: note,
           ),
         ],
       );

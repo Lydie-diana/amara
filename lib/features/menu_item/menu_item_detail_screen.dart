@@ -86,13 +86,26 @@ class _MenuItemDetailScreenState extends ConsumerState<MenuItemDetailScreen> {
 
   void _addToCart() {
     HapticFeedback.mediumImpact();
-    for (var i = 0; i < _quantity; i++) {
-      ref.read(cartProvider.notifier).addItem(
-            widget.item,
-            widget.restaurantId,
-            widget.restaurantName,
-          );
+
+    // Préparer les options sélectionnées
+    final Map<String, List<String>> opts = {};
+    for (final entry in _selectedOptions.entries) {
+      if (entry.value.isNotEmpty) {
+        opts[entry.key] = entry.value.toList();
+      }
     }
+
+    ref.read(cartProvider.notifier).addItem(
+          widget.item,
+          widget.restaurantId,
+          widget.restaurantName,
+          selectedOptions: opts,
+          extraPrice: _extraPrice,
+          note: _noteController.text.trim().isEmpty
+              ? null
+              : _noteController.text.trim(),
+          quantity: _quantity,
+        );
     if (mounted) context.pop();
   }
 
@@ -170,34 +183,53 @@ class _MenuItemDetailScreenState extends ConsumerState<MenuItemDetailScreen> {
         background: Stack(
           fit: StackFit.expand,
           children: [
-            Container(
-              color: bgColor,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(widget.item.imageEmoji,
-                      style: const TextStyle(fontSize: 120)),
-                  // Indicateurs pagination (comme les maquettes)
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      4,
-                      (i) => Container(
-                        width: i == 0 ? 20 : 6,
-                        height: 6,
-                        margin:
-                            const EdgeInsets.symmetric(horizontal: 3),
-                        decoration: BoxDecoration(
-                          color: i == 0
-                              ? AmaraColors.primary
-                              : AmaraColors.divider,
-                          borderRadius: BorderRadius.circular(3),
+            // Image réseau ou fallback emoji
+            if (widget.item.imageUrl != null)
+              Image.network(
+                widget.item.imageUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: bgColor,
+                  child: Center(
+                    child: Text(widget.item.imageEmoji,
+                        style: const TextStyle(fontSize: 120)),
+                  ),
+                ),
+                loadingBuilder: (_, child, progress) => progress == null
+                    ? child
+                    : Container(
+                        color: bgColor,
+                        child: Center(
+                          child: Text(widget.item.imageEmoji,
+                              style: const TextStyle(fontSize: 120)),
                         ),
                       ),
-                    ),
+              )
+            else
+              Container(
+                color: bgColor,
+                child: Center(
+                  child: Text(widget.item.imageEmoji,
+                      style: const TextStyle(fontSize: 120)),
+                ),
+              ),
+            // Dégradé bas pour lisibilité du contenu
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 80,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.4),
+                      Colors.transparent,
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
             // Badges
@@ -632,42 +664,79 @@ class _OptionGroup extends StatelessWidget {
     required this.onToggle,
   });
 
+  String get _subtitle {
+    if (group.maxSelections == 1) return 'Choisissez 1 option';
+    return 'Jusqu\'à ${group.maxSelections} choix';
+  }
+
+  bool get _isFulfilled => !group.required || selected.isNotEmpty;
+
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 8),
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 4),
           child: Row(
             children: [
               Expanded(
-                child: Text(group.title,
-                    style: AmaraTextStyles.bodySmall
-                        .copyWith(fontWeight: FontWeight.w600)),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(group.title,
+                        style: AmaraTextStyles.bodySmall
+                            .copyWith(fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 2),
+                    Text(_subtitle,
+                        style: AmaraTextStyles.caption
+                            .copyWith(color: AmaraColors.muted, fontSize: 11)),
+                  ],
+                ),
               ),
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 3),
+                    horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: group.required
-                      ? AmaraColors.primary.withValues(alpha: 0.1)
+                      ? (_isFulfilled
+                          ? AmaraColors.success.withValues(alpha: 0.1)
+                          : AmaraColors.primary.withValues(alpha: 0.1))
                       : AmaraColors.bgAlt,
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
-                  group.required ? 'Requis' : 'Optionnel',
-                  style: AmaraTextStyles.caption.copyWith(
-                    color: group.required
-                        ? AmaraColors.primary
-                        : AmaraColors.muted,
-                    fontWeight: FontWeight.w600,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (group.required && _isFulfilled)
+                      const Padding(
+                        padding: EdgeInsets.only(right: 4),
+                        child: Icon(Icons.check_circle_rounded,
+                            size: 12, color: AmaraColors.success),
+                      ),
+                    Text(
+                      group.required
+                          ? (_isFulfilled
+                              ? '${selected.length}/${group.maxSelections}'
+                              : 'Requis')
+                          : 'Optionnel',
+                      style: AmaraTextStyles.caption.copyWith(
+                        color: group.required
+                            ? (_isFulfilled
+                                ? AmaraColors.success
+                                : AmaraColors.primary)
+                            : AmaraColors.muted,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
         ),
+        const SizedBox(height: 4),
         ...group.options.map((option) {
           final isSelected = selected.contains(option.id);
           return GestureDetector(

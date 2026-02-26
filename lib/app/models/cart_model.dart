@@ -7,6 +7,8 @@ class CartItem {
   final String? note;
   final String restaurantId;
   final String restaurantName;
+  final Map<String, List<String>> selectedOptions; // groupId → optionIds
+  final double extraPrice; // total des suppléments
 
   const CartItem({
     required this.item,
@@ -14,6 +16,8 @@ class CartItem {
     required this.restaurantId,
     required this.restaurantName,
     this.note,
+    this.selectedOptions = const {},
+    this.extraPrice = 0,
   });
 
   CartItem copyWith({int? quantity, String? note}) {
@@ -23,10 +27,13 @@ class CartItem {
       restaurantId: restaurantId,
       restaurantName: restaurantName,
       note: note ?? this.note,
+      selectedOptions: selectedOptions,
+      extraPrice: extraPrice,
     );
   }
 
-  double get subtotal => item.price * quantity;
+  double get unitPrice => item.price + extraPrice;
+  double get subtotal => unitPrice * quantity;
   String get formattedSubtotal => '${subtotal.toStringAsFixed(0)} F';
 }
 
