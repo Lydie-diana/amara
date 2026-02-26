@@ -193,10 +193,41 @@ class RestaurantCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 3),
-                  Text(restaurant.cuisine,
-                      style: AmaraTextStyles.caption.copyWith(
-                          color: AmaraColors.muted)),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(restaurant.cuisine,
+                          style: AmaraTextStyles.caption.copyWith(
+                              color: AmaraColors.muted)),
+                      const Spacer(),
+                      if (restaurant.likePercent > 0) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE74C3C).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.thumb_up_rounded,
+                                  size: 10, color: Color(0xFFE74C3C)),
+                              const SizedBox(width: 3),
+                              Text('${restaurant.likePercent}%',
+                                  style: AmaraTextStyles.caption.copyWith(
+                                      color: const Color(0xFFE74C3C),
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 10)),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Text(_formatCustomers(restaurant.totalCustomers),
+                            style: AmaraTextStyles.caption.copyWith(
+                                color: AmaraColors.muted, fontSize: 10)),
+                      ],
+                    ],
+                  ),
                   const SizedBox(height: 10),
                   // Chips sans bordure
                   Row(
@@ -415,4 +446,10 @@ class _InfoPill extends StatelessWidget {
       ),
     );
   }
+}
+
+String _formatCustomers(int count) {
+  if (count <= 0) return '';
+  if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}k clients';
+  return '$count clients';
 }

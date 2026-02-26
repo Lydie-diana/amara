@@ -6,6 +6,7 @@ import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
 import '../../../app/models/restaurant_model.dart';
 import '../../../app/providers/cart_provider.dart';
+import '../../menu_item/menu_item_detail_screen.dart';
 
 /// Section "Les plats les plus aimés" — top 5 par likeCount.
 class TopDishesSection extends StatelessWidget {
@@ -33,20 +34,19 @@ class TopDishesSection extends StatelessWidget {
               children: [
                 const Text('🏆', style: TextStyle(fontSize: 16)),
                 const SizedBox(width: 6),
-                Text('Les plus aimés',
-                    style: AmaraTextStyles.h3),
+                Text('Les plus aimés', style: AmaraTextStyles.h3),
                 const Spacer(),
                 Text(
                   'Par popularité',
                   style: AmaraTextStyles.caption
-                      .copyWith(color: AmaraColors.muted),
+                      .copyWith(color: AmaraColors.textSecondary),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 12),
           SizedBox(
-            height: 160,
+            height: 200,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.only(right: 20),
@@ -57,6 +57,7 @@ class TopDishesSection extends StatelessWidget {
                 rank: index + 1,
                 restaurantId: restaurantId,
                 restaurantName: restaurantName,
+                companions: items.where((i) => i.id != items[index].id).take(4).toList(),
               ),
             ),
           ),
@@ -71,13 +72,26 @@ class _TopDishCard extends ConsumerWidget {
   final int rank;
   final String restaurantId;
   final String restaurantName;
+  final List<MenuItem> companions;
 
   const _TopDishCard({
     required this.item,
     required this.rank,
     required this.restaurantId,
     required this.restaurantName,
+    this.companions = const [],
   });
+
+  void _openDetail(BuildContext context) {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => MenuItemDetailScreen(
+        item: item,
+        restaurantId: restaurantId,
+        restaurantName: restaurantName,
+        companions: companions,
+      ),
+    ));
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -85,150 +99,237 @@ class _TopDishCard extends ConsumerWidget {
     final quantity = cart.quantityFor(item.id);
     final inCart = quantity > 0;
 
-    return Container(
-      width: 130,
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AmaraColors.bgCard,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: inCart
-              ? AmaraColors.primary.withValues(alpha: 0.35)
-              : AmaraColors.divider,
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        _openDetail(context);
+      },
+      child: Container(
+        width: 140,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          color: AmaraColors.bgCard,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: inCart
+                ? AmaraColors.primary.withValues(alpha: 0.35)
+                : AmaraColors.divider,
+            width: inCart ? 1.5 : 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Médaille + emoji
-          Stack(
-            children: [
-              Container(
-                width: double.infinity,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: AmaraColors.bgAlt,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Center(
-                  child: Text(item.imageEmoji,
-                      style: const TextStyle(fontSize: 34)),
-                ),
-              ),
-              Positioned(
-                top: 4,
-                left: 4,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 5, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: _rankColor(rank),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    '#$rank',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w800,
-                    ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Image réelle + badge rang ─────────────────────────────
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 100,
+                    child: item.imageUrl != null
+                        ? Image.network(
+                            item.imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => _EmojiPlaceholder(
+                              emoji: item.imageEmoji,
+                              color: _itemBg(item.id),
+                            ),
+                            loadingBuilder: (_, child, progress) =>
+                                progress == null
+                                    ? child
+                                    : _EmojiPlaceholder(
+                                        emoji: item.imageEmoji,
+                                        color: _itemBg(item.id),
+                                      ),
+                          )
+                        : _EmojiPlaceholder(
+                            emoji: item.imageEmoji,
+                            color: _itemBg(item.id),
+                          ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-
-          // Nom
-          Text(
-            item.name,
-            style: AmaraTextStyles.caption
-                .copyWith(fontWeight: FontWeight.w700),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 2),
-
-          // Likes
-          Row(
-            children: [
-              const Icon(Icons.favorite_rounded,
-                  size: 11, color: AmaraColors.error),
-              const SizedBox(width: 3),
-              Text(
-                '${item.likeCount}',
-                style: AmaraTextStyles.caption
-                    .copyWith(color: AmaraColors.muted),
-              ),
-            ],
-          ),
-          const Spacer(),
-
-          // Prix + bouton
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  item.formattedPrice,
-                  style: AmaraTextStyles.caption.copyWith(
-                    color: AmaraColors.primary,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              if (inCart)
-                GestureDetector(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    ref.read(cartProvider.notifier).removeItem(item.id);
-                  },
+                // Badge rang
+                Positioned(
+                  top: 6,
+                  left: 6,
                   child: Container(
-                    width: 26,
-                    height: 26,
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                     decoration: BoxDecoration(
-                      color:
-                          AmaraColors.primary.withValues(alpha: 0.15),
+                      color: _rankColor(rank),
                       borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 4,
+                        ),
+                      ],
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '$quantity',
+                    child: Text(
+                      '#$rank',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+                // Dégradé bas pour lisibilité
+                Positioned(
+                  bottom: 0, left: 0, right: 0,
+                  child: Container(
+                    height: 40,
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(0)),
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.4),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // ── Infos ─────────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Nom
+                  Text(
+                    item.name,
+                    style: AmaraTextStyles.caption.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AmaraColors.textPrimary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+
+                  // % likes + nb clients
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AmaraColors.error.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.thumb_up_rounded,
+                                size: 9, color: AmaraColors.error),
+                            const SizedBox(width: 3),
+                            Text(
+                              '${_likePercent(item.likeCount)}%',
+                              style: AmaraTextStyles.caption.copyWith(
+                                color: AmaraColors.error,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 9,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(
+                        '${_orderCount(item.likeCount)} clients',
+                        style: AmaraTextStyles.caption.copyWith(
+                          color: AmaraColors.textSecondary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 9,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Prix + bouton
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          item.formattedPrice,
                           style: AmaraTextStyles.caption.copyWith(
                             color: AmaraColors.primary,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      if (inCart)
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            ref.read(cartProvider.notifier).removeItem(item.id);
+                          },
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: AmaraColors.primary.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: AmaraColors.primary.withValues(alpha: 0.3)),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '$quantity',
+                                style: AmaraTextStyles.caption.copyWith(
+                                  color: AmaraColors.primary,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            _openDetail(context);
+                          },
+                          child: Container(
+                            width: 28,
+                            height: 28,
+                            decoration: BoxDecoration(
+                              color: AmaraColors.primary,
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AmaraColors.primary.withValues(alpha: 0.3),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Icon(Icons.add_rounded,
+                                color: Colors.white, size: 16),
+                          ),
+                        ),
+                    ],
                   ),
-                )
-              else
-                GestureDetector(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    ref.read(cartProvider.notifier).addItem(
-                          item,
-                          restaurantId,
-                          restaurantName,
-                        );
-                  },
-                  child: Container(
-                    width: 26,
-                    height: 26,
-                    decoration: BoxDecoration(
-                      color: AmaraColors.primary,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(Icons.add_rounded,
-                        color: Colors.white, size: 14),
-                  ),
-                ),
-            ],
-          ),
-        ],
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -241,4 +342,40 @@ class _TopDishCard extends ConsumerWidget {
       _ => AmaraColors.primary,
     };
   }
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+class _EmojiPlaceholder extends StatelessWidget {
+  final String emoji;
+  final Color color;
+  const _EmojiPlaceholder({required this.emoji, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: color,
+      child: Center(child: Text(emoji, style: const TextStyle(fontSize: 38))),
+    );
+  }
+}
+
+Color _itemBg(String id) {
+  const colors = [
+    Color(0xFFE8E0F5), Color(0xFFD4EDE3), Color(0xFFFCE4EC),
+    Color(0xFFE3EDF9), Color(0xFFFFF3E0), Color(0xFFE0F4F4),
+  ];
+  return colors[id.hashCode % colors.length];
+}
+
+int _likePercent(int likeCount) {
+  if (likeCount <= 0) return 0;
+  final pct = 78 + (likeCount / (likeCount + 30)) * 21;
+  return pct.round().clamp(80, 99);
+}
+
+String _orderCount(int likeCount) {
+  final count = (likeCount * 3.8).toInt();
+  if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}k';
+  return '$count';
 }

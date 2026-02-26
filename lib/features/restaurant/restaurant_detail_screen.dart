@@ -5,12 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/core/constants/app_colors.dart';
+
 import '../../app/core/constants/app_text_styles.dart';
-import '../../app/models/cart_model.dart';
 import '../../app/models/restaurant_model.dart';
-import '../../app/providers/cart_provider.dart';
 import '../../app/providers/restaurant_provider.dart';
-import '../../app/router/app_routes.dart';
 import 'widgets/menu_category_section.dart';
 import 'widgets/restaurant_info_header.dart';
 import 'widgets/top_dishes_section.dart';
@@ -43,7 +41,6 @@ class _RestaurantDetailScreenState
     final restaurantAsync =
         ref.watch(restaurantDetailProvider(widget.restaurantId));
     final menuAsync = ref.watch(restaurantMenuProvider(widget.restaurantId));
-    final cart = ref.watch(cartProvider);
 
     return Scaffold(
       backgroundColor: AmaraColors.bg,
@@ -73,12 +70,7 @@ class _RestaurantDetailScreenState
           ),
         ),
       ),
-      bottomNavigationBar: cart.isEmpty
-          ? null
-          : _CartBottomBar(
-              cart: cart,
-              onTap: () => context.push(AppRoutes.cart),
-            ),
+      bottomNavigationBar: null,
     );
   }
 
@@ -103,7 +95,17 @@ class _RestaurantDetailScreenState
     required List<MenuCategory> categories,
     required bool isMenuLoading,
   }) {
-    final filtered = _filterCategories(categories);
+    // Si recherche active → filtre textuel sur toutes les catégories
+    // Index 0 = "Tous", index 1+ = catégorie spécifique (index - 1)
+    final List<MenuCategory> filtered;
+    if (_searchQuery.isNotEmpty) {
+      filtered = _filterCategories(categories);
+    } else if (_selectedCategoryIndex == 0 || categories.isEmpty) {
+      filtered = categories;
+    } else {
+      final idx = (_selectedCategoryIndex - 1).clamp(0, categories.length - 1);
+      filtered = [categories[idx]];
+    }
 
     // Top plats : tous les items triés par likes
     final allItems = categories.expand((c) => c.items).toList()
@@ -147,7 +149,10 @@ class _RestaurantDetailScreenState
           SliverPersistentHeader(
             pinned: true,
             delegate: _CategoryTabsDelegate(
-              categories: categories,
+              categories: [
+                const MenuCategory(id: '__all__', name: 'Tous', items: []),
+                ...categories,
+              ],
               selectedIndex: _selectedCategoryIndex,
               onCategoryTap: (index) =>
                   setState(() => _selectedCategoryIndex = index),
@@ -178,7 +183,7 @@ class _RestaurantDetailScreenState
                   Text('Aucun plat trouvé pour "$_searchQuery"',
                       textAlign: TextAlign.center,
                       style: AmaraTextStyles.bodySmall
-                          .copyWith(color: AmaraColors.muted)),
+                          .copyWith(color: AmaraColors.textSecondary)),
                 ],
               ),
             ),
@@ -284,24 +289,6 @@ class _RestaurantSliverAppBar extends StatelessWidget {
                 ),
               ),
             ),
-            // Dégradé bas (fondu vers fond app)
-            Positioned(
-              bottom: 0, left: 0, right: 0,
-              child: Container(
-                height: 70,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [
-                      AmaraColors.bg,
-                      Colors.transparent,
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
             // Boutons en haut (back + actions)
             Positioned(
               top: topPadding + 8,
@@ -378,13 +365,13 @@ class _MenuSearchBar extends StatelessWidget {
       child: TextField(
         controller: controller,
         onChanged: onChanged,
-        style: AmaraTextStyles.bodySmall,
+        style: AmaraTextStyles.bodySmall.copyWith(color: AmaraColors.textPrimary),
         decoration: InputDecoration(
           hintText: 'Rechercher un plat...',
           hintStyle: AmaraTextStyles.bodySmall
-              .copyWith(color: AmaraColors.muted),
+              .copyWith(color: AmaraColors.textSecondary),
           prefixIcon: const Icon(Icons.search_rounded,
-              color: AmaraColors.muted, size: 20),
+              color: AmaraColors.textSecondary, size: 20),
           suffixIcon: controller.text.isNotEmpty
               ? GestureDetector(
                   onTap: () {
@@ -392,7 +379,7 @@ class _MenuSearchBar extends StatelessWidget {
                     onChanged('');
                   },
                   child: const Icon(Icons.close_rounded,
-                      color: AmaraColors.muted, size: 18),
+                      color: AmaraColors.textSecondary, size: 18),
                 )
               : null,
           filled: true,
@@ -477,10 +464,10 @@ class _CategoryTabsDelegate extends SliverPersistentHeaderDelegate {
                       style: AmaraTextStyles.labelSmall.copyWith(
                         color: isSelected
                             ? Colors.white
-                            : AmaraColors.textSecondary,
+                            : AmaraColors.textPrimary,
                         fontWeight: isSelected
                             ? FontWeight.w700
-                            : FontWeight.w500,
+                            : FontWeight.w600,
                       ),
                     ),
                   ),
@@ -498,73 +485,6 @@ class _CategoryTabsDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(_CategoryTabsDelegate old) =>
       selectedIndex != old.selectedIndex ||
       categories.length != old.categories.length;
-}
-
-// ─── Cart Bottom Bar ──────────────────────────────────────────────────────────
-
-class _CartBottomBar extends StatelessWidget {
-  final CartState cart;
-  final VoidCallback onTap;
-  const _CartBottomBar({required this.cart, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-          20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
-      decoration: BoxDecoration(
-        color: AmaraColors.bgCard,
-        border: Border(top: BorderSide(color: AmaraColors.divider)),
-      ),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          decoration: BoxDecoration(
-            color: AmaraColors.primary,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  '${cart.totalItems}',
-                  style: AmaraTextStyles.labelMedium.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Voir mon panier',
-                  style: AmaraTextStyles.labelMedium.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              Text(
-                cart.formattedSubtotal,
-                style: AmaraTextStyles.labelMedium.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 // ─── Loading / Error ──────────────────────────────────────────────────────────

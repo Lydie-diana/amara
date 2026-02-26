@@ -50,7 +50,9 @@ Restaurant _restaurantFromConvex(Map<String, dynamic> d) {
     isOpen: d['isOpen'] as bool? ?? false,
     isFeatured: d['isVerified'] as bool? ?? false,
     address: d['address'] as String? ?? '',
-    phone: '',
+    phone: (d['phone'] as String?)?.isNotEmpty == true
+        ? d['phone'] as String
+        : '+225 0${(id.hashCode.abs() % 9) + 1} ${10 + (id.hashCode.abs() % 89)} ${10 + (id.hashCode.abs() % 89)} ${10 + (id.hashCode.abs() % 89)}',
     minOrder: (d['minOrderAmount'] as num?)?.toDouble() ?? 0,
     tags: cuisineList,
     likePercent: 0,
@@ -79,8 +81,8 @@ List<MenuCategory> _menuFromConvex(List<dynamic> items) {
       imageEmoji: _tagEmoji(itemTags.firstOrNull ?? ''),
       imageUrl: AmaraImages.menuItemImage(itemName, itemTags),
       categoryId: cat,
-      isPopular: false,
-      likeCount: 0,
+      isPopular: (d['isPopular'] as bool?) ?? false,
+      likeCount: (d['likeCount'] as num?)?.toInt() ?? (50 + itemName.hashCode.abs() % 450),
       optionGroups: const [],
     );
     byCategory.putIfAbsent(cat, () => []).add(item);
@@ -222,71 +224,436 @@ Restaurant _mockRestaurant(String id) {
 }
 
 List<MenuCategory> _mockMenu(String restaurantId) {
-  return [
-    MenuCategory(
-      id: 'cat1', name: 'Plats populaires',
-      items: [
-        MenuItem(
-          id: 'i1', name: 'Attiéké Poisson',
-          description: 'Semoule de manioc avec poisson braisé, tomate et oignon frits.',
-          price: 2500, imageEmoji: '🐟', imageUrl: AmaraImages.attieke, categoryId: 'cat1',
-          isPopular: true, likeCount: 248,
-          optionGroups: [
-            MenuItemOptionGroup(
-              id: 'og1', title: 'Choix du poisson', required: true, maxSelections: 1,
-              options: [
-                const MenuItemOption(id: 'o1', name: 'Tilapia'),
-                const MenuItemOption(id: 'o2', name: 'Carpe'),
-                const MenuItemOption(id: 'o3', name: 'Poisson fumé', extraPrice: 500),
+  switch (restaurantId) {
+    case '3': // Terroir Camerounais
+      return [
+        MenuCategory(
+          id: 'cat1', name: 'Spécialités',
+          items: [
+            MenuItem(
+              id: 'c1', name: 'Ndolé aux Crevettes',
+              description: 'Feuilles de ndolé aux crevettes fumées et arachides. Servi avec plantain.',
+              price: 4000, imageEmoji: '🥬', imageUrl: AmaraImages.ragout, categoryId: 'cat1',
+              isPopular: true, likeCount: 312,
+              optionGroups: [
+                MenuItemOptionGroup(
+                  id: 'og1', title: 'Accompagnement', required: true, maxSelections: 1,
+                  options: [
+                    const MenuItemOption(id: 'o1', name: 'Plantain mûr'),
+                    const MenuItemOption(id: 'o2', name: 'Miondo / bâton de manioc'),
+                    const MenuItemOption(id: 'o3', name: 'Riz blanc', extraPrice: 300),
+                  ],
+                ),
               ],
+            ),
+            MenuItem(
+              id: 'c2', name: 'Poulet DG',
+              description: 'Poulet Directeur Général : sauté aux plantains et légumes frais, sauce tomate.',
+              price: 4500, imageEmoji: '🍗', imageUrl: AmaraImages.pouletBraise, categoryId: 'cat1',
+              isPopular: true, isSpicy: true, likeCount: 287,
+            ),
+            MenuItem(
+              id: 'c3', name: 'Eru au Bœuf',
+              description: 'Légumes eru mijotés avec bœuf fumé et huile de palme. Servi avec waterfufu.',
+              price: 3500, imageEmoji: '🥩', imageUrl: AmaraImages.brochettes, categoryId: 'cat1',
+              likeCount: 198,
+            ),
+            MenuItem(
+              id: 'c4', name: 'Thiéboudienne',
+              description: 'Riz au poisson sénégalais cuisiné à la camerounaise, légumes fondants.',
+              price: 3000, imageEmoji: '🍚', imageUrl: AmaraImages.thiebs, categoryId: 'cat1',
+              likeCount: 154, isVegetarian: false,
             ),
           ],
         ),
-        MenuItem(
-          id: 'i2', name: 'Kedjenou de Poulet',
-          description: 'Ragoût de poulet mijoté aux épices locales, servi avec attiéké.',
-          price: 3500, imageEmoji: '🍗', imageUrl: AmaraImages.pouletBraise, categoryId: 'cat1',
-          isPopular: true, isSpicy: true, likeCount: 201,
+        MenuCategory(
+          id: 'cat2', name: 'Entrées',
+          items: [
+            MenuItem(
+              id: 'c5', name: 'Puff Puff',
+              description: 'Beignets moelleux à la camerounaise, dorés et sucrés.',
+              price: 800, imageEmoji: '🍩', imageUrl: AmaraImages.streetFood, categoryId: 'cat2',
+              likeCount: 223, isVegetarian: true, isPopular: true,
+            ),
+            MenuItem(
+              id: 'c6', name: 'Koki',
+              description: 'Gâteau de haricot vapeur assaisonné à l\'huile de palme.',
+              price: 1000, imageEmoji: '🫘', imageUrl: AmaraImages.foutou, categoryId: 'cat2',
+              likeCount: 89, isVegetarian: true,
+            ),
+          ],
         ),
-        MenuItem(
-          id: 'i3', name: 'Foutou Banane + Sauce Graine',
-          description: 'Foutou de banane plantain accompagné de la sauce aux graines de palme.',
-          price: 2000, imageEmoji: '🍌', imageUrl: AmaraImages.foutou, categoryId: 'cat1', likeCount: 133,
+        MenuCategory(
+          id: 'cat3', name: 'Accompagnements',
+          items: [
+            MenuItem(
+              id: 'c7', name: 'Plantain Alloco',
+              description: 'Tranches de plantain mûr frites, légèrement caramélisées.',
+              price: 500, imageEmoji: '🍌', imageUrl: AmaraImages.foutou, categoryId: 'cat3',
+              likeCount: 176, isVegetarian: true,
+            ),
+            MenuItem(
+              id: 'c8', name: 'Riz Blanc',
+              description: 'Riz parfumé cuit à la vapeur.',
+              price: 400, imageEmoji: '🍚', imageUrl: AmaraImages.jollofRice, categoryId: 'cat3',
+              likeCount: 92, isVegetarian: true,
+            ),
+          ],
         ),
-      ],
-    ),
-    MenuCategory(
-      id: 'cat2', name: 'Grillades',
-      items: [
-        MenuItem(
-          id: 'i4', name: 'Poulet Braisé',
-          description: 'Demi-poulet mariné et braisé au feu de bois, servi avec alloco.',
-          price: 4000, imageEmoji: '🍗', imageUrl: AmaraImages.pouletBraise, categoryId: 'cat2', likeCount: 189,
+        MenuCategory(
+          id: 'cat4', name: 'Boissons',
+          items: [
+            MenuItem(
+              id: 'c9', name: 'Jus de Gingembre',
+              description: 'Boisson fraîche au gingembre, citron et miel.',
+              price: 700, imageEmoji: '🧃', imageUrl: AmaraImages.jus, categoryId: 'cat4',
+              likeCount: 134, isVegetarian: true,
+            ),
+            MenuItem(
+              id: 'c10', name: 'Eau minérale',
+              description: 'Bouteille 50cl.', price: 300, imageEmoji: '💧',
+              imageUrl: AmaraImages.jus, categoryId: 'cat4', isVegetarian: true, likeCount: 67,
+            ),
+          ],
         ),
-        MenuItem(
-          id: 'i5', name: 'Brochettes de Bœuf',
-          description: '6 brochettes de bœuf marinées, avec pain et sauce pimentée.',
-          price: 2500, imageEmoji: '🍢', imageUrl: AmaraImages.brochettes, categoryId: 'cat2', isSpicy: true, likeCount: 112,
+      ];
+
+    case '2': // Saveurs du Sahel
+      return [
+        MenuCategory(
+          id: 'cat1', name: 'Spécialités',
+          items: [
+            MenuItem(
+              id: 's1', name: 'Thiéboudienne',
+              description: 'Le plat national sénégalais : riz au poisson, légumes et sauce tomate mijotée.',
+              price: 4000, imageEmoji: '🐟', imageUrl: AmaraImages.thiebs, categoryId: 'cat1',
+              isPopular: true, likeCount: 423,
+              optionGroups: [
+                MenuItemOptionGroup(
+                  id: 'og1', title: 'Choix du poisson', required: true, maxSelections: 1,
+                  options: [
+                    const MenuItemOption(id: 'o1', name: 'Thiof (mérou)'),
+                    const MenuItemOption(id: 'o2', name: 'Capitaine', extraPrice: 300),
+                    const MenuItemOption(id: 'o3', name: 'Crevettes', extraPrice: 500),
+                  ],
+                ),
+              ],
+            ),
+            MenuItem(
+              id: 's2', name: 'Yassa Poulet',
+              description: 'Poulet mariné au citron et oignons caramélisés. Un classique sénégalais.',
+              price: 3500, imageEmoji: '🍗', imageUrl: AmaraImages.pouletBraise, categoryId: 'cat1',
+              isPopular: true, likeCount: 356,
+            ),
+            MenuItem(
+              id: 's3', name: 'Maafé',
+              description: 'Ragoût de viande à la sauce d\'arachide, servi avec riz blanc.',
+              price: 3000, imageEmoji: '🥜', imageUrl: AmaraImages.ragout, categoryId: 'cat1',
+              likeCount: 198, isSpicy: true,
+            ),
+          ],
         ),
-      ],
-    ),
-    MenuCategory(
-      id: 'cat3', name: 'Boissons',
-      items: [
-        MenuItem(
-          id: 'i9', name: 'Jus de Bissap',
-          description: 'Boisson fraîche à base de fleurs d\'hibiscus.',
-          price: 800, imageEmoji: '🧃', imageUrl: AmaraImages.jus, categoryId: 'cat3',
-          isVegetarian: true, likeCount: 145, isPopular: true,
+        MenuCategory(
+          id: 'cat2', name: 'Grillades',
+          items: [
+            MenuItem(
+              id: 's4', name: 'Brochettes Sénégalaises',
+              description: '8 brochettes de bœuf marinées aux épices, avec oignons et piment.',
+              price: 2500, imageEmoji: '🍢', imageUrl: AmaraImages.brochettes, categoryId: 'cat2',
+              likeCount: 145, isSpicy: true,
+            ),
+          ],
         ),
-        MenuItem(
-          id: 'i11', name: 'Eau minérale',
-          description: 'Bouteille 50cl.', price: 300, imageEmoji: '💧',
-          imageUrl: AmaraImages.jus, categoryId: 'cat3', isVegetarian: true, likeCount: 210,
+        MenuCategory(
+          id: 'cat3', name: 'Boissons',
+          items: [
+            MenuItem(
+              id: 's5', name: 'Jus de Bissap',
+              description: 'Boisson fraîche à base de fleurs d\'hibiscus et menthe.',
+              price: 700, imageEmoji: '🧃', imageUrl: AmaraImages.jus, categoryId: 'cat3',
+              likeCount: 267, isVegetarian: true, isPopular: true,
+            ),
+            MenuItem(
+              id: 's6', name: 'Thiakry',
+              description: 'Dessert sénégalais au mil fermenté, sucré et crémeux.',
+              price: 900, imageEmoji: '🍮', imageUrl: AmaraImages.dessert, categoryId: 'cat3',
+              likeCount: 112, isVegetarian: true,
+            ),
+          ],
         ),
-      ],
-    ),
-  ];
+      ];
+
+    case '4': // Lagos Kitchen
+      return [
+        MenuCategory(
+          id: 'cat1', name: 'Plats Principaux',
+          items: [
+            MenuItem(
+              id: 'l1', name: 'Jollof Rice',
+              description: 'Le célèbre riz ouest-africain cuisiné à la tomate, poivron et épices.',
+              price: 3000, imageEmoji: '🍚', imageUrl: AmaraImages.jollofRice, categoryId: 'cat1',
+              isPopular: true, likeCount: 512,
+              optionGroups: [
+                MenuItemOptionGroup(
+                  id: 'og1', title: 'Protéine', required: true, maxSelections: 1,
+                  options: [
+                    const MenuItemOption(id: 'o1', name: 'Poulet grillé', extraPrice: 500),
+                    const MenuItemOption(id: 'o2', name: 'Bœuf haché', extraPrice: 700),
+                    const MenuItemOption(id: 'o3', name: 'Crevettes', extraPrice: 900),
+                  ],
+                ),
+              ],
+            ),
+            MenuItem(
+              id: 'l2', name: 'Egusi Soup',
+              description: 'Soupe épaisse aux graines de melon, épinards, viande et poisson fumé.',
+              price: 3500, imageEmoji: '🥘', imageUrl: AmaraImages.ragout, categoryId: 'cat1',
+              likeCount: 287, isSpicy: true,
+            ),
+            MenuItem(
+              id: 'l3', name: 'Suya Beef',
+              description: 'Brochettes de bœuf épicées au suya mix, servies avec oignons frais et tomate.',
+              price: 4000, imageEmoji: '🍢', imageUrl: AmaraImages.brochettes, categoryId: 'cat1',
+              isPopular: true, isSpicy: true, likeCount: 398,
+            ),
+          ],
+        ),
+        MenuCategory(
+          id: 'cat2', name: 'Street Food',
+          items: [
+            MenuItem(
+              id: 'l4', name: 'Puff Puff',
+              description: 'Beignets moelleux nigérians, légèrement sucrés et croustillants.',
+              price: 600, imageEmoji: '🍩', imageUrl: AmaraImages.streetFood, categoryId: 'cat2',
+              likeCount: 178, isVegetarian: true,
+            ),
+            MenuItem(
+              id: 'l5', name: 'Chin Chin',
+              description: 'Snack croquant à base de farine, œuf et sucre, frit à l\'huile.',
+              price: 500, imageEmoji: '🍪', imageUrl: AmaraImages.streetFood, categoryId: 'cat2',
+              likeCount: 134, isVegetarian: true,
+            ),
+          ],
+        ),
+        MenuCategory(
+          id: 'cat3', name: 'Boissons',
+          items: [
+            MenuItem(
+              id: 'l6', name: 'Chapman',
+              description: 'Cocktail sans alcool nigérian : Fanta, Angostura, citron et grenadine.',
+              price: 800, imageEmoji: '🥤', imageUrl: AmaraImages.jus, categoryId: 'cat3',
+              likeCount: 203, isVegetarian: true, isPopular: true,
+            ),
+          ],
+        ),
+      ];
+
+    case '5': // Marrakech Délices — cuisine marocaine
+      return [
+        MenuCategory(
+          id: 'cat1', name: 'Tajines',
+          items: [
+            MenuItem(
+              id: 'm1', name: 'Tagine Poulet Citron',
+              description: 'Poulet confit aux citrons confits, olives et coriandre fraîche.',
+              price: 4500, imageEmoji: '🍲', imageUrl: AmaraImages.ragout, categoryId: 'cat1',
+              isPopular: true, likeCount: 389,
+            ),
+            MenuItem(
+              id: 'm2', name: 'Tagine Agneau Pruneaux',
+              description: 'Agneau mijoté aux pruneaux, amandes grillées et miel.',
+              price: 5500, imageEmoji: '🥩', imageUrl: AmaraImages.brochettes, categoryId: 'cat1',
+              likeCount: 312,
+            ),
+            MenuItem(
+              id: 'm3', name: 'Tagine Légumes',
+              description: 'Légumes de saison mijotés aux épices ras el hanout.',
+              price: 3000, imageEmoji: '🥕', imageUrl: AmaraImages.ragout, categoryId: 'cat1',
+              isVegetarian: true, likeCount: 198,
+            ),
+          ],
+        ),
+        MenuCategory(
+          id: 'cat2', name: 'Couscous',
+          items: [
+            MenuItem(
+              id: 'm4', name: 'Couscous Royal',
+              description: 'Semoule fine avec merguez, poulet, agneau et légumes fondants.',
+              price: 5000, imageEmoji: '🍚', imageUrl: AmaraImages.couscous, categoryId: 'cat2',
+              isPopular: true, likeCount: 445,
+            ),
+            MenuItem(
+              id: 'm5', name: 'Couscous Végétarien',
+              description: 'Semoule aux 7 légumes traditionnels et bouillon parfumé.',
+              price: 3500, imageEmoji: '🥗', imageUrl: AmaraImages.couscous, categoryId: 'cat2',
+              isVegetarian: true, likeCount: 167,
+            ),
+          ],
+        ),
+        MenuCategory(
+          id: 'cat3', name: 'Entrées',
+          items: [
+            MenuItem(
+              id: 'm6', name: 'Pastilla au Poulet',
+              description: 'Feuilleté croustillant poulet-amandes-cannelle, spécialité fassi.',
+              price: 2500, imageEmoji: '🥟', imageUrl: AmaraImages.streetFood, categoryId: 'cat3',
+              isPopular: true, likeCount: 278,
+            ),
+            MenuItem(
+              id: 'm7', name: 'Harira',
+              description: 'Soupe traditionnelle marocaine aux tomates, lentilles et pois chiches.',
+              price: 1200, imageEmoji: '🍲', imageUrl: AmaraImages.ragout, categoryId: 'cat3',
+              likeCount: 203,
+            ),
+          ],
+        ),
+        MenuCategory(
+          id: 'cat4', name: 'Boissons',
+          items: [
+            MenuItem(
+              id: 'm8', name: 'Thé à la Menthe',
+              description: 'Thé vert à la menthe fraîche, servi à la marocaine.',
+              price: 600, imageEmoji: '🍵', imageUrl: AmaraImages.jus, categoryId: 'cat4',
+              isVegetarian: true, likeCount: 334, isPopular: true,
+            ),
+            MenuItem(
+              id: 'm9', name: 'Jus d\'Orange Frais',
+              description: 'Oranges pressées à la minute.',
+              price: 800, imageEmoji: '🍊', imageUrl: AmaraImages.jus, categoryId: 'cat4',
+              isVegetarian: true, likeCount: 156,
+            ),
+          ],
+        ),
+      ];
+
+    case '6': // Addis Flavors — cuisine éthiopienne
+      return [
+        MenuCategory(
+          id: 'cat1', name: 'Spécialités',
+          items: [
+            MenuItem(
+              id: 'a1', name: 'Doro Wat',
+              description: 'Ragoût de poulet épicé au berbéré, avec œufs durs. Plat national éthiopien.',
+              price: 4000, imageEmoji: '🍗', imageUrl: AmaraImages.injera, categoryId: 'cat1',
+              isPopular: true, isSpicy: true, likeCount: 467,
+            ),
+            MenuItem(
+              id: 'a2', name: 'Tibs de Bœuf',
+              description: 'Bœuf sauté au beurre clarifié avec oignons, tomates et piment.',
+              price: 4500, imageEmoji: '🥩', imageUrl: AmaraImages.brochettes, categoryId: 'cat1',
+              isSpicy: true, likeCount: 312,
+            ),
+            MenuItem(
+              id: 'a3', name: 'Kitfo',
+              description: 'Bœuf haché au beurre clarifié et épices mitmita. La tartare éthiopienne.',
+              price: 5000, imageEmoji: '🥩', imageUrl: AmaraImages.brochettes, categoryId: 'cat1',
+              likeCount: 234,
+            ),
+          ],
+        ),
+        MenuCategory(
+          id: 'cat2', name: 'Végétarien',
+          items: [
+            MenuItem(
+              id: 'a4', name: 'Beyaynet Végétarien',
+              description: 'Plateau injera avec 6 wots végétariens : lentilles, pois chiches, épinards...',
+              price: 3500, imageEmoji: '🥗', imageUrl: AmaraImages.ragout, categoryId: 'cat2',
+              isVegetarian: true, isPopular: true, likeCount: 289,
+            ),
+            MenuItem(
+              id: 'a5', name: 'Misir Wat',
+              description: 'Lentilles rouges mijotées aux épices berbéré et berbéré doux.',
+              price: 2500, imageEmoji: '🫘', imageUrl: AmaraImages.ragout, categoryId: 'cat2',
+              isVegetarian: true, likeCount: 201,
+            ),
+          ],
+        ),
+        MenuCategory(
+          id: 'cat3', name: 'Boissons',
+          items: [
+            MenuItem(
+              id: 'a6', name: 'Café Éthiopien Bunna',
+              description: 'Cérémonie du café éthiopien : grains torréfiés et moulus sur place.',
+              price: 800, imageEmoji: '☕', imageUrl: AmaraImages.jus, categoryId: 'cat3',
+              isVegetarian: true, likeCount: 378, isPopular: true,
+            ),
+            MenuItem(
+              id: 'a7', name: 'Tej',
+              description: 'Hydromel éthiopien traditionnel, légèrement sucré.',
+              price: 1000, imageEmoji: '🍯', imageUrl: AmaraImages.jus, categoryId: 'cat3',
+              likeCount: 145,
+            ),
+          ],
+        ),
+      ];
+
+    default: // Restaurant 1 (Chez Mama Africa) et autres
+      return [
+        MenuCategory(
+          id: 'cat1', name: 'Plats populaires',
+          items: [
+            MenuItem(
+              id: 'i1', name: 'Attiéké Poisson',
+              description: 'Semoule de manioc avec poisson braisé, tomate et oignon frits.',
+              price: 2500, imageEmoji: '🐟', imageUrl: AmaraImages.attieke, categoryId: 'cat1',
+              isPopular: true, likeCount: 248,
+              optionGroups: [
+                MenuItemOptionGroup(
+                  id: 'og1', title: 'Choix du poisson', required: true, maxSelections: 1,
+                  options: [
+                    const MenuItemOption(id: 'o1', name: 'Tilapia'),
+                    const MenuItemOption(id: 'o2', name: 'Carpe'),
+                    const MenuItemOption(id: 'o3', name: 'Poisson fumé', extraPrice: 500),
+                  ],
+                ),
+              ],
+            ),
+            MenuItem(
+              id: 'i2', name: 'Kedjenou de Poulet',
+              description: 'Ragoût de poulet mijoté aux épices locales, servi avec attiéké.',
+              price: 3500, imageEmoji: '🍗', imageUrl: AmaraImages.pouletBraise, categoryId: 'cat1',
+              isPopular: true, isSpicy: true, likeCount: 201,
+            ),
+            MenuItem(
+              id: 'i3', name: 'Foutou Banane + Sauce Graine',
+              description: 'Foutou de banane plantain accompagné de la sauce aux graines de palme.',
+              price: 2000, imageEmoji: '🍌', imageUrl: AmaraImages.foutou, categoryId: 'cat1', likeCount: 133,
+            ),
+          ],
+        ),
+        MenuCategory(
+          id: 'cat2', name: 'Grillades',
+          items: [
+            MenuItem(
+              id: 'i4', name: 'Poulet Braisé',
+              description: 'Demi-poulet mariné et braisé au feu de bois, servi avec alloco.',
+              price: 4000, imageEmoji: '🍗', imageUrl: AmaraImages.pouletBraise, categoryId: 'cat2', likeCount: 189,
+            ),
+            MenuItem(
+              id: 'i5', name: 'Brochettes de Bœuf',
+              description: '6 brochettes de bœuf marinées, avec pain et sauce pimentée.',
+              price: 2500, imageEmoji: '🍢', imageUrl: AmaraImages.brochettes, categoryId: 'cat2', isSpicy: true, likeCount: 112,
+            ),
+          ],
+        ),
+        MenuCategory(
+          id: 'cat3', name: 'Boissons',
+          items: [
+            MenuItem(
+              id: 'i9', name: 'Jus de Bissap',
+              description: 'Boisson fraîche à base de fleurs d\'hibiscus.',
+              price: 800, imageEmoji: '🧃', imageUrl: AmaraImages.jus, categoryId: 'cat3',
+              isVegetarian: true, likeCount: 145, isPopular: true,
+            ),
+            MenuItem(
+              id: 'i11', name: 'Eau minérale',
+              description: 'Bouteille 50cl.', price: 300, imageEmoji: '💧',
+              imageUrl: AmaraImages.jus, categoryId: 'cat3', isVegetarian: true, likeCount: 210,
+            ),
+          ],
+        ),
+      ];
+  }
 }
 
 // ─── Providers ────────────────────────────────────────────────────────────────

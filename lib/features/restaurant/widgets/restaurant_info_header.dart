@@ -4,44 +4,123 @@ import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
 import '../../../app/models/restaurant_model.dart';
 
-/// Header info restaurant — structure propre, aérée, par blocs distincts.
-class RestaurantInfoHeader extends StatelessWidget {
+/// Header info restaurant — identité + infos dépliables.
+class RestaurantInfoHeader extends StatefulWidget {
   final Restaurant restaurant;
   const RestaurantInfoHeader({super.key, required this.restaurant});
 
   @override
+  State<RestaurantInfoHeader> createState() => _RestaurantInfoHeaderState();
+}
+
+class _RestaurantInfoHeaderState extends State<RestaurantInfoHeader> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
+    final r = widget.restaurant;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // ── Bloc 1 : Identité ──────────────────────────────────────────────
-        _IdentityBlock(restaurant: restaurant),
+        _IdentityBlock(restaurant: r),
 
         // ── Séparateur fin ────────────────────────────────────────────────
         _SectionDivider(),
 
-        // ── Bloc 2 : Métriques (4 chiffres clés) ─────────────────────────
-        _MetricsBlock(restaurant: restaurant),
+        // ── Métriques (toujours visibles) ─────────────────────────────────
+        _MetricsBlock(restaurant: r),
 
-        // ── Séparateur fin ────────────────────────────────────────────────
         _SectionDivider(),
 
-        // ── Bloc 3 : Services + paiements ─────────────────────────────────
-        _ServicesBlock(restaurant: restaurant),
+        // ── Services + paiements (toujours visibles) ──────────────────────
+        _ServicesBlock(restaurant: r),
 
-        // ── Séparateur fin ────────────────────────────────────────────────
-        _SectionDivider(),
-
-        // ── Bloc 4 : Promo (si dispo) ─────────────────────────────────────
-        if (restaurant.promos.isNotEmpty) ...[
-          _PromosBlock(promos: restaurant.promos),
+        if (r.promos.isNotEmpty) ...[
           _SectionDivider(),
+          _PromosBlock(promos: r.promos),
         ],
 
-        // ── Bloc 5 : Horaires (accordéon) ─────────────────────────────────
-        _ScheduleBlock(restaurant: restaurant),
+        // ── Accordéon : adresse + téléphone + horaires ────────────────────
+        _SectionDivider(),
+
+        _InfoAccordion(
+          restaurant: r,
+          expanded: _expanded,
+          onToggle: () => setState(() => _expanded = !_expanded),
+        ),
 
         const SizedBox(height: 8),
+      ],
+    );
+  }
+}
+
+// ─── Accordéon infos ──────────────────────────────────────────────────────────
+
+class _InfoAccordion extends StatelessWidget {
+  final Restaurant restaurant;
+  final bool expanded;
+  final VoidCallback onToggle;
+
+  const _InfoAccordion({
+    required this.restaurant,
+    required this.expanded,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Header tap
+        GestureDetector(
+          onTap: () {
+            HapticFeedback.selectionClick();
+            onToggle();
+          },
+          behavior: HitTestBehavior.opaque,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            child: Row(
+              children: [
+                Container(
+                  width: 32, height: 32,
+                  decoration: BoxDecoration(
+                    color: AmaraColors.bgAlt,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.info_outline_rounded,
+                      size: 16, color: AmaraColors.primary),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Infos du restaurant',
+                    style: AmaraTextStyles.labelSmall.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                AnimatedRotation(
+                  turns: expanded ? 0.5 : 0,
+                  duration: const Duration(milliseconds: 250),
+                  child: const Icon(Icons.keyboard_arrow_down_rounded,
+                      size: 22, color: AmaraColors.muted),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // Contenu dépliable : adresse + téléphone + horaires
+        AnimatedSize(
+          duration: const Duration(milliseconds: 280),
+          curve: Curves.easeInOut,
+          child: expanded
+              ? _AddressScheduleBlock(restaurant: restaurant)
+              : const SizedBox.shrink(),
+        ),
       ],
     );
   }
@@ -75,7 +154,7 @@ class _IdentityBlock extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
 
           // Type de cuisine
           Text(
@@ -97,15 +176,6 @@ class _IdentityBlock extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
-
-          if (restaurant.tags.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            // Tags
-            Wrap(
-              spacing: 6,
-              children: restaurant.tags.map((tag) => _Tag(label: tag)).toList(),
-            ),
-          ],
 
           // Badge "déjà commandé" discret
           if (restaurant.hasOrdered) ...[
@@ -874,6 +944,58 @@ class _Tag extends StatelessWidget {
           color: AmaraColors.textSecondary,
           fontWeight: FontWeight.w500,
         ),
+      ),
+    );
+  }
+}
+
+// ─── Adresse + Téléphone + Horaires ──────────────────────────────────────────
+
+class _AddressScheduleBlock extends StatelessWidget {
+  final Restaurant restaurant;
+  const _AddressScheduleBlock({required this.restaurant});
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = <Widget>[];
+
+    if (restaurant.address.isNotEmpty) {
+      rows.add(_ContactRow(
+        icon: Icons.location_on_rounded,
+        text: restaurant.address,
+        color: AmaraColors.error,
+      ));
+    }
+
+    if (restaurant.phone.isNotEmpty) {
+      if (rows.isNotEmpty) rows.add(const SizedBox(height: 10));
+      rows.add(_ContactRow(
+        icon: Icons.phone_rounded,
+        text: restaurant.phone,
+        color: AmaraColors.success,
+      ));
+    }
+
+    if (restaurant.schedule.isNotEmpty) {
+      rows.add(const SizedBox(height: 16));
+      rows.add(Container(height: 1, color: AmaraColors.divider));
+      rows.add(const SizedBox(height: 16));
+      rows.add(Text(
+        'Horaires d\'ouverture',
+        style: AmaraTextStyles.caption.copyWith(
+          fontWeight: FontWeight.w700,
+          color: AmaraColors.textPrimary,
+        ),
+      ));
+      rows.add(const SizedBox(height: 10));
+      rows.addAll(restaurant.schedule.map((s) => _DayRow(schedule: s)));
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: rows,
       ),
     );
   }

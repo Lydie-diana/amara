@@ -85,20 +85,6 @@ class _MenuItemTile extends ConsumerWidget {
     );
   }
 
-  void _showCustomizationSheet(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => _ItemCustomizationSheet(
-        item: item,
-        restaurantId: restaurantId,
-        restaurantName: restaurantName,
-        ref: ref,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartProvider);
@@ -112,8 +98,7 @@ class _MenuItemTile extends ConsumerWidget {
         _openDetail(context);
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        padding: const EdgeInsets.all(14),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
         decoration: BoxDecoration(
           color: AmaraColors.bgCard,
           borderRadius: BorderRadius.circular(16),
@@ -121,543 +106,193 @@ class _MenuItemTile extends ConsumerWidget {
             color: inCart
                 ? AmaraColors.primary.withValues(alpha: 0.3)
                 : AmaraColors.divider,
+            width: inCart ? 1.5 : 1,
           ),
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image plat
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+            // ── Infos (gauche) ────────────────────────────────────────
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(13, 12, 8, 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Nom + badges
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.name,
+                            style: AmaraTextStyles.labelMedium
+                                .copyWith(fontWeight: FontWeight.w700),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (item.isPopular || item.isVegetarian || item.isSpicy)
+                          Row(children: [
+                            if (item.isPopular)
+                              _Badge(label: '⭐', bgColor: const Color(0xFFFFF3E0)),
+                            if (item.isVegetarian)
+                              _Badge(label: '🌱', bgColor: const Color(0xFFE8F5E9)),
+                            if (item.isSpicy)
+                              _Badge(label: '🌶️', bgColor: const Color(0xFFFFEBEE)),
+                          ]),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+
+                    // Description (2 lignes)
+                    if (item.description.isNotEmpty)
+                      Text(
+                        item.description,
+                        style: AmaraTextStyles.caption.copyWith(
+                          color: AmaraColors.textSecondary,
+                          height: 1.35,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+
+                    const SizedBox(height: 6),
+
+                    // Likes % + commandes
+                    if (item.likeCount > 0)
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AmaraColors.error.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.thumb_up_rounded,
+                                    size: 9, color: AmaraColors.error),
+                                const SizedBox(width: 3),
+                                Text(
+                                  '${_likePercent(item.likeCount)}%',
+                                  style: AmaraTextStyles.caption.copyWith(
+                                      color: AmaraColors.error,
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 9),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Icon(Icons.people_alt_rounded,
+                              size: 10, color: AmaraColors.textSecondary),
+                          const SizedBox(width: 2),
+                          Text(
+                            '${_orderCount(item.likeCount)} clients',
+                            style: AmaraTextStyles.caption.copyWith(
+                                color: AmaraColors.textSecondary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 9),
+                          ),
+                        ],
+                      ),
+
+                    if (hasOptions) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          const Icon(Icons.tune_rounded,
+                              size: 10, color: AmaraColors.primary),
+                          const SizedBox(width: 2),
+                          Text('Options',
+                              style: AmaraTextStyles.caption.copyWith(
+                                color: AmaraColors.primary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 10,
+                              )),
+                        ],
+                      ),
+                    ],
+
+                    const SizedBox(height: 10),
+
+                    // Prix + contrôle quantité
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          item.formattedPrice,
+                          style: AmaraTextStyles.labelMedium.copyWith(
+                            color: AmaraColors.primary,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const Spacer(),
+                        if (!item.isAvailable)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: AmaraColors.bgAlt,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: AmaraColors.divider),
+                            ),
+                            child: Text('Indisponible',
+                                style: AmaraTextStyles.caption
+                                    .copyWith(color: AmaraColors.muted, fontSize: 10)),
+                          )
+                        else if (inCart)
+                          _QuantityControl(
+                            quantity: quantity,
+                            onDecrement: () {
+                              HapticFeedback.lightImpact();
+                              ref.read(cartProvider.notifier).removeItem(item.id);
+                            },
+                            onIncrement: () {
+                              HapticFeedback.lightImpact();
+                              _openDetail(context);
+                            },
+                          )
+                        else
+                          _AddButton(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              _openDetail(context);
+                            },
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // ── Image (droite, pleine hauteur) ──────────────────────
             ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: const BorderRadius.horizontal(right: Radius.circular(15)),
               child: SizedBox(
-                width: 72,
-                height: 72,
+                width: 112,
                 child: item.imageUrl != null
                     ? Image.network(
                         item.imageUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          color: AmaraColors.bgAlt,
-                          child: Center(
-                            child: Text(item.imageEmoji,
-                                style: const TextStyle(fontSize: 32)),
-                          ),
-                        ),
+                        errorBuilder: (_, __, ___) => _EmojiImg(
+                            emoji: item.imageEmoji, bgColor: _itemBg(item.id)),
                         loadingBuilder: (_, child, progress) => progress == null
                             ? child
-                            : Container(
-                                color: AmaraColors.bgAlt,
-                                child: Center(
-                                  child: Text(item.imageEmoji,
-                                      style: const TextStyle(fontSize: 32)),
-                                ),
-                              ),
+                            : _EmojiImg(
+                                emoji: item.imageEmoji, bgColor: _itemBg(item.id)),
                       )
-                    : Container(
-                        color: AmaraColors.bgAlt,
-                        child: Center(
-                          child: Text(item.imageEmoji,
-                              style: const TextStyle(fontSize: 36)),
-                        ),
-                      ),
-              ),
-            ),
-            const SizedBox(width: 14),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Nom + badges
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item.name,
-                          style: AmaraTextStyles.labelMedium
-                              .copyWith(fontWeight: FontWeight.w700),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      Row(
-                        children: [
-                          if (item.isPopular)
-                            _Badge(label: '⭐', bgColor: const Color(0xFFFFF3E0)),
-                          if (item.isVegetarian)
-                            _Badge(label: '🌱', bgColor: const Color(0xFFE8F5E9)),
-                          if (item.isSpicy)
-                            _Badge(label: '🌶️', bgColor: const Color(0xFFFFEBEE)),
-                        ],
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-
-                  // Description
-                  if (item.description.isNotEmpty)
-                    Text(
-                      item.description,
-                      style: AmaraTextStyles.caption.copyWith(
-                        color: AmaraColors.textSecondary,
-                        height: 1.4,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-
-                  // Likes
-                  if (item.likeCount > 0) ...[
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.favorite_rounded,
-                            size: 11, color: AmaraColors.error),
-                        const SizedBox(width: 3),
-                        Text(
-                          '${item.likeCount} personnes adorent ça',
-                          style: AmaraTextStyles.caption
-                              .copyWith(color: AmaraColors.muted),
-                        ),
-                      ],
-                    ),
-                  ],
-
-                  // Accompagnements dispo
-                  if (hasOptions) ...[
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(Icons.tune_rounded,
-                            size: 11, color: AmaraColors.primary),
-                        const SizedBox(width: 3),
-                        Text(
-                          'Options disponibles',
-                          style: AmaraTextStyles.caption.copyWith(
-                            color: AmaraColors.primary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-
-                  const SizedBox(height: 10),
-
-                  // Prix + contrôle quantité
-                  Row(
-                    children: [
-                      Text(
-                        item.formattedPrice,
-                        style: AmaraTextStyles.labelMedium.copyWith(
-                          color: AmaraColors.primary,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const Spacer(),
-                      if (!item.isAvailable)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AmaraColors.bgAlt,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: AmaraColors.divider),
-                          ),
-                          child: Text('Indisponible',
-                              style: AmaraTextStyles.caption
-                                  .copyWith(color: AmaraColors.muted)),
-                        )
-                      else if (inCart)
-                        _QuantityControl(
-                          quantity: quantity,
-                          onDecrement: () {
-                            HapticFeedback.lightImpact();
-                            ref.read(cartProvider.notifier).removeItem(item.id);
-                          },
-                          onIncrement: () {
-                            HapticFeedback.lightImpact();
-                            if (hasOptions) {
-                              _showCustomizationSheet(context, ref);
-                            } else {
-                              ref.read(cartProvider.notifier).addItem(
-                                    item,
-                                    restaurantId,
-                                    restaurantName,
-                                  );
-                            }
-                          },
-                        )
-                      else
-                        _AddButton(
-                          hasOptions: hasOptions,
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            if (hasOptions) {
-                              _showCustomizationSheet(context, ref);
-                            } else {
-                              ref.read(cartProvider.notifier).addItem(
-                                    item,
-                                    restaurantId,
-                                    restaurantName,
-                                  );
-                            }
-                          },
-                        ),
-                    ],
-                  ),
-                ],
+                    : _EmojiImg(emoji: item.imageEmoji, bgColor: _itemBg(item.id)),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ─── Bottom Sheet personnalisation ────────────────────────────────────────────
-
-class _ItemCustomizationSheet extends StatefulWidget {
-  final MenuItem item;
-  final String restaurantId;
-  final String restaurantName;
-  final WidgetRef ref;
-
-  const _ItemCustomizationSheet({
-    required this.item,
-    required this.restaurantId,
-    required this.restaurantName,
-    required this.ref,
-  });
-
-  @override
-  State<_ItemCustomizationSheet> createState() =>
-      _ItemCustomizationSheetState();
-}
-
-class _ItemCustomizationSheetState extends State<_ItemCustomizationSheet> {
-  final _noteController = TextEditingController();
-
-  // selectedOptions[groupId] = Set d'option ids sélectionnés
-  final Map<String, Set<String>> _selectedOptions = {};
-
-  @override
-  void initState() {
-    super.initState();
-    for (final group in widget.item.optionGroups) {
-      _selectedOptions[group.id] = {};
-    }
-  }
-
-  @override
-  void dispose() {
-    _noteController.dispose();
-    super.dispose();
-  }
-
-  bool get _canConfirm {
-    for (final group in widget.item.optionGroups) {
-      if (group.required &&
-          (_selectedOptions[group.id]?.isEmpty ?? true)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  void _toggleOption(MenuItemOptionGroup group, String optionId) {
-    setState(() {
-      final selected = _selectedOptions[group.id]!;
-      if (group.maxSelections == 1) {
-        selected.clear();
-        selected.add(optionId);
-      } else {
-        if (selected.contains(optionId)) {
-          selected.remove(optionId);
-        } else if (selected.length < group.maxSelections) {
-          selected.add(optionId);
-        }
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-
-    return Container(
-      decoration: const BoxDecoration(
-        color: AmaraColors.bg,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      padding: EdgeInsets.only(bottom: bottomInset),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Handle
-          Center(
-            child: Container(
-              margin: const EdgeInsets.only(top: 12, bottom: 4),
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                color: AmaraColors.divider,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-
-          Flexible(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header
-                  Row(
-                    children: [
-                      Text(widget.item.imageEmoji,
-                          style: const TextStyle(fontSize: 32)),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(widget.item.name,
-                                style: AmaraTextStyles.h3),
-                            Text(widget.item.formattedPrice,
-                                style: AmaraTextStyles.labelSmall.copyWith(
-                                    color: AmaraColors.primary,
-                                    fontWeight: FontWeight.w700)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Groupes d'options
-                  ...widget.item.optionGroups.map((group) {
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(group.title,
-                                  style: AmaraTextStyles.labelMedium.copyWith(
-                                      fontWeight: FontWeight.w700)),
-                            ),
-                            if (group.required)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 7, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: AmaraColors.primary
-                                      .withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text('Requis',
-                                    style: AmaraTextStyles.caption.copyWith(
-                                        color: AmaraColors.primary,
-                                        fontWeight: FontWeight.w700)),
-                              )
-                            else
-                              Text('Optionnel',
-                                  style: AmaraTextStyles.caption
-                                      .copyWith(color: AmaraColors.muted)),
-                          ],
-                        ),
-                        if (group.maxSelections > 1)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2),
-                            child: Text(
-                                'Choisissez jusqu\'à ${group.maxSelections}',
-                                style: AmaraTextStyles.caption
-                                    .copyWith(color: AmaraColors.muted)),
-                          ),
-                        const SizedBox(height: 8),
-                        ...group.options.map((option) {
-                          final selected =
-                              _selectedOptions[group.id]?.contains(option.id) ??
-                                  false;
-                          return GestureDetector(
-                            onTap: () {
-                              HapticFeedback.selectionClick();
-                              _toggleOption(group, option.id);
-                            },
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 150),
-                              margin: const EdgeInsets.only(bottom: 8),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 12),
-                              decoration: BoxDecoration(
-                                color: selected
-                                    ? AmaraColors.primary
-                                        .withValues(alpha: 0.07)
-                                    : AmaraColors.bgCard,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: selected
-                                      ? AmaraColors.primary
-                                          .withValues(alpha: 0.4)
-                                      : AmaraColors.divider,
-                                  width: selected ? 1.5 : 1,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  AnimatedContainer(
-                                    duration:
-                                        const Duration(milliseconds: 150),
-                                    width: 20,
-                                    height: 20,
-                                    decoration: BoxDecoration(
-                                      color: selected
-                                          ? AmaraColors.primary
-                                          : Colors.transparent,
-                                      borderRadius:
-                                          BorderRadius.circular(
-                                              group.maxSelections == 1
-                                                  ? 10
-                                                  : 6),
-                                      border: Border.all(
-                                        color: selected
-                                            ? AmaraColors.primary
-                                            : AmaraColors.muted,
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                    child: selected
-                                        ? const Icon(Icons.check_rounded,
-                                            size: 12,
-                                            color: Colors.white)
-                                        : null,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(option.name,
-                                        style:
-                                            AmaraTextStyles.bodySmall.copyWith(
-                                          color: selected
-                                              ? AmaraColors.textPrimary
-                                              : AmaraColors.textSecondary,
-                                          fontWeight: selected
-                                              ? FontWeight.w600
-                                              : FontWeight.w400,
-                                        )),
-                                  ),
-                                  if (option.extraPrice > 0)
-                                    Text(
-                                      option.priceLabel,
-                                      style: AmaraTextStyles.caption.copyWith(
-                                        color: AmaraColors.primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    )
-                                  else
-                                    Text(
-                                      option.priceLabel,
-                                      style: AmaraTextStyles.caption.copyWith(
-                                          color: AmaraColors.muted),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
-                        const SizedBox(height: 8),
-                      ],
-                    );
-                  }),
-
-                  // Note personnelle
-                  Text('Note pour le restaurant',
-                      style: AmaraTextStyles.labelMedium
-                          .copyWith(fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _noteController,
-                    maxLines: 3,
-                    style: AmaraTextStyles.bodySmall,
-                    decoration: InputDecoration(
-                      hintText:
-                          'Ex : sans oignons, sauce à part, cuisson à point...',
-                      hintStyle: AmaraTextStyles.bodySmall
-                          .copyWith(color: AmaraColors.muted),
-                      filled: true,
-                      fillColor: AmaraColors.bgAlt,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide:
-                            const BorderSide(color: AmaraColors.divider),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide:
-                            const BorderSide(color: AmaraColors.divider),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(
-                            color: AmaraColors.primary, width: 1.5),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
-          ),
-
-          // Bouton confirmer
-          Padding(
-            padding: EdgeInsets.fromLTRB(
-                20,
-                8,
-                20,
-                MediaQuery.of(context).padding.bottom + 16),
-            child: GestureDetector(
-              onTap: _canConfirm
-                  ? () {
-                      HapticFeedback.lightImpact();
-                      widget.ref.read(cartProvider.notifier).addItem(
-                            widget.item,
-                            widget.restaurantId,
-                            widget.restaurantName,
-                          );
-                      Navigator.of(context).pop();
-                    }
-                  : null,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  color: _canConfirm ? AmaraColors.primary : AmaraColors.muted,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.add_shopping_cart_rounded,
-                        color: Colors.white, size: 18),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Ajouter au panier',
-                      style: AmaraTextStyles.labelMedium
-                          .copyWith(color: Colors.white, fontWeight: FontWeight.w700),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -686,39 +321,71 @@ class _Badge extends StatelessWidget {
 
 class _AddButton extends StatelessWidget {
   final VoidCallback onTap;
-  final bool hasOptions;
-  const _AddButton({required this.onTap, this.hasOptions = false});
+  const _AddButton({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: hasOptions
-            ? const EdgeInsets.symmetric(horizontal: 12, vertical: 8)
-            : null,
-        width: hasOptions ? null : 36,
+        width: 36,
         height: 36,
         decoration: BoxDecoration(
           color: AmaraColors.primary,
           borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.add_rounded, color: Colors.white, size: 18),
-            if (hasOptions) ...[
-              const SizedBox(width: 4),
-              Text('Choisir',
-                  style: AmaraTextStyles.caption
-                      .copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
-            ],
+          boxShadow: [
+            BoxShadow(
+              color: AmaraColors.primary.withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
           ],
         ),
+        child: const Icon(Icons.add_rounded, color: Colors.white, size: 20),
       ),
     );
   }
+}
+
+// ─── Image emoji pleine hauteur ───────────────────────────────────────────────
+
+class _EmojiImg extends StatelessWidget {
+  final String emoji;
+  final Color bgColor;
+  const _EmojiImg({required this.emoji, required this.bgColor});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: bgColor,
+      child: Center(
+        child: Text(emoji, style: const TextStyle(fontSize: 44)),
+      ),
+    );
+  }
+}
+
+Color _itemBg(String id) {
+  const colors = [
+    Color(0xFFE8E0F5), Color(0xFFD4EDE3), Color(0xFFFCE4EC),
+    Color(0xFFE3EDF9), Color(0xFFFFF3E0), Color(0xFFE0F4F4),
+  ];
+  return colors[id.hashCode % colors.length];
+}
+
+/// Calcule un % de satisfaction basé sur likeCount (entre 80% et 99%)
+int _likePercent(int likeCount) {
+  if (likeCount <= 0) return 0;
+  // Formule : plus on a de likes, plus le % tend vers 99%
+  final pct = 78 + (likeCount / (likeCount + 30)) * 21;
+  return pct.round().clamp(80, 99);
+}
+
+/// Estime le nombre de clients ayant commandé ce plat
+String _orderCount(int likeCount) {
+  final count = (likeCount * 3.8).toInt();
+  if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}k';
+  return '$count';
 }
 
 class _QuantityControl extends StatelessWidget {
