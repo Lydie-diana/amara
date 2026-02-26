@@ -73,6 +73,29 @@ List<MenuCategory> _menuFromConvex(List<dynamic> items) {
     final cat = d['category'] as String? ?? 'Autres';
     final itemName = d['name'] as String? ?? '';
     final itemTags = (d['tags'] as List?)?.cast<String>() ?? [];
+    // Parser les optionGroups depuis Convex (si présents)
+    final rawGroups = d['optionGroups'] as List?;
+    final optionGroups = rawGroups != null
+        ? rawGroups.map((g) {
+            final group = Map<String, dynamic>.from(g as Map);
+            final rawOpts = group['options'] as List? ?? [];
+            return MenuItemOptionGroup(
+              id: group['id'] as String,
+              title: group['title'] as String,
+              required: group['required'] as bool? ?? false,
+              maxSelections: (group['maxSelections'] as num?)?.toInt() ?? 1,
+              options: rawOpts.map((o) {
+                final opt = Map<String, dynamic>.from(o as Map);
+                return MenuItemOption(
+                  id: opt['id'] as String,
+                  name: opt['name'] as String,
+                  extraPrice: (opt['extraPrice'] as num?)?.toDouble() ?? 0,
+                );
+              }).toList(),
+            );
+          }).toList()
+        : <MenuItemOptionGroup>[];
+
     final item = MenuItem(
       id: d['_id'] as String? ?? '',
       name: itemName,
@@ -83,7 +106,7 @@ List<MenuCategory> _menuFromConvex(List<dynamic> items) {
       categoryId: cat,
       isPopular: (d['isPopular'] as bool?) ?? false,
       likeCount: (d['likeCount'] as num?)?.toInt() ?? (50 + itemName.hashCode.abs() % 450),
-      optionGroups: const [],
+      optionGroups: optionGroups,
     );
     byCategory.putIfAbsent(cat, () => []).add(item);
   }
@@ -251,12 +274,39 @@ List<MenuCategory> _mockMenu(String restaurantId) {
               description: 'Poulet Directeur Général : sauté aux plantains et légumes frais, sauce tomate.',
               price: 4500, imageEmoji: '🍗', imageUrl: AmaraImages.pouletBraise, categoryId: 'cat1',
               isPopular: true, isSpicy: true, likeCount: 287,
+              optionGroups: [
+                MenuItemOptionGroup(
+                  id: 'og1', title: 'Taille de la portion', required: true, maxSelections: 1,
+                  options: [
+                    const MenuItemOption(id: 'o1', name: 'Normal'),
+                    const MenuItemOption(id: 'o2', name: 'Large', extraPrice: 800),
+                  ],
+                ),
+                MenuItemOptionGroup(
+                  id: 'og2', title: 'Suppléments', required: false, maxSelections: 3,
+                  options: [
+                    const MenuItemOption(id: 'o3', name: 'Plantain mûr extra', extraPrice: 300),
+                    const MenuItemOption(id: 'o4', name: 'Avocat', extraPrice: 400),
+                    const MenuItemOption(id: 'o5', name: 'Œuf au plat', extraPrice: 200),
+                  ],
+                ),
+              ],
             ),
             MenuItem(
               id: 'c3', name: 'Eru au Bœuf',
               description: 'Légumes eru mijotés avec bœuf fumé et huile de palme. Servi avec waterfufu.',
               price: 3500, imageEmoji: '🥩', imageUrl: AmaraImages.brochettes, categoryId: 'cat1',
               likeCount: 198,
+              optionGroups: [
+                MenuItemOptionGroup(
+                  id: 'og1', title: 'Accompagnement', required: true, maxSelections: 1,
+                  options: [
+                    const MenuItemOption(id: 'o1', name: 'Waterfufu'),
+                    const MenuItemOption(id: 'o2', name: 'Garri'),
+                    const MenuItemOption(id: 'o3', name: 'Riz blanc', extraPrice: 300),
+                  ],
+                ),
+              ],
             ),
             MenuItem(
               id: 'c4', name: 'Thiéboudienne',
@@ -344,12 +394,48 @@ List<MenuCategory> _mockMenu(String restaurantId) {
               description: 'Poulet mariné au citron et oignons caramélisés. Un classique sénégalais.',
               price: 3500, imageEmoji: '🍗', imageUrl: AmaraImages.pouletBraise, categoryId: 'cat1',
               isPopular: true, likeCount: 356,
+              optionGroups: [
+                MenuItemOptionGroup(
+                  id: 'og1', title: 'Accompagnement', required: true, maxSelections: 1,
+                  options: [
+                    const MenuItemOption(id: 'o1', name: 'Riz blanc'),
+                    const MenuItemOption(id: 'o2', name: 'Fonio', extraPrice: 200),
+                    const MenuItemOption(id: 'o3', name: 'Attiéké', extraPrice: 300),
+                  ],
+                ),
+                MenuItemOptionGroup(
+                  id: 'og2', title: 'Niveau de piment', required: false, maxSelections: 1,
+                  options: [
+                    const MenuItemOption(id: 'o4', name: 'Sans piment'),
+                    const MenuItemOption(id: 'o5', name: 'Piment doux'),
+                    const MenuItemOption(id: 'o6', name: 'Piment fort'),
+                  ],
+                ),
+              ],
             ),
             MenuItem(
               id: 's3', name: 'Maafé',
               description: 'Ragoût de viande à la sauce d\'arachide, servi avec riz blanc.',
               price: 3000, imageEmoji: '🥜', imageUrl: AmaraImages.ragout, categoryId: 'cat1',
               likeCount: 198, isSpicy: true,
+              optionGroups: [
+                MenuItemOptionGroup(
+                  id: 'og1', title: 'Choix de la viande', required: true, maxSelections: 1,
+                  options: [
+                    const MenuItemOption(id: 'o1', name: 'Bœuf'),
+                    const MenuItemOption(id: 'o2', name: 'Agneau', extraPrice: 500),
+                    const MenuItemOption(id: 'o3', name: 'Poulet'),
+                  ],
+                ),
+                MenuItemOptionGroup(
+                  id: 'og2', title: 'Suppléments', required: false, maxSelections: 2,
+                  options: [
+                    const MenuItemOption(id: 'o4', name: 'Banane plantain', extraPrice: 300),
+                    const MenuItemOption(id: 'o5', name: 'Œuf dur', extraPrice: 200),
+                    const MenuItemOption(id: 'o6', name: 'Portion de riz extra', extraPrice: 300),
+                  ],
+                ),
+              ],
             ),
           ],
         ),
@@ -458,12 +544,47 @@ List<MenuCategory> _mockMenu(String restaurantId) {
               description: 'Poulet confit aux citrons confits, olives et coriandre fraîche.',
               price: 4500, imageEmoji: '🍲', imageUrl: AmaraImages.ragout, categoryId: 'cat1',
               isPopular: true, likeCount: 389,
+              optionGroups: [
+                MenuItemOptionGroup(
+                  id: 'og1', title: 'Accompagnement', required: true, maxSelections: 1,
+                  options: [
+                    const MenuItemOption(id: 'o1', name: 'Pain marocain'),
+                    const MenuItemOption(id: 'o2', name: 'Semoule', extraPrice: 300),
+                    const MenuItemOption(id: 'o3', name: 'Riz safrané', extraPrice: 400),
+                  ],
+                ),
+                MenuItemOptionGroup(
+                  id: 'og2', title: 'Extras', required: false, maxSelections: 2,
+                  options: [
+                    const MenuItemOption(id: 'o4', name: 'Olives confites', extraPrice: 200),
+                    const MenuItemOption(id: 'o5', name: 'Harissa maison', extraPrice: 150),
+                    const MenuItemOption(id: 'o6', name: 'Amandes grillées', extraPrice: 250),
+                  ],
+                ),
+              ],
             ),
             MenuItem(
               id: 'm2', name: 'Tagine Agneau Pruneaux',
               description: 'Agneau mijoté aux pruneaux, amandes grillées et miel.',
               price: 5500, imageEmoji: '🥩', imageUrl: AmaraImages.brochettes, categoryId: 'cat1',
               likeCount: 312,
+              optionGroups: [
+                MenuItemOptionGroup(
+                  id: 'og1', title: 'Accompagnement', required: true, maxSelections: 1,
+                  options: [
+                    const MenuItemOption(id: 'o1', name: 'Pain marocain'),
+                    const MenuItemOption(id: 'o2', name: 'Semoule', extraPrice: 300),
+                    const MenuItemOption(id: 'o3', name: 'Riz safrané', extraPrice: 400),
+                  ],
+                ),
+                MenuItemOptionGroup(
+                  id: 'og2', title: 'Taille', required: false, maxSelections: 1,
+                  options: [
+                    const MenuItemOption(id: 'o4', name: 'Portion normale'),
+                    const MenuItemOption(id: 'o5', name: 'Grande portion', extraPrice: 1000),
+                  ],
+                ),
+              ],
             ),
             MenuItem(
               id: 'm3', name: 'Tagine Légumes',
@@ -481,6 +602,24 @@ List<MenuCategory> _mockMenu(String restaurantId) {
               description: 'Semoule fine avec merguez, poulet, agneau et légumes fondants.',
               price: 5000, imageEmoji: '🍚', imageUrl: AmaraImages.couscous, categoryId: 'cat2',
               isPopular: true, likeCount: 445,
+              optionGroups: [
+                MenuItemOptionGroup(
+                  id: 'og1', title: 'Suppléments viande', required: false, maxSelections: 3,
+                  options: [
+                    const MenuItemOption(id: 'o1', name: 'Merguez x2', extraPrice: 400),
+                    const MenuItemOption(id: 'o2', name: 'Cuisse de poulet extra', extraPrice: 500),
+                    const MenuItemOption(id: 'o3', name: 'Brochette d\'agneau', extraPrice: 700),
+                  ],
+                ),
+                MenuItemOptionGroup(
+                  id: 'og2', title: 'Sauces', required: false, maxSelections: 2,
+                  options: [
+                    const MenuItemOption(id: 'o4', name: 'Harissa'),
+                    const MenuItemOption(id: 'o5', name: 'Sauce piquante', extraPrice: 100),
+                    const MenuItemOption(id: 'o6', name: 'Bouillon extra'),
+                  ],
+                ),
+              ],
             ),
             MenuItem(
               id: 'm5', name: 'Couscous Végétarien',
@@ -536,6 +675,24 @@ List<MenuCategory> _mockMenu(String restaurantId) {
               description: 'Ragoût de poulet épicé au berbéré, avec œufs durs. Plat national éthiopien.',
               price: 4000, imageEmoji: '🍗', imageUrl: AmaraImages.injera, categoryId: 'cat1',
               isPopular: true, isSpicy: true, likeCount: 467,
+              optionGroups: [
+                MenuItemOptionGroup(
+                  id: 'og1', title: 'Nombre d\'injera', required: true, maxSelections: 1,
+                  options: [
+                    const MenuItemOption(id: 'o1', name: '2 injera (standard)'),
+                    const MenuItemOption(id: 'o2', name: '4 injera', extraPrice: 300),
+                    const MenuItemOption(id: 'o3', name: '6 injera', extraPrice: 500),
+                  ],
+                ),
+                MenuItemOptionGroup(
+                  id: 'og2', title: 'Accompagnements', required: false, maxSelections: 2,
+                  options: [
+                    const MenuItemOption(id: 'o4', name: 'Salade verte', extraPrice: 200),
+                    const MenuItemOption(id: 'o5', name: 'Ayib (fromage frais)', extraPrice: 300),
+                    const MenuItemOption(id: 'o6', name: 'Gomen (épinards)', extraPrice: 250),
+                  ],
+                ),
+              ],
             ),
             MenuItem(
               id: 'a2', name: 'Tibs de Bœuf',
@@ -613,6 +770,24 @@ List<MenuCategory> _mockMenu(String restaurantId) {
               description: 'Ragoût de poulet mijoté aux épices locales, servi avec attiéké.',
               price: 3500, imageEmoji: '🍗', imageUrl: AmaraImages.pouletBraise, categoryId: 'cat1',
               isPopular: true, isSpicy: true, likeCount: 201,
+              optionGroups: [
+                MenuItemOptionGroup(
+                  id: 'og1', title: 'Accompagnement', required: true, maxSelections: 1,
+                  options: [
+                    const MenuItemOption(id: 'o1', name: 'Attiéké'),
+                    const MenuItemOption(id: 'o2', name: 'Riz blanc', extraPrice: 200),
+                    const MenuItemOption(id: 'o3', name: 'Foutou banane', extraPrice: 300),
+                  ],
+                ),
+                MenuItemOptionGroup(
+                  id: 'og2', title: 'Niveau de piment', required: false, maxSelections: 1,
+                  options: [
+                    const MenuItemOption(id: 'o4', name: 'Doux'),
+                    const MenuItemOption(id: 'o5', name: 'Moyen'),
+                    const MenuItemOption(id: 'o6', name: 'Très piquant'),
+                  ],
+                ),
+              ],
             ),
             MenuItem(
               id: 'i3', name: 'Foutou Banane + Sauce Graine',
@@ -628,6 +803,24 @@ List<MenuCategory> _mockMenu(String restaurantId) {
               id: 'i4', name: 'Poulet Braisé',
               description: 'Demi-poulet mariné et braisé au feu de bois, servi avec alloco.',
               price: 4000, imageEmoji: '🍗', imageUrl: AmaraImages.pouletBraise, categoryId: 'cat2', likeCount: 189,
+              optionGroups: [
+                MenuItemOptionGroup(
+                  id: 'og1', title: 'Accompagnement', required: true, maxSelections: 1,
+                  options: [
+                    const MenuItemOption(id: 'o1', name: 'Alloco (plantain frit)'),
+                    const MenuItemOption(id: 'o2', name: 'Attiéké'),
+                    const MenuItemOption(id: 'o3', name: 'Frites', extraPrice: 300),
+                  ],
+                ),
+                MenuItemOptionGroup(
+                  id: 'og2', title: 'Sauces', required: false, maxSelections: 2,
+                  options: [
+                    const MenuItemOption(id: 'o4', name: 'Sauce piment'),
+                    const MenuItemOption(id: 'o5', name: 'Mayonnaise'),
+                    const MenuItemOption(id: 'o6', name: 'Sauce tomate-oignon'),
+                  ],
+                ),
+              ],
             ),
             MenuItem(
               id: 'i5', name: 'Brochettes de Bœuf',
