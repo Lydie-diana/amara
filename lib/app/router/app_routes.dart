@@ -29,6 +29,14 @@ class AppRoutes {
   static const String orderTracking = '/order/:id/tracking';
   static const String orderTrackingPath = '/order';
 
+  // Favorites
+  static const String favorites = '/favorites';
+
   // Menu item detail
   static const String menuItemDetail = '/menu-item';
+
+  // Profile sub-pages
+  static const String personalInfo = '/profile/personal-info';
+  static const String myAddresses = '/profile/addresses';
+  static const String helpFaq = '/profile/help-faq';
 }

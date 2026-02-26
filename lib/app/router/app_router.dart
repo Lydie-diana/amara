@@ -16,6 +16,10 @@ import '../../features/cart/cart_detail_screen.dart';
 import '../../features/checkout/checkout_screen.dart';
 import '../../features/order_confirmation/order_confirmation_screen.dart';
 import '../../features/order_tracking/order_tracking_screen.dart';
+import '../../features/favorites/favorites_screen.dart';
+import '../../features/profile/personal_info_screen.dart';
+import '../../features/profile/my_addresses_screen.dart';
+import '../../features/profile/help_faq_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -134,6 +138,38 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           );
         },
+      ),
+
+      // Favorites
+      GoRoute(
+        path: AppRoutes.favorites,
+        pageBuilder: (context, state) => _buildSlideUpPage(
+          state: state,
+          child: const FavoritesScreen(),
+        ),
+      ),
+
+      // Profile sub-pages
+      GoRoute(
+        path: AppRoutes.personalInfo,
+        pageBuilder: (context, state) => _buildSlideUpPage(
+          state: state,
+          child: const PersonalInfoScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.myAddresses,
+        pageBuilder: (context, state) => _buildSlideUpPage(
+          state: state,
+          child: const MyAddressesScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.helpFaq,
+        pageBuilder: (context, state) => _buildSlideUpPage(
+          state: state,
+          child: const HelpFaqScreen(),
+        ),
       ),
 
       // Order tracking
