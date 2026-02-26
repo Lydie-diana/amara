@@ -1,92 +1,33 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
 import '../../app/router/app_routes.dart';
+import '../shell/main_shell.dart';
 
-class OrderConfirmationScreen extends StatefulWidget {
+class OrderConfirmationScreen extends ConsumerWidget {
   final String orderId;
+  final String restaurantName;
+  final List<Map<String, dynamic>> orderItems;
 
-  const OrderConfirmationScreen({super.key, required this.orderId});
-
-  @override
-  State<OrderConfirmationScreen> createState() =>
-      _OrderConfirmationScreenState();
-}
-
-class _OrderConfirmationScreenState extends State<OrderConfirmationScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _checkController;
-  late AnimationController _pulseController;
-
-  // Étapes de suivi simulées
-  final List<_TrackingStep> _steps = [
-    _TrackingStep(
-      icon: Icons.receipt_long_rounded,
-      label: 'Commande reçue',
-      sublabel: 'Votre commande a été confirmée',
-      isCompleted: true,
-      time: 'Maintenant',
-    ),
-    _TrackingStep(
-      icon: Icons.restaurant_rounded,
-      label: 'En préparation',
-      sublabel: 'Le restaurant prépare votre commande',
-      isCompleted: false,
-      isActive: true,
-      time: '~10 min',
-    ),
-    _TrackingStep(
-      icon: Icons.delivery_dining_rounded,
-      label: 'En route',
-      sublabel: 'Votre livreur est en chemin',
-      isCompleted: false,
-      time: '~25 min',
-    ),
-    _TrackingStep(
-      icon: Icons.check_circle_rounded,
-      label: 'Livré !',
-      sublabel: 'Bon appétit 🎉',
-      isCompleted: false,
-      time: '~35 min',
-    ),
-  ];
+  const OrderConfirmationScreen({
+    super.key,
+    required this.orderId,
+    this.restaurantName = 'Restaurant',
+    this.orderItems = const [],
+  });
 
   @override
-  void initState() {
-    super.initState();
-    _checkController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat(reverse: true);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final bottom = MediaQuery.of(context).padding.bottom;
 
-    // Lancer l'animation après un court délai
-    Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) {
-        _checkController.forward();
-        HapticFeedback.heavyImpact();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _checkController.dispose();
-    _pulseController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AmaraColors.bg,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -95,443 +36,394 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen>
                 physics: const BouncingScrollPhysics(),
                 child: Column(
                   children: [
-                    // ── Section succès ────────────────────────────────────
-                    _buildSuccessSection(context),
-
-                    // ── Numéro de commande ────────────────────────────────
-                    _buildOrderId(context),
-
-                    // ── Temps estimé ──────────────────────────────────────
-                    _buildEstimatedTime(context),
-
-                    // ── Tracking steps ────────────────────────────────────
-                    _buildTrackingSteps(context),
-
-                    // ── Info livreur ──────────────────────────────────────
-                    _buildDriverCard(context),
-
+                    _HeroSection(restaurantName: restaurantName),
+                    _OrderIdSection(orderId: orderId),
+                    _DetailCard(orderItems: orderItems),
                     const SizedBox(height: 24),
                   ],
                 ),
               ),
             ),
-
-            // ── Boutons d'action ──────────────────────────────────────────
-            _buildActions(context),
+            _Buttons(
+              bottom: bottom,
+              orderId: orderId,
+              onBackHome: () {
+                ref.read(shellIndexProvider.notifier).state = 0;
+                context.go(AppRoutes.home);
+              },
+            ),
           ],
         ),
       ),
     );
   }
+}
 
-  // ─── Section succès (cercle animé + checkmark) ─────────────────────────────
+// ─── Hero : confettis + badge rose + texte ──────────────────────────────────
 
-  Widget _buildSuccessSection(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 40, 20, 32),
-      color: AmaraColors.bg,
-      child: Column(
+class _HeroSection extends StatefulWidget {
+  final String restaurantName;
+  const _HeroSection({required this.restaurantName});
+
+  @override
+  State<_HeroSection> createState() => _HeroSectionState();
+}
+
+class _HeroSectionState extends State<_HeroSection>
+    with TickerProviderStateMixin {
+  late AnimationController _badgeController;
+  late AnimationController _confettiController;
+
+  @override
+  void initState() {
+    super.initState();
+    _badgeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _confettiController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    );
+
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (mounted) {
+        _badgeController.forward();
+        _confettiController.forward();
+        HapticFeedback.heavyImpact();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _badgeController.dispose();
+    _confettiController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 320,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          // Cercle animé avec checkmark
           AnimatedBuilder(
-            animation: _pulseController,
-            builder: (context, child) {
-              return Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Cercle pulse externe
-                  Container(
-                    width: 130 + (_pulseController.value * 20),
-                    height: 130 + (_pulseController.value * 20),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AmaraColors.success
-                          .withValues(alpha: 0.08 - _pulseController.value * 0.07),
-                    ),
-                  ),
-                  // Cercle moyen
-                  Container(
-                    width: 110,
-                    height: 110,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AmaraColors.success.withValues(alpha: 0.12),
-                    ),
-                  ),
-                  child!,
-                ],
+            animation: _confettiController,
+            builder: (context, _) {
+              return CustomPaint(
+                size: const Size(double.infinity, 320),
+                painter: _ConfettiPainter(
+                  progress: _confettiController.value,
+                ),
               );
             },
-            child: AnimatedBuilder(
-              animation: _checkController,
-              builder: (context, _) {
-                return Container(
-                  width: 88,
-                  height: 88,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AmaraColors.success,
-                  ),
-                  child: Center(
-                    child: _DrawCheckmark(
-                      progress: _checkController.value,
-                      color: Colors.white,
-                      size: 40,
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 20),
+              AnimatedBuilder(
+                animation: _badgeController,
+                builder: (context, child) {
+                  final scale = _badgeController.value < 0.5
+                      ? _badgeController.value * 2.4
+                      : 1.0 +
+                          (1.0 -
+                                  ((_badgeController.value - 0.5) * 2)
+                                      .clamp(0.0, 1.0)) *
+                              0.2;
+                  return Transform.scale(
+                    scale: scale.clamp(0.0, 1.2),
+                    child: child,
+                  );
+                },
+                child: SizedBox(
+                  width: 120,
+                  height: 120,
+                  child: CustomPaint(
+                    painter: _BadgePainter(),
+                    child: const Center(
+                      child: Icon(
+                        Icons.check_rounded,
+                        color: Colors.white,
+                        size: 48,
+                      ),
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'Commande envoyee !',
+                style: AmaraTextStyles.h1.copyWith(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: AmaraColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: Text(
+                  'Merci d\'avoir commande chez ${widget.restaurantName}. Notre cuisine prepare votre repas. Nous vous informerons des qu\'il sera pret.',
+                  style: AmaraTextStyles.bodySmall.copyWith(
+                    color: AmaraColors.textSecondary,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
           ),
-
-          const SizedBox(height: 24),
-
-          Text(
-            'Commande confirmée !',
-            style: AmaraTextStyles.h1.copyWith(
-              color: AmaraColors.textPrimary,
-            ),
-            textAlign: TextAlign.center,
-          ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.3, end: 0),
-
-          const SizedBox(height: 8),
-
-          Text(
-            'Votre commande est en cours de préparation.\nNous vous notifierons dès qu\'elle est en route !',
-            style: AmaraTextStyles.bodySmall.copyWith(
-              color: AmaraColors.textSecondary,
-              height: 1.6,
-            ),
-            textAlign: TextAlign.center,
-          ).animate().fadeIn(delay: 500.ms),
         ],
       ),
     );
   }
+}
 
-  // ─── Numéro de commande ────────────────────────────────────────────────────
+// ─── Order ID ───────────────────────────────────────────────────────────────
 
-  Widget _buildOrderId(BuildContext context) {
+class _OrderIdSection extends StatelessWidget {
+  final String orderId;
+  const _OrderIdSection({required this.orderId});
+
+  @override
+  Widget build(BuildContext context) {
+    final displayId =
+        orderId.length > 12 ? orderId.substring(0, 12).toUpperCase() : orderId.toUpperCase();
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          'N DE COMMANDE\n#$displayId',
+          style: AmaraTextStyles.labelLarge.copyWith(
+            fontWeight: FontWeight.w800,
+            color: AmaraColors.textPrimary,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Detail Card ────────────────────────────────────────────────────────────
+
+class _DetailCard extends StatelessWidget {
+  final List<Map<String, dynamic>> orderItems;
+  const _DetailCard({required this.orderItems});
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AmaraColors.bgCard,
+          color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AmaraColors.divider),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AmaraColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.tag_rounded,
-                  color: AmaraColors.primary, size: 20),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Numéro de commande',
-                    style: AmaraTextStyles.caption
-                        .copyWith(color: AmaraColors.muted),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '#${widget.orderId.toUpperCase()}',
-                    style: AmaraTextStyles.labelMedium.copyWith(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                ],
+            Text(
+              'Nom du destinataire',
+              style: AmaraTextStyles.caption.copyWith(
+                color: AmaraColors.textSecondary,
               ),
             ),
-            GestureDetector(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                Clipboard.setData(
-                    ClipboardData(text: '#${widget.orderId.toUpperCase()}'));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: const Text('Numéro copié !'),
-                    duration: const Duration(seconds: 1),
-                    behavior: SnackBarBehavior.floating,
-                    backgroundColor: AmaraColors.dark,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                  ),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AmaraColors.bgAlt,
-                  borderRadius: BorderRadius.circular(10),
+            const SizedBox(height: 4),
+            Text(
+              'Client Amara',
+              style: AmaraTextStyles.labelLarge.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AmaraColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Detail de la commande',
+              style: AmaraTextStyles.labelMedium.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AmaraColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            if (orderItems.isNotEmpty)
+              ...orderItems.map((item) => _OrderItemRow(item: item))
+            else
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Text(
+                  'Aucun article',
+                  style: AmaraTextStyles.bodySmall
+                      .copyWith(color: AmaraColors.muted),
                 ),
-                child: const Icon(Icons.copy_rounded,
-                    size: 16, color: AmaraColors.textSecondary),
               ),
-            ),
           ],
         ),
       ),
-    ).animate().fadeIn(delay: 600.ms).slideY(begin: 0.2, end: 0);
+    );
   }
+}
 
-  // ─── Temps estimé ──────────────────────────────────────────────────────────
+class _OrderItemRow extends StatelessWidget {
+  final Map<String, dynamic> item;
+  const _OrderItemRow({required this.item});
 
-  Widget _buildEstimatedTime(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
+    final name = item['name'] as String? ?? '';
+    final imageUrl = item['imageUrl'] as String?;
+    final emoji = item['imageEmoji'] as String? ?? '';
+    final quantity = item['quantity'] as int? ?? 1;
+    final unitPrice = (item['unitPrice'] as num?)?.toDouble() ?? 0;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFFF3CD),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFF39C12).withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: AmaraColors.warning.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.access_time_rounded,
-                  color: AmaraColors.warning, size: 22),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Temps estimé de livraison',
-                    style: AmaraTextStyles.caption.copyWith(
-                        color: const Color(0xFF856404)),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    '30 – 45 minutes',
-                    style: AmaraTextStyles.labelMedium.copyWith(
-                      color: const Color(0xFF533F03),
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    ).animate().fadeIn(delay: 700.ms).slideY(begin: 0.2, end: 0);
-  }
-
-  // ─── Tracking steps ────────────────────────────────────────────────────────
-
-  Widget _buildTrackingSteps(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
         children: [
-          Row(
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: SizedBox(
+              width: 60,
+              height: 60,
+              child: imageUrl != null
+                  ? Image.network(
+                      imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => Container(
+                        color: AmaraColors.bgAlt,
+                        child: Center(
+                          child: Text(emoji,
+                              style: const TextStyle(fontSize: 28)),
+                        ),
+                      ),
+                    )
+                  : Container(
+                      color: AmaraColors.bgAlt,
+                      child: Center(
+                        child:
+                            Text(emoji, style: const TextStyle(fontSize: 28)),
+                      ),
+                    ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              name,
+              style: AmaraTextStyles.labelMedium.copyWith(
+                fontWeight: FontWeight.w600,
+                color: AmaraColors.textPrimary,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Container(
-                width: 4,
-                height: 18,
-                decoration: BoxDecoration(
-                  color: AmaraColors.primary,
-                  borderRadius: BorderRadius.circular(2),
+              Text(
+                '${unitPrice.toStringAsFixed(0)} F',
+                style: AmaraTextStyles.labelMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AmaraColors.textPrimary,
                 ),
               ),
-              const SizedBox(width: 8),
-              Text('Suivi de commande',
-                  style: AmaraTextStyles.labelMedium
-                      .copyWith(fontWeight: FontWeight.w700)),
+              const SizedBox(height: 2),
+              Text(
+                '${quantity}Pcs',
+                style: AmaraTextStyles.caption.copyWith(
+                  color: AmaraColors.textSecondary,
+                ),
+              ),
             ],
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AmaraColors.bgCard,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AmaraColors.divider),
-            ),
-            child: Column(
-              children: List.generate(_steps.length, (index) {
-                final step = _steps[index];
-                final isLast = index == _steps.length - 1;
-                return _TrackingStepTile(
-                  step: step,
-                  isLast: isLast,
-                  animDelay: Duration(milliseconds: 800 + index * 120),
-                );
-              }),
-            ),
           ),
         ],
       ),
-    ).animate().fadeIn(delay: 800.ms).slideY(begin: 0.15, end: 0);
+    );
   }
+}
 
-  // ─── Carte livreur ─────────────────────────────────────────────────────────
+// ─── Buttons ────────────────────────────────────────────────────────────────
 
-  Widget _buildDriverCard(BuildContext context) {
+class _Buttons extends StatelessWidget {
+  final double bottom;
+  final String orderId;
+  final VoidCallback onBackHome;
+
+  const _Buttons({
+    required this.bottom,
+    required this.orderId,
+    required this.onBackHome,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AmaraColors.bgCard,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AmaraColors.divider),
-        ),
-        child: Row(
-          children: [
-            // Avatar livreur
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: AmaraColors.bgAlt,
-                shape: BoxShape.circle,
-              ),
-              child: const Center(
-                child: Text('🛵', style: TextStyle(fontSize: 26)),
-              ),
-            ),
-            const SizedBox(width: 14),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Votre livreur',
-                    style: AmaraTextStyles.caption
-                        .copyWith(color: AmaraColors.muted),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Assignation en cours...',
-                    style: AmaraTextStyles.labelMedium.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Vous serez notifié quand un livreur\naura pris en charge votre commande',
-                    style: AmaraTextStyles.caption
-                        .copyWith(color: AmaraColors.textSecondary),
-                  ),
-                ],
-              ),
-            ),
-
-            // Bouton appel (désactivé pour l'instant)
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: AmaraColors.bgAlt,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(Icons.phone_rounded,
-                  color: AmaraColors.muted, size: 20),
-            ),
-          ],
-        ),
-      ),
-    ).animate().fadeIn(delay: 1100.ms).slideY(begin: 0.15, end: 0);
-  }
-
-  // ─── Boutons d'action ──────────────────────────────────────────────────────
-
-  Widget _buildActions(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-          20, 12, 20, MediaQuery.of(context).padding.bottom + 12),
-      decoration: BoxDecoration(
-        color: AmaraColors.bgCard,
-        border: Border(top: BorderSide(color: AmaraColors.divider)),
-      ),
+      padding: EdgeInsets.fromLTRB(20, 12, 20, bottom + 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Bouton principal : Suivre la commande
           GestureDetector(
             onTap: () {
               HapticFeedback.mediumImpact();
-              context.go('/order/${widget.orderId}/tracking');
+              context.push('/order/$orderId/tracking');
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: AmaraColors.primary, width: 1.5),
+              ),
+              child: Center(
+                child: Text(
+                  'Suivre ma commande',
+                  style: AmaraTextStyles.labelLarge.copyWith(
+                    color: AmaraColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              onBackHome();
             },
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 16),
               decoration: BoxDecoration(
                 color: AmaraColors.primary,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(30),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.location_on_rounded,
-                      color: Colors.white, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Suivre ma commande',
-                    style: AmaraTextStyles.labelMedium.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
+              child: Center(
+                child: Text(
+                  'Retour a l\'accueil',
+                  style: AmaraTextStyles.labelLarge.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
                   ),
-                ],
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          // Bouton secondaire : Retour à l'accueil
-          GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              context.go(AppRoutes.home);
-            },
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              decoration: BoxDecoration(
-                color: AmaraColors.bgAlt,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AmaraColors.divider),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.home_rounded,
-                      color: AmaraColors.textPrimary, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Retour à l\'accueil',
-                    style: AmaraTextStyles.labelMedium.copyWith(
-                      color: AmaraColors.textPrimary,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
@@ -541,203 +433,124 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen>
   }
 }
 
-// ─── Tracking Step Tile ────────────────────────────────────────────────────────
+// ─── Badge painter (forme sceau/rosette rose) ─────────────────────────────────
 
-class _TrackingStepTile extends StatelessWidget {
-  final _TrackingStep step;
-  final bool isLast;
-  final Duration animDelay;
+class _BadgePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
 
-  const _TrackingStepTile({
-    required this.step,
-    required this.isLast,
-    required this.animDelay,
-  });
+    final shadowPaint = Paint()
+      ..color = const Color(0xFFE62050).withValues(alpha: 0.25)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
+    canvas.drawCircle(
+        center + const Offset(0, 4), radius * 0.85, shadowPaint);
+
+    final path = Path();
+    const waveCount = 14;
+    final outerRadius = radius;
+    final innerRadius = radius * 0.82;
+
+    for (int i = 0; i < waveCount * 2; i++) {
+      final angle = (i * pi) / waveCount - pi / 2;
+      final r = i.isEven ? outerRadius : innerRadius;
+      final x = center.dx + r * cos(angle);
+      final y = center.dy + r * sin(angle);
+      if (i == 0) {
+        path.moveTo(x, y);
+      } else {
+        path.lineTo(x, y);
+      }
+    }
+    path.close();
+
+    final paint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0xFFFF6B8A),
+          Color(0xFFE62050),
+        ],
+      ).createShader(Rect.fromCircle(center: center, radius: radius));
+
+    canvas.drawPath(path, paint);
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Icône + ligne verticale
-        Column(
-          children: [
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: step.isCompleted
-                    ? AmaraColors.success
-                    : step.isActive
-                        ? AmaraColors.primary
-                        : AmaraColors.bgAlt,
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: step.isCompleted
-                      ? AmaraColors.success
-                      : step.isActive
-                          ? AmaraColors.primary
-                          : AmaraColors.divider,
-                  width: 2,
-                ),
-              ),
-              child: Icon(
-                step.isCompleted ? Icons.check_rounded : step.icon,
-                size: 18,
-                color: step.isCompleted
-                    ? Colors.white
-                    : step.isActive
-                        ? Colors.white
-                        : AmaraColors.muted,
-              ),
-            ),
-            if (!isLast)
-              Container(
-                width: 2,
-                height: 32,
-                margin: const EdgeInsets.symmetric(vertical: 4),
-                color: step.isCompleted
-                    ? AmaraColors.success
-                    : AmaraColors.divider,
-              ),
-          ],
-        ),
-
-        const SizedBox(width: 14),
-
-        // Texte
-        Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(top: 6, bottom: isLast ? 0 : 28),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        step.label,
-                        style: AmaraTextStyles.labelSmall.copyWith(
-                          color: step.isCompleted || step.isActive
-                              ? AmaraColors.textPrimary
-                              : AmaraColors.muted,
-                          fontWeight: step.isActive
-                              ? FontWeight.w700
-                              : FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        step.sublabel,
-                        style: AmaraTextStyles.caption.copyWith(
-                          color: step.isCompleted || step.isActive
-                              ? AmaraColors.textSecondary
-                              : AmaraColors.muted,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Text(
-                  step.time,
-                  style: AmaraTextStyles.caption.copyWith(
-                    color: step.isActive
-                        ? AmaraColors.primary
-                        : AmaraColors.muted,
-                    fontWeight:
-                        step.isActive ? FontWeight.w700 : FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    ).animate().fadeIn(delay: animDelay).slideX(begin: 0.1, end: 0);
-  }
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// ─── Modèle step tracking ──────────────────────────────────────────────────────
+// ─── Confetti painter ─────────────────────────────────────────────────────────
 
-class _TrackingStep {
-  final IconData icon;
-  final String label;
-  final String sublabel;
-  final bool isCompleted;
-  final bool isActive;
-  final String time;
-
-  const _TrackingStep({
-    required this.icon,
-    required this.label,
-    required this.sublabel,
-    required this.time,
-    this.isCompleted = false,
-    this.isActive = false,
-  });
-}
-
-// ─── Checkmark dessiné à la main ──────────────────────────────────────────────
-
-class _DrawCheckmark extends StatelessWidget {
+class _ConfettiPainter extends CustomPainter {
   final double progress;
-  final Color color;
-  final double size;
 
-  const _DrawCheckmark({
-    required this.progress,
-    required this.color,
-    required this.size,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: Size(size, size),
-      painter: _CheckmarkPainter(progress: progress, color: color),
-    );
-  }
-}
-
-class _CheckmarkPainter extends CustomPainter {
-  final double progress;
-  final Color color;
-
-  _CheckmarkPainter({required this.progress, required this.color});
+  _ConfettiPainter({required this.progress});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 3.5
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
+    if (progress == 0) return;
 
-    // Points du checkmark
-    final p1 = Offset(size.width * 0.2, size.height * 0.55);
-    final p2 = Offset(size.width * 0.43, size.height * 0.75);
-    final p3 = Offset(size.width * 0.8, size.height * 0.28);
+    final random = Random(42);
+    const count = 40;
 
-    // Longueurs des segments
-    final seg1 = (p2 - p1).distance;
-    final seg2 = (p3 - p2).distance;
-    final total = seg1 + seg2;
+    final colors = [
+      const Color(0xFFE62050),
+      const Color(0xFF4FC3F7),
+      const Color(0xFFFFD54F),
+      const Color(0xFF81C784),
+      const Color(0xFFBA68C8),
+      const Color(0xFFFF8A65),
+      const Color(0xFF4DB6AC),
+    ];
 
-    final drawn = progress * total;
+    for (int i = 0; i < count; i++) {
+      final color = colors[random.nextInt(colors.length)];
+      final startX = random.nextDouble() * size.width;
+      const startY = -20.0;
+      final endX = startX + (random.nextDouble() - 0.5) * 120;
+      final endY = size.height * (0.3 + random.nextDouble() * 0.7);
 
-    if (drawn <= seg1) {
-      // Premier segment partiellement dessiné
-      final t = drawn / seg1;
-      canvas.drawLine(p1, Offset.lerp(p1, p2, t)!, paint);
-    } else {
-      // Premier segment complet + deuxième partiellement
-      canvas.drawLine(p1, p2, paint);
-      final t = (drawn - seg1) / seg2;
-      canvas.drawLine(p2, Offset.lerp(p2, p3, t)!, paint);
+      final x = startX + (endX - startX) * progress;
+      final y = startY + (endY - startY) * progress;
+
+      final opacity = progress < 0.7 ? 1.0 : (1.0 - progress) / 0.3;
+
+      final paint = Paint()
+        ..color = color.withValues(alpha: opacity.clamp(0.0, 1.0));
+
+      final shape = random.nextInt(3);
+      if (shape == 0) {
+        final w = 4.0 + random.nextDouble() * 6;
+        final h = 8.0 + random.nextDouble() * 10;
+        canvas.save();
+        canvas.translate(x, y);
+        canvas.rotate(progress * pi * 2 * (random.nextDouble() - 0.5));
+        canvas.drawRect(
+            Rect.fromCenter(center: Offset.zero, width: w, height: h), paint);
+        canvas.restore();
+      } else if (shape == 1) {
+        canvas.drawCircle(
+            Offset(x, y), 3 + random.nextDouble() * 3, paint);
+      } else {
+        final s = 6.0 + random.nextDouble() * 6;
+        final p = Path()
+          ..moveTo(x, y - s)
+          ..lineTo(x - s * 0.7, y + s * 0.5)
+          ..lineTo(x + s * 0.7, y + s * 0.5)
+          ..close();
+        canvas.save();
+        canvas.translate(x, y);
+        canvas.rotate(progress * pi * (random.nextDouble() - 0.5));
+        canvas.translate(-x, -y);
+        canvas.drawPath(p, paint);
+        canvas.restore();
+      }
     }
   }
 
   @override
-  bool shouldRepaint(_CheckmarkPainter old) => old.progress != progress;
+  bool shouldRepaint(_ConfettiPainter old) => old.progress != progress;
 }
