@@ -117,6 +117,9 @@ class _RestaurantDetailScreenState
       });
     final topItems = allItems.take(5).toList();
 
+    // Total clients = somme des orderCount de tous les plats (dédupliqué par plat)
+    final totalClients = allItems.fold<int>(0, (sum, item) => sum + item.orderCount);
+
     return CustomScrollView(
       controller: _scrollController,
       physics: const BouncingScrollPhysics(),
@@ -126,7 +129,7 @@ class _RestaurantDetailScreenState
 
         // ── Infos restaurant ────────────────────────────────────────────────
         SliverToBoxAdapter(
-          child: RestaurantInfoHeader(restaurant: restaurant)
+          child: RestaurantInfoHeader(restaurant: restaurant, totalClients: totalClients)
               .animate()
               .fadeIn(duration: 400.ms),
         ),

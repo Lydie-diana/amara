@@ -7,7 +7,8 @@ import '../../../app/models/restaurant_model.dart';
 /// Header info restaurant — identité + infos dépliables.
 class RestaurantInfoHeader extends StatefulWidget {
   final Restaurant restaurant;
-  const RestaurantInfoHeader({super.key, required this.restaurant});
+  final int totalClients;
+  const RestaurantInfoHeader({super.key, required this.restaurant, this.totalClients = 0});
 
   @override
   State<RestaurantInfoHeader> createState() => _RestaurantInfoHeaderState();
@@ -29,7 +30,7 @@ class _RestaurantInfoHeaderState extends State<RestaurantInfoHeader> {
         _SectionDivider(),
 
         // ── Métriques (toujours visibles) ─────────────────────────────────
-        _MetricsBlock(restaurant: r),
+        _MetricsBlock(restaurant: r, totalClients: widget.totalClients),
 
         _SectionDivider(),
 
@@ -177,6 +178,25 @@ class _IdentityBlock extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
 
+          // Téléphone
+          if (restaurant.phone.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(Icons.phone_rounded,
+                    size: 14, color: AmaraColors.success),
+                const SizedBox(width: 6),
+                Text(
+                  restaurant.phone,
+                  style: AmaraTextStyles.bodySmall.copyWith(
+                    color: AmaraColors.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ],
+
           // Badge "déjà commandé" discret
           if (restaurant.hasOrdered) ...[
             const SizedBox(height: 12),
@@ -206,7 +226,13 @@ class _IdentityBlock extends StatelessWidget {
 
 class _MetricsBlock extends StatelessWidget {
   final Restaurant restaurant;
-  const _MetricsBlock({required this.restaurant});
+  final int totalClients;
+  const _MetricsBlock({required this.restaurant, this.totalClients = 0});
+
+  String _formatClients(int count) {
+    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}k';
+    return '$count';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -234,6 +260,15 @@ class _MetricsBlock extends StatelessWidget {
             label: 'Avis',
             icon: Icons.reviews_rounded,
             iconColor: const Color(0xFF80E5A8),
+            onDark: true,
+          ),
+          _MetricDivider(onDark: true),
+          // Nombre total de clients
+          _Metric(
+            value: _formatClients(totalClients),
+            label: 'Clients',
+            icon: Icons.people_alt_rounded,
+            iconColor: const Color(0xFF80D4FF),
             onDark: true,
           ),
           _MetricDivider(onDark: true),

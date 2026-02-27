@@ -8,20 +8,6 @@ import '../../../app/models/restaurant_model.dart';
 import '../../../app/providers/favorites_provider.dart';
 import '../../../app/router/app_routes.dart';
 
-// Distances simulées (identique à l'Explorer)
-const _mockDistances = {
-  '1': 0.8, '2': 1.2, '3': 2.5, '4': 3.1, '5': 4.0, '6': 5.3,
-};
-
-String _distanceLabel(String id) {
-  double d;
-  if (_mockDistances.containsKey(id)) {
-    d = _mockDistances[id]!;
-  } else {
-    d = 0.5 + (id.hashCode.abs() % 80) * 0.1;
-  }
-  return d < 1 ? '${(d * 1000).toInt()} m' : '${d.toStringAsFixed(1)} km';
-}
 
 class RestaurantCard extends StatelessWidget {
   final Restaurant restaurant;
@@ -89,30 +75,6 @@ class RestaurantCard extends StatelessWidget {
                               Colors.transparent,
                             ],
                           ),
-                        ),
-                      ),
-                    ),
-                    // Distance (bas gauche)
-                    Positioned(
-                      bottom: 10, left: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.55),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.location_on_rounded,
-                                color: Colors.white, size: 11),
-                            const SizedBox(width: 3),
-                            Text(_distanceLabel(restaurant.id),
-                                style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600)),
-                          ],
                         ),
                       ),
                     ),
@@ -343,29 +305,6 @@ class RestaurantCard extends StatelessWidget {
                                 Colors.transparent,
                               ],
                             ),
-                          ),
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 8, left: 10,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.55),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.location_on_rounded,
-                                  color: Colors.white, size: 10),
-                              const SizedBox(width: 2),
-                              Text(_distanceLabel(restaurant.id),
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600)),
-                            ],
                           ),
                         ),
                       ),

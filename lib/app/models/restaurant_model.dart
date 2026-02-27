@@ -84,7 +84,7 @@ class Restaurant {
     required this.minOrder,
     this.isFeatured = false,
     this.tags = const [],
-    this.likePercent = 95,
+    this.likePercent = 0,
     this.totalCustomers = 0,
     this.hasOrdered = false,
     this.paymentMethods = const ['Mobile Money', 'Cash'],
@@ -112,7 +112,7 @@ class Restaurant {
       phone: json['phone'] as String? ?? '',
       minOrder: (json['minOrder'] as num?)?.toDouble() ?? 0.0,
       tags: List<String>.from(json['tags'] as List? ?? []),
-      likePercent: (json['likePercent'] as num?)?.toInt() ?? 95,
+      likePercent: (json['likePercent'] as num?)?.toInt() ?? 0,
       totalCustomers: (json['totalCustomers'] as num?)?.toInt() ?? 0,
       hasOrdered: json['hasOrdered'] as bool? ?? false,
       paymentMethods:
@@ -235,6 +235,9 @@ class MenuItem {
   String get formattedPrice => '${price.toStringAsFixed(0)} F';
 
   bool get hasStats => totalRatings > 0 || orderCount > 0;
+
+  /// Pourcentage de satisfaction dérivé de la note moyenne (rating/5 * 100)
+  int get likePercent => totalRatings > 0 ? (rating / 5 * 100).round() : 0;
 
   String get formattedOrderCount {
     if (orderCount >= 1000) return '${(orderCount / 1000).toStringAsFixed(1)}k';

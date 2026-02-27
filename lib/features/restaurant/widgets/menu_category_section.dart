@@ -167,34 +167,34 @@ class _MenuItemTile extends ConsumerWidget {
 
                     const SizedBox(height: 6),
 
-                    // Note + nb clients
+                    // % like + nb clients
                     if (item.hasStats)
                       Row(
                         children: [
-                          if (item.totalRatings > 0)
+                          if (item.likePercent > 0)
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFF39C12).withValues(alpha: 0.12),
+                                color: const Color(0xFFE74C3C).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(Icons.star_rounded,
-                                      size: 10, color: Color(0xFFF39C12)),
+                                  const Icon(Icons.thumb_up_rounded,
+                                      size: 10, color: Color(0xFFE74C3C)),
                                   const SizedBox(width: 2),
                                   Text(
-                                    item.rating.toStringAsFixed(1),
+                                    '${item.likePercent}%',
                                     style: AmaraTextStyles.caption.copyWith(
-                                        color: const Color(0xFFF39C12),
+                                        color: const Color(0xFFE74C3C),
                                         fontWeight: FontWeight.w800,
                                         fontSize: 9),
                                   ),
                                 ],
                               ),
                             ),
-                          if (item.totalRatings > 0 && item.orderCount > 0)
+                          if (item.likePercent > 0 && item.orderCount > 0)
                             const SizedBox(width: 6),
                           if (item.orderCount > 0) ...[
                             const Icon(Icons.people_alt_rounded,
