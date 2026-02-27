@@ -16,6 +16,7 @@ import '../../features/cart/cart_detail_screen.dart';
 import '../../features/checkout/checkout_screen.dart';
 import '../../features/order_confirmation/order_confirmation_screen.dart';
 import '../../features/order_tracking/order_tracking_screen.dart';
+import '../../features/review/review_screen.dart';
 import '../../features/favorites/favorites_screen.dart';
 import '../../features/profile/personal_info_screen.dart';
 import '../../features/profile/my_addresses_screen.dart';
@@ -164,6 +165,24 @@ final routerProvider = Provider<GoRouter>((ref) {
           return _buildSlideUpPage(
             state: state,
             child: OrderTrackingScreen(orderId: id),
+          );
+        },
+      ),
+
+      // Review
+      GoRoute(
+        path: AppRoutes.review,
+        pageBuilder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          final extra = state.extra as Map<String, dynamic>?;
+          return _buildSlideUpPage(
+            state: state,
+            child: ReviewScreen(
+              orderId: id,
+              restaurantName:
+                  extra?['restaurantName'] as String? ?? 'Restaurant',
+              hasDriver: extra?['hasDriver'] as bool? ?? false,
+            ),
           );
         },
       ),

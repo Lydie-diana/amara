@@ -108,9 +108,13 @@ class _RestaurantDetailScreenState
       filtered = [categories[idx]];
     }
 
-    // Top plats : tous les items triés par likes
+    // Top plats : tous les items triés par note puis nb commandes
     final allItems = categories.expand((c) => c.items).toList()
-      ..sort((a, b) => b.likeCount.compareTo(a.likeCount));
+      ..sort((a, b) {
+        final rCmp = b.rating.compareTo(a.rating);
+        if (rCmp != 0) return rCmp;
+        return b.orderCount.compareTo(a.orderCount);
+      });
     final topItems = allItems.take(5).toList();
 
     return CustomScrollView(

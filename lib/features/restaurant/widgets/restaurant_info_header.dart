@@ -208,11 +208,6 @@ class _MetricsBlock extends StatelessWidget {
   final Restaurant restaurant;
   const _MetricsBlock({required this.restaurant});
 
-  String _formatCount(int count) {
-    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}k';
-    return '$count';
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -233,21 +228,12 @@ class _MetricsBlock extends StatelessWidget {
             onDark: true,
           ),
           _MetricDivider(onDark: true),
-          // Satisfaction
+          // Nombre d'avis
           _Metric(
-            value: '${restaurant.likePercent}%',
-            label: 'Satisfaits',
-            icon: Icons.thumb_up_alt_rounded,
+            value: '${restaurant.reviewCount}',
+            label: 'Avis',
+            icon: Icons.reviews_rounded,
             iconColor: const Color(0xFF80E5A8),
-            onDark: true,
-          ),
-          _MetricDivider(onDark: true),
-          // Clients fidèles
-          _Metric(
-            value: _formatCount(restaurant.totalCustomers),
-            label: 'Clients',
-            icon: Icons.people_rounded,
-            iconColor: Colors.white,
             onDark: true,
           ),
           _MetricDivider(onDark: true),

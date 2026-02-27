@@ -245,6 +245,50 @@ class ConvexClient {
       if (reason != null) 'reason': reason,
     });
   }
+
+  // ─── TRACKING LIVREUR ───────────────────────────────────────────────────────
+
+  /// Position GPS du livreur en temps réel
+  Future<Map<String, dynamic>?> getDriverLocation(String livreurId) async {
+    try {
+      final data = await get('/api/driver/location/track', params: {
+        'livreurId': livreurId,
+      });
+      if (data == null) return null;
+      return Map<String, dynamic>.from(data as Map);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // ─── AVIS / REVIEWS ────────────────────────────────────────────────────────
+
+  /// Soumettre un avis (restaurant + livreur)
+  Future<Map<String, dynamic>> submitReview({
+    required String orderId,
+    required int rating,
+    int? driverRating,
+    String? comment,
+  }) async {
+    final data = await post('/api/review', body: {
+      'orderId': orderId,
+      'rating': rating,
+      if (driverRating != null) 'driverRating': driverRating,
+      if (comment != null && comment.trim().isNotEmpty) 'comment': comment.trim(),
+    });
+    return Map<String, dynamic>.from(data as Map);
+  }
+
+  /// Vérifier si une commande a déjà un avis
+  Future<bool> hasReview(String orderId) async {
+    try {
+      final data = await get('/api/review/check', params: {'orderId': orderId});
+      return (data as Map)['hasReview'] == true;
+    } catch (_) {
+      return false;
+    }
+  }
+
 }
 
 // ─── Provider ─────────────────────────────────────────────────────────────────

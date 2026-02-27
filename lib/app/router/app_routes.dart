@@ -35,6 +35,10 @@ class AppRoutes {
   // Menu item detail
   static const String menuItemDetail = '/menu-item';
 
+  // Review
+  static const String review = '/order/:id/review';
+  static const String reviewPath = '/order';
+
   // Profile sub-pages
   static const String personalInfo = '/profile/personal-info';
   static const String myAddresses = '/profile/addresses';
