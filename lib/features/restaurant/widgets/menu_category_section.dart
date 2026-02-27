@@ -167,43 +167,47 @@ class _MenuItemTile extends ConsumerWidget {
 
                     const SizedBox(height: 6),
 
-                    // Likes % + commandes
-                    if (item.likeCount > 0)
+                    // Note + nb clients
+                    if (item.hasStats)
                       Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AmaraColors.error.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(6),
+                          if (item.totalRatings > 0)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF39C12).withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.star_rounded,
+                                      size: 10, color: Color(0xFFF39C12)),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    item.rating.toStringAsFixed(1),
+                                    style: AmaraTextStyles.caption.copyWith(
+                                        color: const Color(0xFFF39C12),
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 9),
+                                  ),
+                                ],
+                              ),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.thumb_up_rounded,
-                                    size: 9, color: AmaraColors.error),
-                                const SizedBox(width: 3),
-                                Text(
-                                  '${_likePercent(item.likeCount)}%',
-                                  style: AmaraTextStyles.caption.copyWith(
-                                      color: AmaraColors.error,
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 9),
-                                ),
-                              ],
+                          if (item.totalRatings > 0 && item.orderCount > 0)
+                            const SizedBox(width: 6),
+                          if (item.orderCount > 0) ...[
+                            const Icon(Icons.people_alt_rounded,
+                                size: 10, color: AmaraColors.textSecondary),
+                            const SizedBox(width: 2),
+                            Text(
+                              '${item.formattedOrderCount} clients',
+                              style: AmaraTextStyles.caption.copyWith(
+                                  color: AmaraColors.textSecondary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 9),
                             ),
-                          ),
-                          const SizedBox(width: 6),
-                          const Icon(Icons.people_alt_rounded,
-                              size: 10, color: AmaraColors.textSecondary),
-                          const SizedBox(width: 2),
-                          Text(
-                            '${_orderCount(item.likeCount)} clients',
-                            style: AmaraTextStyles.caption.copyWith(
-                                color: AmaraColors.textSecondary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 9),
-                          ),
+                          ],
                         ],
                       ),
 
@@ -377,21 +381,6 @@ Color _itemBg(String id) {
     Color(0xFFE3EDF9), Color(0xFFFFF3E0), Color(0xFFE0F4F4),
   ];
   return colors[id.hashCode % colors.length];
-}
-
-/// Calcule un % de satisfaction basé sur likeCount (entre 80% et 99%)
-int _likePercent(int likeCount) {
-  if (likeCount <= 0) return 0;
-  // Formule : plus on a de likes, plus le % tend vers 99%
-  final pct = 78 + (likeCount / (likeCount + 30)) * 21;
-  return pct.round().clamp(80, 99);
-}
-
-/// Estime le nombre de clients ayant commandé ce plat
-String _orderCount(int likeCount) {
-  final count = (likeCount * 3.8).toInt();
-  if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}k';
-  return '$count';
 }
 
 class _QuantityControl extends StatelessWidget {

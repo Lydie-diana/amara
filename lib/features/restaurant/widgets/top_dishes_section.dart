@@ -8,7 +8,7 @@ import '../../../app/models/restaurant_model.dart';
 import '../../../app/providers/cart_provider.dart';
 import '../../menu_item/menu_item_detail_screen.dart';
 
-/// Section "Les plats les plus aimés" — top 5 par likeCount.
+/// Section "Les plats les plus aimés" — top 5 par rating.
 class TopDishesSection extends StatelessWidget {
   final List<MenuItem> items;
   final String restaurantId;
@@ -228,43 +228,48 @@ class _TopDishCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
 
-                  // % likes + nb clients
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AmaraColors.error.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.thumb_up_rounded,
-                                size: 9, color: AmaraColors.error),
-                            const SizedBox(width: 3),
-                            Text(
-                              '${_likePercent(item.likeCount)}%',
-                              style: AmaraTextStyles.caption.copyWith(
-                                color: AmaraColors.error,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 9,
-                              ),
+                  // Note + nb clients
+                  if (item.hasStats) ...[
+                    Row(
+                      children: [
+                        if (item.totalRatings > 0)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF39C12).withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(6),
                             ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        '${_orderCount(item.likeCount)} clients',
-                        style: AmaraTextStyles.caption.copyWith(
-                          color: AmaraColors.textSecondary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 9,
-                        ),
-                      ),
-                    ],
-                  ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.star_rounded,
+                                    size: 9, color: Color(0xFFF39C12)),
+                                const SizedBox(width: 2),
+                                Text(
+                                  item.rating.toStringAsFixed(1),
+                                  style: AmaraTextStyles.caption.copyWith(
+                                    color: const Color(0xFFF39C12),
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 9,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (item.orderCount > 0) ...[
+                          const SizedBox(width: 5),
+                          Text(
+                            '${item.formattedOrderCount} clients',
+                            style: AmaraTextStyles.caption.copyWith(
+                              color: AmaraColors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 9,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 6),
 
                   // Prix + bouton
@@ -374,14 +379,3 @@ Color _itemBg(String id) {
   return colors[id.hashCode % colors.length];
 }
 
-int _likePercent(int likeCount) {
-  if (likeCount <= 0) return 0;
-  final pct = 78 + (likeCount / (likeCount + 30)) * 21;
-  return pct.round().clamp(80, 99);
-}
-
-String _orderCount(int likeCount) {
-  final count = (likeCount * 3.8).toInt();
-  if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}k';
-  return '$count';
-}

@@ -302,16 +302,27 @@ class _MenuItemDetailScreenState extends ConsumerState<MenuItemDetailScreen> {
                 ),
                 const SizedBox(height: 8),
 
-                // Likes + restaurant
+                // Note + clients + restaurant
                 Row(
                   children: [
-                    const Icon(Icons.favorite_rounded,
-                        size: 14, color: AmaraColors.error),
-                    const SizedBox(width: 4),
-                    Text('${widget.item.likeCount} personnes adorent ça',
-                        style: AmaraTextStyles.caption
-                            .copyWith(color: AmaraColors.muted)),
-                    const SizedBox(width: 12),
+                    if (widget.item.totalRatings > 0) ...[
+                      const Icon(Icons.star_rounded,
+                          size: 14, color: Color(0xFFF39C12)),
+                      const SizedBox(width: 4),
+                      Text('${widget.item.rating.toStringAsFixed(1)} (${widget.item.totalRatings} avis)',
+                          style: AmaraTextStyles.caption
+                              .copyWith(color: AmaraColors.muted)),
+                      const SizedBox(width: 12),
+                    ],
+                    if (widget.item.orderCount > 0) ...[
+                      const Icon(Icons.people_alt_rounded,
+                          size: 14, color: AmaraColors.muted),
+                      const SizedBox(width: 4),
+                      Text('${widget.item.formattedOrderCount} clients',
+                          style: AmaraTextStyles.caption
+                              .copyWith(color: AmaraColors.muted)),
+                      const SizedBox(width: 12),
+                    ],
                     const Icon(Icons.storefront_rounded,
                         size: 14, color: AmaraColors.muted),
                     const SizedBox(width: 4),

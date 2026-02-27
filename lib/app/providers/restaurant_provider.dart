@@ -114,7 +114,9 @@ List<MenuCategory> _menuFromConvex(List<dynamic> items) {
           : AmaraImages.menuItemImage(itemName, itemTags),
       categoryId: cat,
       isPopular: (d['isPopular'] as bool?) ?? false,
-      likeCount: (d['likeCount'] as num?)?.toInt() ?? 0,
+      orderCount: (d['orderCount'] as num?)?.toInt() ?? 0,
+      rating: (d['rating'] as num?)?.toDouble() ?? 0.0,
+      totalRatings: (d['totalRatings'] as num?)?.toInt() ?? 0,
       optionGroups: optionGroups,
     );
     byCategory.putIfAbsent(cat, () => []).add(item);

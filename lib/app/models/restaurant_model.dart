@@ -191,7 +191,9 @@ class MenuItem {
   final bool isVegetarian;
   final bool isSpicy;
   final String categoryId;
-  final int likeCount;    // nb de likes du plat
+  final int orderCount;       // nb de clients ayant commandé ce plat
+  final double rating;         // note moyenne (0.0-5.0)
+  final int totalRatings;      // nb d'avis incluant ce plat
   final List<MenuItemOptionGroup> optionGroups; // accompagnements/options
 
   const MenuItem({
@@ -206,7 +208,9 @@ class MenuItem {
     this.isPopular = false,
     this.isVegetarian = false,
     this.isSpicy = false,
-    this.likeCount = 0,
+    this.orderCount = 0,
+    this.rating = 0.0,
+    this.totalRatings = 0,
     this.optionGroups = const [],
   });
 
@@ -222,9 +226,18 @@ class MenuItem {
       isPopular: json['isPopular'] as bool? ?? false,
       isVegetarian: json['isVegetarian'] as bool? ?? false,
       isSpicy: json['isSpicy'] as bool? ?? false,
-      likeCount: (json['likeCount'] as num?)?.toInt() ?? 0,
+      orderCount: (json['orderCount'] as num?)?.toInt() ?? 0,
+      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
+      totalRatings: (json['totalRatings'] as num?)?.toInt() ?? 0,
     );
   }
 
   String get formattedPrice => '${price.toStringAsFixed(0)} F';
+
+  bool get hasStats => totalRatings > 0 || orderCount > 0;
+
+  String get formattedOrderCount {
+    if (orderCount >= 1000) return '${(orderCount / 1000).toStringAsFixed(1)}k';
+    return '$orderCount';
+  }
 }
