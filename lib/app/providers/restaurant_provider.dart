@@ -113,7 +113,10 @@ List<MenuCategory> _menuFromConvex(List<dynamic> items) {
           ? convexImageUrl
           : AmaraImages.menuItemImage(itemName, itemTags),
       categoryId: cat,
-      isPopular: (d['isPopular'] as bool?) ?? false,
+      isAvailable: d['isAvailable'] as bool? ?? true,
+      isPopular: itemTags.contains('populaire'),
+      isVegetarian: itemTags.contains('végétarien'),
+      isSpicy: itemTags.contains('épicé'),
       orderCount: (d['orderCount'] as num?)?.toInt() ?? 0,
       rating: (d['rating'] as num?)?.toDouble() ?? 0.0,
       totalRatings: (d['totalRatings'] as num?)?.toInt() ?? 0,
