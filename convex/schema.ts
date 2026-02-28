@@ -194,6 +194,10 @@ export default defineSchema({
       v.literal("refunded")
     ),
 
+    // Infos client dénormalisées (pour affichage côté restaurant/livreur)
+    clientName: v.optional(v.string()),
+    clientPhone: v.optional(v.string()),
+
     // Notes
     clientNote: v.optional(v.string()),
 

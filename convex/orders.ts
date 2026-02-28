@@ -196,6 +196,8 @@ export const create = mutation({
       status: "pending",
       paymentMethod: args.paymentMethod,
       paymentStatus: "pending",
+      clientName: user.name,
+      clientPhone: user.phone,
       clientNote: args.clientNote,
       createdAt: now,
       updatedAt: now,
