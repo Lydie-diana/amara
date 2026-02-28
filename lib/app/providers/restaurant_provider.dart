@@ -62,8 +62,14 @@ Restaurant _restaurantFromConvex(Map<String, dynamic> d) {
     likePercent: 0,
     totalCustomers: 0,
     hasOrdered: false,
-    paymentMethods: const ['Mobile Money', 'Cash'],
-    serviceModes: const [ServiceMode.delivery, ServiceMode.takeaway],
+    paymentMethods: (d['paymentMethods'] as List?)?.cast<String>() ?? const [],
+    serviceModes: ((d['serviceModes'] as List?)?.cast<String>() ?? [])
+        .map((s) {
+          if (s == 'takeaway') return ServiceMode.takeaway;
+          if (s == 'dineIn') return ServiceMode.dineIn;
+          return ServiceMode.delivery;
+        })
+        .toList(),
     schedule: schedule,
     promos: const [],
     latitude: (d['latitude'] as num?)?.toDouble(),
@@ -169,12 +175,24 @@ final restaurantListProvider =
       .toList();
 });
 
-/// Détail d'un restaurant par ID (Convex uniquement)
+/// Détail d'un restaurant par ID — rafraîchi toutes les 8 secondes
 final restaurantDetailProvider =
-    FutureProvider.family<Restaurant, String>((ref, id) async {
+    StreamProvider.family<Restaurant, String>((ref, id) async* {
   final client = ref.read(convexClientProvider);
+
+  // Première émission immédiate
   final data = await client.getRestaurant(id);
-  return _restaurantFromConvex(data);
+  yield _restaurantFromConvex(data);
+
+  // Puis rafraîchissement toutes les 8 secondes
+  await for (final _ in Stream.periodic(const Duration(seconds: 8))) {
+    try {
+      final updated = await client.getRestaurant(id);
+      yield _restaurantFromConvex(updated);
+    } catch (_) {
+      // Ignore les erreurs réseau ponctuelles
+    }
+  }
 });
 
 /// Menu d'un restaurant — rafraîchi toutes les 8 secondes pour les mises à jour temps réel

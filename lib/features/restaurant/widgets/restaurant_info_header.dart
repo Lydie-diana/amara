@@ -178,24 +178,6 @@ class _IdentityBlock extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
 
-          // Téléphone
-          if (restaurant.phone.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                const Icon(Icons.phone_rounded,
-                    size: 14, color: AmaraColors.success),
-                const SizedBox(width: 6),
-                Text(
-                  restaurant.phone,
-                  style: AmaraTextStyles.bodySmall.copyWith(
-                    color: AmaraColors.textPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ],
 
           // Badge "déjà commandé" discret
           if (restaurant.hasOrdered) ...[
@@ -777,15 +759,6 @@ class _ExpandedSchedule extends StatelessWidget {
             text: restaurant.address,
             color: AmaraColors.error,
           ),
-          const SizedBox(height: 10),
-
-          // Téléphone
-          _ContactRow(
-            icon: Icons.phone_rounded,
-            text: restaurant.phone,
-            color: AmaraColors.success,
-          ),
-
           if (restaurant.schedule.isNotEmpty) ...[
             const SizedBox(height: 16),
             Container(height: 1, color: AmaraColors.divider),
