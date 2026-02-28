@@ -192,6 +192,49 @@ export const updateProfile = mutation({
   },
 });
 
+/** Changement de mot de passe */
+export const changePassword = mutation({
+  args: {
+    token: v.string(),
+    currentPassword: v.string(),
+    newPassword: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const session = await ctx.db
+      .query("auth_sessions")
+      .withIndex("by_token", (q) => q.eq("token", args.token))
+      .unique();
+
+    if (!session || session.expiresAt < Date.now()) {
+      throw new Error("Session invalide ou expirée");
+    }
+
+    const user = await ctx.db.get(session.userId);
+    if (!user || !user.isActive) {
+      throw new Error("Utilisateur non trouvé");
+    }
+
+    if (!user.passwordHash) {
+      throw new Error("Ce compte n'a pas de mot de passe défini");
+    }
+
+    const valid = await verifyPassword(args.currentPassword, user.passwordHash);
+    if (!valid) {
+      throw new Error("Mot de passe actuel incorrect");
+    }
+
+    if (args.newPassword.length < 6) {
+      throw new Error("Le nouveau mot de passe doit comporter au moins 6 caractères");
+    }
+
+    const salt = generateSalt();
+    const passwordHash = await hashPassword(args.newPassword, salt);
+    await ctx.db.patch(session.userId, { passwordHash });
+
+    return { success: true };
+  },
+});
+
 /** Valider une session et retourner l'utilisateur */
 export const validateSession = query({
   args: {
