@@ -1270,6 +1270,31 @@ http.route({
 
 http.route({ path: "/api/admin/drivers/online", method: "OPTIONS", handler: preflight });
 
+/** GET /api/admin/driver — Détail d'un livreur par userId */
+http.route({
+  path: "/api/admin/driver",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const token = extractToken(request);
+      if (!token) return error("Token requis", 401);
+      const url = new URL(request.url);
+      const userId = url.searchParams.get("id");
+      if (!userId) return error("id requis");
+      const driver = await ctx.runQuery(api.adminStats.driverById, {
+        token,
+        userId: userId as any,
+      });
+      if (!driver) return error("Livreur introuvable", 404);
+      return json(driver);
+    } catch (e: any) {
+      return error(e.message ?? "Erreur livreur", 400);
+    }
+  }),
+});
+
+http.route({ path: "/api/admin/driver", method: "OPTIONS", handler: preflight });
+
 /** POST /api/admin/driver/verify — Vérifier un livreur */
 http.route({
   path: "/api/admin/driver/verify",

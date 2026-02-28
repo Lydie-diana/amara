@@ -238,6 +238,30 @@ export const allDrivers = query({
   },
 });
 
+/** Un seul livreur par userId (admin) */
+export const driverById = query({
+  args: { token: v.string(), userId: v.id("users") },
+  handler: async (ctx, args) => {
+    await requireRoleWithToken(ctx, args.token, "admin", "ops", "support");
+
+    const profile = await ctx.db
+      .query("driverProfiles")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .unique();
+
+    if (!profile) return null;
+
+    const user = await ctx.db.get(args.userId);
+    return {
+      ...profile,
+      name: user?.name ?? "Livreur inconnu",
+      email: user?.email ?? "",
+      phone: user?.phone ?? "",
+      isActive: user?.isActive ?? false,
+    };
+  },
+});
+
 /** Vérifier un livreur (admin) */
 export const verifyDriver = mutation({
   args: {
