@@ -131,6 +131,10 @@ export default defineSchema({
     orderCount: v.optional(v.number()),     // nb de clients ayant commandé ce plat
     rating: v.optional(v.number()),          // note moyenne (1.0-5.0)
     totalRatings: v.optional(v.number()),    // nb d'avis incluant ce plat
+    // Réductions
+    discountPercent: v.optional(v.number()),    // 0-100 (%)
+    discountStartDate: v.optional(v.number()),  // timestamp ms (null = immédiat)
+    discountEndDate: v.optional(v.number()),    // timestamp ms (null = permanent)
     createdAt: v.number(),
   })
     .index("by_restaurant", ["restaurantId"])

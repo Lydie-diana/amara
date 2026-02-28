@@ -77,6 +77,9 @@ export const create = mutation({
         extraPrice: v.number(),
       })),
     }))),
+    discountPercent: v.optional(v.number()),
+    discountStartDate: v.optional(v.number()),
+    discountEndDate: v.optional(v.number()),
     token: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -134,6 +137,9 @@ export const update = mutation({
         extraPrice: v.number(),
       })),
     }))),
+    discountPercent: v.optional(v.number()),
+    discountStartDate: v.optional(v.number()),
+    discountEndDate: v.optional(v.number()),
     token: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -146,10 +152,11 @@ export const update = mutation({
     }
 
     const { menuItemId, token: _token, ...updates } = args;
+    // Garde les champs définis (y compris null pour effacer discountPercent/dates)
     const filtered = Object.fromEntries(
       Object.entries(updates).filter(([, val]) => val !== undefined)
     );
-    await ctx.db.patch(menuItemId, filtered);
+    await ctx.db.patch(menuItemId, filtered as any);
   },
 });
 
