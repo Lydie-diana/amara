@@ -75,6 +75,18 @@ class _RestaurantDetailScreenState
     );
   }
 
+  /// Filtre les items indisponibles (isAvailable == false) de toutes les catégories.
+  List<MenuCategory> _filterAvailable(List<MenuCategory> cats) {
+    return cats
+        .map((c) => MenuCategory(
+              id: c.id,
+              name: c.name,
+              items: c.items.where((i) => i.isAvailable).toList(),
+            ))
+        .where((c) => c.items.isNotEmpty)
+        .toList();
+  }
+
   /// Filtre les catégories selon la recherche.
   List<MenuCategory> _filterCategories(List<MenuCategory> all) {
     if (_searchQuery.isEmpty) return all;
@@ -96,20 +108,23 @@ class _RestaurantDetailScreenState
     required List<MenuCategory> categories,
     required bool isMenuLoading,
   }) {
+    // Exclure les items indisponibles avant tout autre traitement
+    final available = _filterAvailable(categories);
+
     // Si recherche active → filtre textuel sur toutes les catégories
     // Index 0 = "Tous", index 1+ = catégorie spécifique (index - 1)
     final List<MenuCategory> filtered;
     if (_searchQuery.isNotEmpty) {
-      filtered = _filterCategories(categories);
-    } else if (_selectedCategoryIndex == 0 || categories.isEmpty) {
-      filtered = categories;
+      filtered = _filterCategories(available);
+    } else if (_selectedCategoryIndex == 0 || available.isEmpty) {
+      filtered = available;
     } else {
-      final idx = (_selectedCategoryIndex - 1).clamp(0, categories.length - 1);
-      filtered = [categories[idx]];
+      final idx = (_selectedCategoryIndex - 1).clamp(0, available.length - 1);
+      filtered = [available[idx]];
     }
 
-    // Top plats : tous les items triés par note puis nb commandes
-    final allItems = categories.expand((c) => c.items).toList()
+    // Top plats : tous les items disponibles triés par note puis nb commandes
+    final allItems = available.expand((c) => c.items).toList()
       ..sort((a, b) {
         final rCmp = b.rating.compareTo(a.rating);
         if (rCmp != 0) return rCmp;
@@ -154,13 +169,13 @@ class _RestaurantDetailScreenState
         ),
 
         // ── Onglets catégories (sticky) ──────────────────────────────────────
-        if (categories.isNotEmpty)
+        if (available.isNotEmpty)
           SliverPersistentHeader(
             pinned: true,
             delegate: _CategoryTabsDelegate(
               categories: [
                 const MenuCategory(id: '__all__', name: 'Tous', items: []),
-                ...categories,
+                ...available,
               ],
               selectedIndex: _selectedCategoryIndex,
               onCategoryTap: (index) =>
