@@ -15,6 +15,7 @@ import type * as auth from "../auth.js";
 import type * as autoDispatch from "../autoDispatch.js";
 import type * as backfillMenuStats from "../backfillMenuStats.js";
 import type * as businessRules from "../businessRules.js";
+import type * as createAdmin from "../createAdmin.js";
 import type * as dispatch from "../dispatch.js";
 import type * as drivers from "../drivers.js";
 import type * as favorites from "../favorites.js";
@@ -47,6 +48,7 @@ declare const fullApi: ApiFromModules<{
   autoDispatch: typeof autoDispatch;
   backfillMenuStats: typeof backfillMenuStats;
   businessRules: typeof businessRules;
+  createAdmin: typeof createAdmin;
   dispatch: typeof dispatch;
   drivers: typeof drivers;
   favorites: typeof favorites;
