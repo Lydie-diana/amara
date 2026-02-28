@@ -187,6 +187,8 @@ export const update = mutation({
         sunday: v.optional(v.object({ open: v.string(), close: v.string() })),
       })
     ),
+    serviceModes: v.optional(v.array(v.string())),
+    paymentMethods: v.optional(v.array(v.string())),
     token: v.optional(v.string()),
   },
   handler: async (ctx, args) => {

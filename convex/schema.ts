@@ -97,6 +97,8 @@ export default defineSchema({
     deliveryFee: v.number(),
     minOrderAmount: v.number(),
     estimatedDeliveryTime: v.number(), // en minutes
+    serviceModes: v.optional(v.array(v.string())),   // ['delivery', 'takeaway']
+    paymentMethods: v.optional(v.array(v.string())), // ['Mobile Money', 'Carte', 'Cash']
 
     createdAt: v.number(),
   })
