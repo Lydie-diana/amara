@@ -68,7 +68,7 @@ class _MenuItemDetailScreenState extends ConsumerState<MenuItemDetailScreen> {
     return extra;
   }
 
-  double get _totalPrice => (widget.item.price + _extraPrice) * _quantity;
+  double get _totalPrice => (widget.item.effectivePrice + _extraPrice) * _quantity;
 
   void _toggleOption(MenuItemOptionGroup group, String optionId) {
     setState(() {
@@ -284,12 +284,48 @@ class _MenuItemDetailScreenState extends ConsumerState<MenuItemDetailScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(
-                          widget.item.formattedPrice,
-                          style: AmaraTextStyles.h2.copyWith(
-                            color: AmaraColors.primary,
+                        if (widget.item.hasActiveDiscount) ...[
+                          Text(
+                            widget.item.formattedPrice,
+                            style: AmaraTextStyles.labelMedium.copyWith(
+                              color: AmaraColors.muted,
+                              decoration: TextDecoration.lineThrough,
+                            ),
                           ),
-                        ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                widget.item.formattedEffectivePrice,
+                                style: AmaraTextStyles.h2.copyWith(
+                                  color: AmaraColors.primary,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: AmaraColors.primary,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  '-${widget.item.discountPercent!.toInt()}%',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ] else
+                          Text(
+                            widget.item.formattedPrice,
+                            style: AmaraTextStyles.h2.copyWith(
+                              color: AmaraColors.primary,
+                            ),
+                          ),
                         if (_extraPrice > 0)
                           Text(
                             '+${_extraPrice.toStringAsFixed(0)} F options',

@@ -234,13 +234,46 @@ class _MenuItemTile extends ConsumerWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(
-                          item.formattedPrice,
-                          style: AmaraTextStyles.labelMedium.copyWith(
-                            color: AmaraColors.primary,
-                            fontWeight: FontWeight.w800,
+                        if (item.hasActiveDiscount) ...[
+                          Text(
+                            item.formattedPrice,
+                            style: AmaraTextStyles.caption.copyWith(
+                              color: AmaraColors.muted,
+                              decoration: TextDecoration.lineThrough,
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 5),
+                          Text(
+                            item.formattedEffectivePrice,
+                            style: AmaraTextStyles.labelMedium.copyWith(
+                              color: AmaraColors.primary,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: AmaraColors.primary,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              '-${item.discountPercent!.toInt()}%',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ] else
+                          Text(
+                            item.formattedPrice,
+                            style: AmaraTextStyles.labelMedium.copyWith(
+                              color: AmaraColors.primary,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                         const Spacer(),
                         if (!item.isAvailable)
                           Container(

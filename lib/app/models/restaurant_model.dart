@@ -195,6 +195,9 @@ class MenuItem {
   final double rating;         // note moyenne (0.0-5.0)
   final int totalRatings;      // nb d'avis incluant ce plat
   final List<MenuItemOptionGroup> optionGroups; // accompagnements/options
+  final double? discountPercent;   // 0-100 (%)
+  final int? discountStartDate;    // timestamp ms
+  final int? discountEndDate;      // timestamp ms
 
   const MenuItem({
     required this.id,
@@ -212,7 +215,25 @@ class MenuItem {
     this.rating = 0.0,
     this.totalRatings = 0,
     this.optionGroups = const [],
+    this.discountPercent,
+    this.discountStartDate,
+    this.discountEndDate,
   });
+
+  bool get hasActiveDiscount {
+    if (discountPercent == null || discountPercent! <= 0) return false;
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (discountStartDate != null && now < discountStartDate!) return false;
+    if (discountEndDate != null && now > discountEndDate!) return false;
+    return true;
+  }
+
+  double get effectivePrice {
+    if (!hasActiveDiscount) return price;
+    return price * (1 - discountPercent! / 100);
+  }
+
+  String get formattedEffectivePrice => '${effectivePrice.toStringAsFixed(0)} F';
 
   factory MenuItem.fromJson(Map<String, dynamic> json) {
     return MenuItem(
@@ -229,6 +250,9 @@ class MenuItem {
       orderCount: (json['orderCount'] as num?)?.toInt() ?? 0,
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       totalRatings: (json['totalRatings'] as num?)?.toInt() ?? 0,
+      discountPercent: (json['discountPercent'] as num?)?.toDouble(),
+      discountStartDate: (json['discountStartDate'] as num?)?.toInt(),
+      discountEndDate: (json['discountEndDate'] as num?)?.toInt(),
     );
   }
 

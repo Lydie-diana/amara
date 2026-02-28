@@ -35,7 +35,7 @@ class CartItem {
     );
   }
 
-  double get unitPrice => item.price + extraPrice;
+  double get unitPrice => item.effectivePrice + extraPrice;
   double get subtotal => unitPrice * quantity;
   String get formattedSubtotal => '${subtotal.toStringAsFixed(0)} F';
 }
