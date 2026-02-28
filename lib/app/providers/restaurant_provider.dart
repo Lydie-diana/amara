@@ -118,6 +118,9 @@ List<MenuCategory> _menuFromConvex(List<dynamic> items) {
       rating: (d['rating'] as num?)?.toDouble() ?? 0.0,
       totalRatings: (d['totalRatings'] as num?)?.toInt() ?? 0,
       optionGroups: optionGroups,
+      discountPercent: (d['discountPercent'] as num?)?.toDouble(),
+      discountStartDate: (d['discountStartDate'] as num?)?.toInt(),
+      discountEndDate: (d['discountEndDate'] as num?)?.toInt(),
     );
     byCategory.putIfAbsent(cat, () => []).add(item);
   }
@@ -171,10 +174,22 @@ final restaurantDetailProvider =
   return _restaurantFromConvex(data);
 });
 
-/// Menu d'un restaurant (Convex uniquement)
+/// Menu d'un restaurant — rafraîchi toutes les 8 secondes pour les mises à jour temps réel
 final restaurantMenuProvider =
-    FutureProvider.family<List<MenuCategory>, String>((ref, restaurantId) async {
+    StreamProvider.family<List<MenuCategory>, String>((ref, restaurantId) async* {
   final client = ref.read(convexClientProvider);
+
+  // Première émission immédiate
   final items = await client.getMenu(restaurantId);
-  return _menuFromConvex(items);
+  yield _menuFromConvex(items);
+
+  // Puis rafraîchissement toutes les 8 secondes
+  await for (final _ in Stream.periodic(const Duration(seconds: 8))) {
+    try {
+      final updated = await client.getMenu(restaurantId);
+      yield _menuFromConvex(updated);
+    } catch (_) {
+      // Ignore les erreurs réseau ponctuelles
+    }
+  }
 });
