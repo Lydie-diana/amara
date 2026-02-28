@@ -160,6 +160,38 @@ export const update = mutation({
   },
 });
 
+/** Appliquer ou retirer une réduction sur un plat */
+export const applyDiscount = mutation({
+  args: {
+    menuItemId: v.id("menuItems"),
+    discountPercent: v.number(),              // 0 = retirer la réduction
+    discountStartDate: v.optional(v.number()), // undefined = immédiat
+    discountEndDate: v.optional(v.number()),   // undefined = permanent
+    token: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const item = await ctx.db.get(args.menuItemId);
+    if (!item) throw new NotFoundError("Plat");
+    await requireRestaurantOwner(ctx, item.restaurantId, args.token);
+
+    if (args.discountPercent === 0) {
+      // Retirer la réduction : patch avec undefined supprime le champ
+      await ctx.db.patch(args.menuItemId, {
+        discountPercent: undefined,
+        discountStartDate: undefined,
+        discountEndDate: undefined,
+      });
+    } else {
+      // Appliquer la réduction
+      await ctx.db.patch(args.menuItemId, {
+        discountPercent: args.discountPercent,
+        discountStartDate: args.discountStartDate,
+        discountEndDate: args.discountEndDate,
+      });
+    }
+  },
+});
+
 /** Supprimer un plat */
 export const remove = mutation({
   args: { menuItemId: v.id("menuItems"), token: v.optional(v.string()) },
