@@ -121,9 +121,18 @@ List<MenuCategory> _menuFromConvex(List<dynamic> items) {
           : AmaraImages.menuItemImage(itemName, itemTags),
       categoryId: cat,
       isAvailable: d['isAvailable'] as bool? ?? true,
-      isPopular: itemTags.contains('populaire'),
-      isVegetarian: itemTags.contains('végétarien'),
-      isSpicy: itemTags.contains('épicé'),
+      isPopular: itemTags.any((t) {
+        final l = t.toLowerCase();
+        return l == 'populaire' || l == 'popular' || l == 'coup de cœur' || l == 'favorite';
+      }),
+      isVegetarian: itemTags.any((t) {
+        final l = t.toLowerCase();
+        return l == 'végétarien' || l == 'vegetarian' || l == 'vegan';
+      }),
+      isSpicy: itemTags.any((t) {
+        final l = t.toLowerCase();
+        return l == 'épicé' || l == 'spicy';
+      }),
       orderCount: (d['orderCount'] as num?)?.toInt() ?? 0,
       rating: (d['rating'] as num?)?.toDouble() ?? 0.0,
       totalRatings: (d['totalRatings'] as num?)?.toInt() ?? 0,

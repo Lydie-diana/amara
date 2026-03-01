@@ -236,6 +236,8 @@ class MenuItem {
   String get formattedEffectivePrice => '${effectivePrice.toStringAsFixed(0)} F';
 
   factory MenuItem.fromJson(Map<String, dynamic> json) {
+    // Tags depuis Convex : List<String> ex. ['Populaire', 'Épicé', 'Végétarien']
+    final tags = List<String>.from(json['tags'] as List? ?? []);
     return MenuItem(
       id: json['_id'] as String? ?? json['id'] as String,
       name: json['name'] as String,
@@ -244,9 +246,18 @@ class MenuItem {
       imageEmoji: json['imageEmoji'] as String? ?? '🍽️',
       categoryId: json['categoryId'] as String? ?? '',
       isAvailable: json['isAvailable'] as bool? ?? true,
-      isPopular: json['isPopular'] as bool? ?? false,
-      isVegetarian: json['isVegetarian'] as bool? ?? false,
-      isSpicy: json['isSpicy'] as bool? ?? false,
+      isPopular: (json['isPopular'] as bool? ?? false) ||
+          tags.contains('Populaire') ||
+          tags.contains('Popular') ||
+          tags.contains('Coup de cœur') ||
+          tags.contains('Favorite'),
+      isVegetarian: (json['isVegetarian'] as bool? ?? false) ||
+          tags.contains('Végétarien') ||
+          tags.contains('Vegetarian') ||
+          tags.contains('Vegan'),
+      isSpicy: (json['isSpicy'] as bool? ?? false) ||
+          tags.contains('Épicé') ||
+          tags.contains('Spicy'),
       orderCount: (json['orderCount'] as num?)?.toInt() ?? 0,
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       totalRatings: (json['totalRatings'] as num?)?.toInt() ?? 0,
