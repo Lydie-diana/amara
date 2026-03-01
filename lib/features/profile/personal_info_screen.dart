@@ -132,6 +132,12 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                   );
                   return;
                 }
+                // Sync controllers avec les valeurs retournées par le serveur
+                final updatedUser = ref.read(authProvider).user;
+                _nameController.text = updatedUser?.name ?? _nameController.text;
+                _phoneController.text = updatedUser?.phone ?? _phoneController.text;
+                _emailController.text = updatedUser?.email ?? _emailController.text;
+
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Profil mis à jour',

@@ -97,7 +97,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen>
       _isLoading = true;
       _errorMsg = null;
     });
-    await ref.read(authProvider.notifier).signup(
+    final pendingUserId = await ref.read(authProvider.notifier).signup(
           name: name,
           email: email,
           phone: phone,
@@ -105,10 +105,13 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen>
         );
     if (!mounted) return;
     setState(() => _isLoading = false);
-    final authState = ref.read(authProvider);
-    if (authState.isAuthenticated) {
-      context.go(AppRoutes.home);
+    if (pendingUserId != null) {
+      context.go(AppRoutes.authOtp, extra: {
+        'pendingUserId': pendingUserId,
+        'email': email,
+      });
     } else {
+      final authState = ref.read(authProvider);
       setState(
           () => _errorMsg = authState.error ?? 'Erreur lors de l\'inscription');
     }

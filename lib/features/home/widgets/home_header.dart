@@ -1,26 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
+import '../../../app/providers/auth_provider.dart';
+import '../../../app/providers/location_provider.dart';
+import 'location_picker_sheet.dart';
 
-class HomeHeader extends StatelessWidget {
+class HomeHeader extends ConsumerWidget {
   final Widget? searchBar;
   const HomeHeader({super.key, this.searchBar});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final top = MediaQuery.of(context).padding.top;
+    final location = ref.watch(locationProvider);
+    final authState = ref.watch(authProvider);
+    final user = authState.user;
+    final initial = (user?.name.isNotEmpty == true)
+        ? user!.name[0].toUpperCase()
+        : 'A';
+    final firstName = user?.name.split(' ').first ?? '';
+
     return Container(
       color: AmaraColors.primary,
       padding: EdgeInsets.fromLTRB(20, top + 16, 20, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Localisation + actions ────────────────────────────────────────
+          // ── Localisation + actions ──────────────────────────────────────────
           Row(
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap: () => _openLocationPicker(context, ref),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -46,13 +58,16 @@ class HomeHeader extends StatelessWidget {
                           ),
                           Row(
                             children: [
-                              Text(
-                                'Abidjan, Cocody',
-                                style: AmaraTextStyles.labelSmall.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
+                              if (location.isLoading)
+                                _LoadingAddress()
+                              else
+                                Text(
+                                  location.displayAddress,
+                                  style: AmaraTextStyles.labelSmall.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
-                              ),
                               const SizedBox(width: 2),
                               const Icon(Icons.keyboard_arrow_down_rounded,
                                   color: Colors.white, size: 16),
@@ -98,7 +113,7 @@ class HomeHeader extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              // Avatar blanc
+              // Avatar
               Container(
                 width: 40,
                 height: 40,
@@ -108,7 +123,7 @@ class HomeHeader extends StatelessWidget {
                 ),
                 child: Center(
                   child: Text(
-                    'D',
+                    initial,
                     style: TextStyle(
                       color: AmaraColors.primary,
                       fontSize: 17,
@@ -122,9 +137,9 @@ class HomeHeader extends StatelessWidget {
 
           const SizedBox(height: 22),
 
-          // ── Salutation ────────────────────────────────────────────────────
+          // ── Salutation ──────────────────────────────────────────────────────
           Text(
-            'Bonjour, Diana 👋',
+            firstName.isNotEmpty ? 'Bonjour, $firstName 👋' : 'Bonjour 👋',
             style: AmaraTextStyles.caption.copyWith(
               color: Colors.white.withValues(alpha: 0.7),
             ),
@@ -143,6 +158,29 @@ class HomeHeader extends StatelessWidget {
             searchBar!,
           ],
         ],
+      ),
+    );
+  }
+
+  void _openLocationPicker(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const LocationPickerSheet(),
+    );
+  }
+}
+
+class _LoadingAddress extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 100,
+      height: 12,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(6),
       ),
     );
   }

@@ -14,7 +14,7 @@ class FavoritesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final favoriteIds = ref.watch(favoritesProvider);
-    final restaurantsAsync = ref.watch(restaurantListProvider('Abidjan'));
+    final restaurantsAsync = ref.watch(restaurantListProvider);
 
     return Scaffold(
       backgroundColor: AmaraColors.bg,

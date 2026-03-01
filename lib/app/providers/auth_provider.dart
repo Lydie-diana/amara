@@ -148,8 +148,8 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  /// Inscription email/password
-  Future<void> signup({
+  /// Inscription email/password → retourne pendingUserId si succès, null si erreur
+  Future<String?> signup({
     required String name,
     required String email,
     required String phone,
@@ -164,6 +164,30 @@ class AuthNotifier extends Notifier<AuthState> {
         phone: phone,
         password: password,
       );
+      final pendingUserId = result['pendingUserId'] as String;
+      state = const AuthState(status: AuthStatus.unauthenticated);
+      return pendingUserId;
+    } catch (e) {
+      state = AuthState(
+        status: AuthStatus.unauthenticated,
+        error: _extractError(e),
+      );
+      return null;
+    }
+  }
+
+  /// Vérification OTP email → connecte l'utilisateur si succès
+  Future<void> verifyEmail({
+    required String pendingUserId,
+    required String code,
+  }) async {
+    state = const AuthState(status: AuthStatus.loading);
+    try {
+      final client = ref.read(convexClientProvider);
+      final result = await client.verifyEmail(
+        pendingUserId: pendingUserId,
+        code: code,
+      );
       final token = result['token'] as String;
       await _storage.write(token);
       client.setToken(token);
@@ -177,7 +201,14 @@ class AuthNotifier extends Notifier<AuthState> {
         status: AuthStatus.unauthenticated,
         error: _extractError(e),
       );
+      rethrow;
     }
+  }
+
+  /// Renvoi du code OTP
+  Future<void> resendVerification(String pendingUserId) async {
+    final client = ref.read(convexClientProvider);
+    await client.resendVerification(pendingUserId: pendingUserId);
   }
 
   /// Connexion email/password

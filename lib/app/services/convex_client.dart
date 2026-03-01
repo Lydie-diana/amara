@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Client HTTP pour les Convex HTTP Actions.
-/// Base URL : https://confident-dachshund-484.eu-west-1.convex.site
+/// Base URL : https://disciplined-kudu-592.eu-west-1.convex.site
 class ConvexClient {
   ConvexClient._() {
     _dio = Dio(
@@ -39,7 +39,7 @@ class ConvexClient {
   static final ConvexClient instance = ConvexClient._();
 
   static const String _baseUrl =
-      'https://confident-dachshund-484.eu-west-1.convex.site';
+      'https://disciplined-kudu-592.eu-west-1.convex.site';
 
   late final Dio _dio;
 
@@ -72,7 +72,7 @@ class ConvexClient {
 
   // ─── AUTH ─────────────────────────────────────────────────────────────────
 
-  /// Inscription → retourne {token, userId}
+  /// Inscription → retourne {pendingUserId, email} (vérification email requise)
   Future<Map<String, dynamic>> signup({
     required String name,
     required String email,
@@ -86,6 +86,25 @@ class ConvexClient {
       'password': password,
     });
     return Map<String, dynamic>.from(data as Map);
+  }
+
+  /// Vérifier le code OTP email → retourne {token, userId}
+  Future<Map<String, dynamic>> verifyEmail({
+    required String pendingUserId,
+    required String code,
+  }) async {
+    final data = await post('/api/auth/verify-email', body: {
+      'pendingUserId': pendingUserId,
+      'code': code,
+    });
+    return Map<String, dynamic>.from(data as Map);
+  }
+
+  /// Renvoyer le code de vérification
+  Future<void> resendVerification({required String pendingUserId}) async {
+    await post('/api/auth/resend-verification', body: {
+      'pendingUserId': pendingUserId,
+    });
   }
 
   /// Connexion → retourne {token, userId}
@@ -182,6 +201,20 @@ class ConvexClient {
   /// Liste des restaurants d'une ville
   Future<List<dynamic>> getRestaurants({String city = 'Abidjan'}) async {
     final data = await get('/api/restaurants', params: {'city': city});
+    return List<dynamic>.from(data as List);
+  }
+
+  /// Liste des restaurants à proximité d'une position GPS
+  Future<List<dynamic>> getRestaurantsNearby({
+    required double latitude,
+    required double longitude,
+    double radiusKm = 15,
+  }) async {
+    final data = await get('/api/restaurants/nearby', params: {
+      'lat': latitude.toString(),
+      'lng': longitude.toString(),
+      'radius': radiusKm.toString(),
+    });
     return List<dynamic>.from(data as List);
   }
 

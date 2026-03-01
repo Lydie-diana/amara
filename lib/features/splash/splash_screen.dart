@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_images.dart';
 import '../../app/providers/auth_provider.dart';
+import '../../app/providers/location_provider.dart';
 import '../../app/router/app_routes.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -48,6 +49,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     });
 
     _navigate();
+
+    // Démarrer la détection GPS en parallèle (non-bloquant)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(locationProvider.notifier).initLocation();
+    });
   }
 
   @override

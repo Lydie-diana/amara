@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/restaurant_model.dart';
 import '../services/convex_client.dart';
 import '../core/constants/app_images.dart';
+import 'location_provider.dart';
 
 // ─── Mapping Convex → Restaurant Flutter ─────────────────────────────────────
 
@@ -165,11 +166,38 @@ String _tagEmoji(String tag) {
 
 // ─── Providers ────────────────────────────────────────────────────────────────
 
-/// Liste des restaurants d'une ville (depuis Convex uniquement)
-final restaurantListProvider =
-    FutureProvider.family<List<Restaurant>, String>((ref, city) async {
+/// Liste des restaurants selon la position GPS de l'utilisateur.
+/// Utilise les coordonnées GPS si disponibles, sinon fallback par ville.
+final restaurantListProvider = FutureProvider<List<Restaurant>>((ref) async {
+  final location = ref.watch(locationProvider);
   final client = ref.read(convexClientProvider);
-  final list = await client.getRestaurants(city: city);
+
+  // Si position GPS disponible → requête par coordonnées (triée par distance)
+  if (location.hasLocation) {
+    try {
+      var list = await client.getRestaurantsNearby(
+        latitude: location.latitude!,
+        longitude: location.longitude!,
+        radiusKm: 15,
+      );
+      // Si aucun résultat dans 15km → élargir à 50km
+      if (list.isEmpty) {
+        list = await client.getRestaurantsNearby(
+          latitude: location.latitude!,
+          longitude: location.longitude!,
+          radiusKm: 50,
+        );
+      }
+      return list
+          .map((d) => _restaurantFromConvex(Map<String, dynamic>.from(d as Map)))
+          .toList();
+    } catch (_) {
+      // Fallback sur ville si erreur réseau
+    }
+  }
+
+  // Fallback : requête par ville
+  final list = await client.getRestaurants(city: location.city);
   return list
       .map((d) => _restaurantFromConvex(Map<String, dynamic>.from(d as Map)))
       .toList();

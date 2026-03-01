@@ -1,27 +1,35 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
+import '../../../app/providers/auth_provider.dart';
 import '../../../app/router/app_routes.dart';
 
-class OtpScreen extends StatefulWidget {
-  final String phoneNumber;
+class OtpScreen extends ConsumerStatefulWidget {
+  final String pendingUserId;
+  final String email;
 
-  const OtpScreen({super.key, required this.phoneNumber});
+  const OtpScreen({
+    super.key,
+    required this.pendingUserId,
+    required this.email,
+  });
 
   @override
-  State<OtpScreen> createState() => _OtpScreenState();
+  ConsumerState<OtpScreen> createState() => _OtpScreenState();
 }
 
-class _OtpScreenState extends State<OtpScreen> {
+class _OtpScreenState extends ConsumerState<OtpScreen> {
   final _pinController = TextEditingController();
   final _focusNode = FocusNode();
   bool _isLoading = false;
   bool _hasError = false;
-  int _resendTimer = 30;
+  String? _errorMessage;
+  int _resendTimer = 60;
   Timer? _timer;
 
   @override
@@ -32,7 +40,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
   void _startTimer() {
     _timer?.cancel();
-    setState(() => _resendTimer = 30);
+    setState(() => _resendTimer = 60);
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (_resendTimer <= 0) {
         t.cancel();
@@ -56,21 +64,33 @@ class _OtpScreenState extends State<OtpScreen> {
     setState(() {
       _isLoading = true;
       _hasError = false;
+      _errorMessage = null;
     });
 
-    // TODO: Intégrer Convex — vérifier OTP
-    await Future.delayed(const Duration(milliseconds: 1200));
-
-    if (!mounted) return;
-
-    // Simuler succès (à remplacer par vrai check)
-    if (pin == '123456') {
-      setState(() => _isLoading = false);
-      context.go(AppRoutes.authProfile);
-    } else {
+    try {
+      await ref.read(authProvider.notifier).verifyEmail(
+            pendingUserId: widget.pendingUserId,
+            code: pin,
+          );
+      if (!mounted) return;
+      final authState = ref.read(authProvider);
+      if (authState.isAuthenticated) {
+        context.go(AppRoutes.home);
+      } else {
+        setState(() {
+          _isLoading = false;
+          _hasError = true;
+          _errorMessage = authState.error ?? 'Code incorrect, réessayez';
+        });
+        _pinController.clear();
+        _focusNode.requestFocus();
+      }
+    } catch (e) {
+      if (!mounted) return;
       setState(() {
         _isLoading = false;
         _hasError = true;
+        _errorMessage = e.toString().replaceFirst('Exception: ', '');
       });
       _pinController.clear();
       _focusNode.requestFocus();
@@ -79,17 +99,35 @@ class _OtpScreenState extends State<OtpScreen> {
 
   Future<void> _resend() async {
     if (_resendTimer > 0) return;
-    // TODO: Renvoi OTP via Convex
-    _startTimer();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Code renvoyé !', style: AmaraTextStyles.bodyMedium),
-        backgroundColor: AmaraColors.success,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-      ),
-    );
+    try {
+      await ref.read(authProvider.notifier).resendVerification(widget.pendingUserId);
+      if (!mounted) return;
+      _startTimer();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Code renvoyé à ${widget.email}',
+              style: AmaraTextStyles.bodyMedium),
+          backgroundColor: AmaraColors.success,
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur lors du renvoi',
+              style: AmaraTextStyles.bodyMedium),
+          backgroundColor: AmaraColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    }
   }
 
   @override
@@ -178,9 +216,9 @@ class _OtpScreenState extends State<OtpScreen> {
                       height: 1.5,
                     ),
                     children: [
-                      const TextSpan(text: 'Code envoyé au\n'),
+                      const TextSpan(text: 'Code envoyé à\n'),
                       TextSpan(
-                        text: widget.phoneNumber,
+                        text: widget.email,
                         style: AmaraTextStyles.bodyLarge.copyWith(
                           color: AmaraColors.white,
                           fontWeight: FontWeight.w600,
@@ -207,14 +245,21 @@ class _OtpScreenState extends State<OtpScreen> {
                     submittedPinTheme: submittedPinTheme,
                     errorPinTheme: errorPinTheme,
                     forceErrorState: _hasError,
-                    errorText: _hasError ? 'Code incorrect, réessayez' : null,
+                    errorText: _hasError
+                        ? (_errorMessage ?? 'Code incorrect, réessayez')
+                        : null,
                     errorTextStyle: AmaraTextStyles.bodySmall.copyWith(
                       color: AmaraColors.error,
                     ),
                     pinAnimationType: PinAnimationType.slide,
                     onCompleted: _verify,
                     onChanged: (_) {
-                      if (_hasError) setState(() => _hasError = false);
+                      if (_hasError) {
+                        setState(() {
+                          _hasError = false;
+                          _errorMessage = null;
+                        });
+                      }
                     },
                   ),
                 )

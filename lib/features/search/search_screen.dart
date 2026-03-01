@@ -64,9 +64,9 @@ String _distanceLabel(Restaurant r) {
 }
 
 // Provider filtré
-final _filteredProvider = Provider.family<AsyncValue<List<Restaurant>>, String>(
-  (ref, city) {
-    final allAsync   = ref.watch(restaurantListProvider(city));
+final _filteredProvider = Provider<AsyncValue<List<Restaurant>>>(
+  (ref) {
+    final allAsync   = ref.watch(restaurantListProvider);
     final query      = ref.watch(searchQueryProvider).toLowerCase().trim();
     final foodType   = ref.watch(_foodTypeProvider);
     final freeOnly   = ref.watch(_maxDeliveryFeeProvider);
@@ -182,7 +182,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final freeOnly   = ref.watch(_maxDeliveryFeeProvider);
     final openOnly   = ref.watch(_openNowProvider);
     final minRating  = ref.watch(_minRatingProvider);
-    final filtered   = ref.watch(_filteredProvider('Abidjan'));
+    final filtered   = ref.watch(_filteredProvider);
 
     final hasFilters = foodType != null || freeOnly || openOnly || minRating > 0 ||
         sort != _SortOption.recommended;
@@ -478,7 +478,7 @@ class _DiscoverView extends StatelessWidget {
 class _NearbyList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(restaurantListProvider('Abidjan'));
+    final async = ref.watch(restaurantListProvider);
     return async.when(
       loading: () => const Center(
         child: Padding(
