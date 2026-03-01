@@ -16,6 +16,9 @@ class FoodCategory {
   }
 }
 
+/// Catégorie sélectionnée sur la home (null = "Tout")
+final selectedCategoryProvider = StateProvider<String?>((ref) => null);
+
 final categoriesProvider =
     FutureProvider<List<FoodCategory>>((ref) async {
   try {

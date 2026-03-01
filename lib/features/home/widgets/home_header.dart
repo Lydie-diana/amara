@@ -7,8 +7,7 @@ import '../../../app/providers/location_provider.dart';
 import 'location_picker_sheet.dart';
 
 class HomeHeader extends ConsumerWidget {
-  final Widget? searchBar;
-  const HomeHeader({super.key, this.searchBar});
+  const HomeHeader({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,150 +18,132 @@ class HomeHeader extends ConsumerWidget {
     final initial = (user?.name.isNotEmpty == true)
         ? user!.name[0].toUpperCase()
         : 'A';
-    final firstName = user?.name.split(' ').first ?? '';
+    final firstName = user?.name.split(' ').first ?? 'Gourmet';
 
     return Container(
-      color: AmaraColors.primary,
-      padding: EdgeInsets.fromLTRB(20, top + 16, 20, 20),
+      color: AmaraColors.bg,
+      padding: EdgeInsets.fromLTRB(20, top + 12, 20, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Localisation + actions ──────────────────────────────────────────
+          // ── Ligne avatar + nom + notif ──
           Row(
             children: [
               Expanded(
-                child: GestureDetector(
-                  onTap: () => _openLocationPicker(context, ref),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(9),
-                        ),
-                        child: const Icon(Icons.location_on_rounded,
-                            color: Colors.white, size: 15),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: AmaraColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      const SizedBox(width: 8),
-                      Column(
+                      child: Center(
+                        child: Text(
+                          initial,
+                          style: TextStyle(
+                            color: AmaraColors.primary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Livrer à',
-                            style: AmaraTextStyles.caption.copyWith(
-                              color: Colors.white.withValues(alpha: 0.65),
+                            '$firstName 👋',
+                            style: AmaraTextStyles.labelMedium.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: AmaraColors.textPrimary,
                             ),
                           ),
-                          Row(
-                            children: [
-                              if (location.isLoading)
-                                _LoadingAddress()
-                              else
-                                Text(
-                                  location.displayAddress,
-                                  style: AmaraTextStyles.labelSmall.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w700,
+                          const SizedBox(height: 2),
+                          GestureDetector(
+                            onTap: () => _openLocationPicker(context),
+                            child: Row(
+                              children: [
+                                Icon(Icons.location_on_rounded,
+                                    color: AmaraColors.primary, size: 14),
+                                const SizedBox(width: 3),
+                                if (location.isLoading)
+                                  _LoadingAddress()
+                                else
+                                  Flexible(
+                                    child: Text(
+                                      location.displayAddress,
+                                      style: AmaraTextStyles.caption.copyWith(
+                                        color: AmaraColors.textSecondary,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ),
-                              const SizedBox(width: 2),
-                              const Icon(Icons.keyboard_arrow_down_rounded,
-                                  color: Colors.white, size: 16),
-                            ],
+                                const SizedBox(width: 2),
+                                Icon(Icons.keyboard_arrow_down_rounded,
+                                    color: AmaraColors.textSecondary, size: 16),
+                              ],
+                            ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-              // Notification
               GestureDetector(
                 onTap: () {},
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
                     Container(
-                      width: 40,
-                      height: 40,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(12),
+                        color: AmaraColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Icon(Icons.notifications_outlined,
-                          color: Colors.white, size: 20),
+                      child: Icon(Icons.notifications_outlined,
+                          color: AmaraColors.primary, size: 21),
                     ),
                     Positioned(
-                      top: -2,
-                      right: -2,
+                      top: -1,
+                      right: -1,
                       child: Container(
                         width: 10,
                         height: 10,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF39C12),
+                          color: AmaraColors.primary,
                           shape: BoxShape.circle,
-                          border: Border.all(
-                              color: AmaraColors.primary, width: 1.5),
+                          border: Border.all(color: Colors.white, width: 1.5),
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 10),
-              // Avatar
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Text(
-                    initial,
-                    style: TextStyle(
-                      color: AmaraColors.primary,
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
-
-          const SizedBox(height: 22),
-
-          // ── Salutation ──────────────────────────────────────────────────────
+          const SizedBox(height: 18),
+          // ── Message accroche ──
           Text(
-            firstName.isNotEmpty ? 'Bonjour, $firstName 👋' : 'Bonjour 👋',
-            style: AmaraTextStyles.caption.copyWith(
-              color: Colors.white.withValues(alpha: 0.7),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            "Qu'est-ce qui vous\nfait envie aujourd'hui ?",
-            style: AmaraTextStyles.h2.copyWith(
-              color: Colors.white,
+            'Qu\'est-ce qui vous\nfait envie aujourd\'hui ?',
+            style: AmaraTextStyles.h1.copyWith(
               fontWeight: FontWeight.w800,
-              height: 1.3,
+              color: AmaraColors.textPrimary,
+              height: 1.25,
             ),
           ),
-          if (searchBar != null) ...[
-            const SizedBox(height: 16),
-            searchBar!,
-          ],
         ],
       ),
     );
   }
 
-  void _openLocationPicker(BuildContext context, WidgetRef ref) {
+  void _openLocationPicker(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -177,10 +158,10 @@ class _LoadingAddress extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 100,
-      height: 12,
+      height: 10,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(6),
+        color: AmaraColors.divider,
+        borderRadius: BorderRadius.circular(5),
       ),
     );
   }

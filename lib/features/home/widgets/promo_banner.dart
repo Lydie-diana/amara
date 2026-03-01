@@ -35,7 +35,7 @@ class _PromoBannerState extends ConsumerState<PromoBanner> {
 
   @override
   Widget build(BuildContext context) {
-    final promosAsync = ref.watch(promotionsProvider('Abidjan'));
+    final promosAsync = ref.watch(promotionsProvider(null));
 
     return promosAsync.when(
       loading: () => const SizedBox(height: 156),
