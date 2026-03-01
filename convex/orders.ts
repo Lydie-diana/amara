@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import {
   requireUser,
   requireRole,
@@ -131,15 +131,16 @@ export const create = mutation({
         imageUrl: v.optional(v.string()),
       })
     ),
-    deliveryAddress: v.string(),
-    deliveryLatitude: v.number(),
-    deliveryLongitude: v.number(),
+    deliveryAddress: v.optional(v.string()),
+    deliveryLatitude: v.optional(v.number()),
+    deliveryLongitude: v.optional(v.number()),
     paymentMethod: v.union(
       v.literal("mobile_money"),
       v.literal("card"),
       v.literal("cash")
     ),
     clientNote: v.optional(v.string()),
+    orderType: v.optional(v.union(v.literal("delivery"), v.literal("pickup"))),
     token: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -179,20 +180,34 @@ export const create = mutation({
       );
     }
 
-    const total = subtotal + restaurant.deliveryFee + serviceFee;
+    const isPickup = args.orderType === "pickup";
+    const deliveryFee = isPickup ? 0 : restaurant.deliveryFee;
+    const total = subtotal + deliveryFee + serviceFee;
     const now = Date.now();
+
+    // Pour pickup : utiliser l'adresse et les coordonnées du restaurant
+    const deliveryAddress = isPickup
+      ? (restaurant as any).address ?? "À emporter"
+      : (args.deliveryAddress ?? "");
+    const deliveryLatitude = isPickup
+      ? (restaurant as any).latitude ?? 5.3484
+      : (args.deliveryLatitude ?? 5.3484);
+    const deliveryLongitude = isPickup
+      ? (restaurant as any).longitude ?? -4.0083
+      : (args.deliveryLongitude ?? -4.0083);
 
     const orderId = await ctx.db.insert("orders", {
       clientId: user._id,
       restaurantId: args.restaurantId,
+      orderType: args.orderType ?? "delivery",
       items: args.items,
       subtotal,
-      deliveryFee: restaurant.deliveryFee,
+      deliveryFee,
       serviceFee,
       total,
-      deliveryAddress: args.deliveryAddress,
-      deliveryLatitude: args.deliveryLatitude,
-      deliveryLongitude: args.deliveryLongitude,
+      deliveryAddress,
+      deliveryLatitude,
+      deliveryLongitude,
       status: "pending",
       paymentMethod: args.paymentMethod,
       paymentStatus: "pending",
@@ -244,6 +259,20 @@ export const updateStatus = mutation({
     // Valider la transition via la state machine
     validateTransition(order.status, args.status, user.role);
 
+    // Garde pickup : empêcher restaurant/client de faire picked_up/delivered sur une commande delivery
+    if ((args.status === "picked_up" || args.status === "delivered") &&
+        (user.role === "restaurant" || user.role === "client")) {
+      const orderType = (order as any).orderType
+        ?? (order.deliveryAddress === "À emporter" ? "pickup" : "delivery");
+      if (orderType !== "pickup") {
+        throw new Error("Seul le livreur peut gérer cette transition pour une commande en livraison");
+      }
+      // Vérifier que le client ne modifie que SA propre commande
+      if (user.role === "client" && order.clientId !== user._id) {
+        throw new Error("Vous ne pouvez modifier que vos propres commandes");
+      }
+    }
+
     const now = Date.now();
 
     await ctx.db.patch(args.orderId, {
@@ -294,18 +323,36 @@ export const updateStatus = mutation({
       }),
     });
 
-    // Auto-dispatch : quand la commande passe à "ready", chercher un livreur
+    // Auto-dispatch : uniquement pour les commandes en livraison
     if (args.status === "ready") {
-      await ctx.scheduler.runAfter(
-        2_000,
-        internal.autoDispatch.findAndDispatch,
-        {
-          orderId: args.orderId,
-          excludeDriverIds: [],
-          attempt: 1,
-        }
-      );
+      const orderType = (order as any).orderType
+        ?? (order.deliveryAddress === "À emporter" ? "pickup" : "delivery");
+      if (orderType !== "pickup") {
+        await ctx.scheduler.runAfter(
+          2_000,
+          internal.autoDispatch.findAndDispatch,
+          {
+            orderId: args.orderId,
+            excludeDriverIds: [],
+            attempt: 1,
+          }
+        );
+      }
     }
+
+    // Auto-delivered : quand une commande pickup passe à picked_up, la finaliser après 2s
+    if (args.status === "picked_up") {
+      const orderType = (order as any).orderType
+        ?? (order.deliveryAddress === "À emporter" ? "pickup" : "delivery");
+      if (orderType === "pickup") {
+        await ctx.scheduler.runAfter(
+          2_000,
+          internal.orders.autoCompletePickup,
+          { orderId: args.orderId }
+        );
+      }
+    }
+
   },
 });
 
@@ -325,6 +372,48 @@ export const retriggerDispatch = mutation({
         attempt: 1,
       }
     );
+  },
+});
+
+/** Auto-compléter une commande pickup après picked_up */
+export const autoCompletePickup = internalMutation({
+  args: { orderId: v.id("orders") },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.orderId);
+    if (!order) return;
+    if (order.status !== "picked_up") return;
+    const orderType = (order as any).orderType
+      ?? (order.deliveryAddress === "À emporter" ? "pickup" : "delivery");
+    if (orderType !== "pickup") return;
+
+    const now = Date.now();
+    await ctx.db.patch(args.orderId, {
+      status: "delivered",
+      updatedAt: now,
+    });
+
+    // Incrémenter orderCount de chaque plat
+    const seen = new Set<string>();
+    for (const item of order.items) {
+      const mid = (item as any).menuItemId;
+      if (!mid || seen.has(mid)) continue;
+      seen.add(mid);
+      const menuItem = await ctx.db.get(mid);
+      if (menuItem) {
+        await ctx.db.patch(mid, {
+          orderCount: ((menuItem as any).orderCount ?? 0) + 1,
+        });
+      }
+    }
+
+    // Enregistrer la transition
+    await ctx.scheduler.runAfter(0, internal.orderStateMachine.recordTransition, {
+      orderId: args.orderId,
+      fromStatus: "picked_up",
+      toStatus: "delivered",
+      triggeredByRole: "system",
+      reason: "Auto-completed pickup order",
+    });
   },
 });
 
