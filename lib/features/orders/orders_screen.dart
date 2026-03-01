@@ -1,28 +1,44 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/widgets/error_dialog.dart';
 import '../../app/providers/auth_provider.dart';
 import '../../app/providers/restaurant_provider.dart';
 import '../../app/services/convex_client.dart';
 import '../menu_item/menu_item_detail_screen.dart';
 
-// ─── Provider commandes ───────────────────────────────────────────────────────
+// ─── Provider commandes (polling 5s pour temps réel) ──────────────────────────
 
 final myOrdersProvider =
-    FutureProvider<List<Map<String, dynamic>>>((ref) async {
+    StreamProvider<List<Map<String, dynamic>>>((ref) async* {
   final auth = ref.watch(authProvider);
-  if (!auth.isAuthenticated) return [];
+  if (!auth.isAuthenticated) {
+    yield [];
+    return;
+  }
+
+  final client = ref.read(convexClientProvider);
+
+  // Émission immédiate
   try {
-    final client = ref.read(convexClientProvider);
     final orders = await client.getMyOrders();
-    return orders
-        .map((o) => Map<String, dynamic>.from(o as Map))
-        .toList();
+    yield orders.map((o) => Map<String, dynamic>.from(o as Map)).toList();
   } catch (_) {
-    return [];
+    yield [];
+  }
+
+  // Puis polling toutes les 5 secondes
+  await for (final _ in Stream.periodic(const Duration(seconds: 5))) {
+    try {
+      final orders = await client.getMyOrders();
+      yield orders.map((o) => Map<String, dynamic>.from(o as Map)).toList();
+    } catch (_) {
+      // Garder les données précédentes en cas d'erreur réseau
+    }
   }
 });
 
@@ -642,15 +658,7 @@ class _OrderTile extends ConsumerWidget {
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Erreur : $e'),
-                      backgroundColor: AmaraColors.error,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                    ),
-                  );
+                  showErrorDialog(context, e);
                 }
               }
             },

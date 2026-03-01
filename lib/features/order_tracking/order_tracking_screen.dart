@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/widgets/error_dialog.dart';
 import '../../app/providers/auth_provider.dart';
 import '../../app/router/app_routes.dart';
 import '../../app/services/convex_client.dart';
@@ -60,7 +61,7 @@ final _orderTrackingProvider =
   }
 });
 
-// Statut → step index (0-based)
+// Statut → step index (0-based) — Livraison
 const _statusSteps = {
   'pending': 0,
   'confirmed': 0,
@@ -68,6 +69,17 @@ const _statusSteps = {
   'ready': 2,
   'delivering': 3,
   'delivered': 4,
+  'cancelled': -1,
+};
+
+// Statut → step index (0-based) — À emporter (pas de "delivering")
+const _pickupStatusSteps = {
+  'pending': 0,
+  'confirmed': 0,
+  'preparing': 1,
+  'ready': 2,
+  'picked_up': 3,
+  'delivered': 3,
   'cancelled': -1,
 };
 
@@ -88,7 +100,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
   @override
   void initState() {
     super.initState();
-    _pollingTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+    _pollingTimer = Timer.periodic(const Duration(seconds: 5), (_) {
       ref.invalidate(_orderTrackingProvider(widget.orderId));
     });
   }
@@ -97,6 +109,18 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
   void dispose() {
     _pollingTimer?.cancel();
     super.dispose();
+  }
+
+  Future<void> _confirmPickup() async {
+    try {
+      final client = ref.read(convexClientProvider);
+      await client.confirmPickup(widget.orderId);
+      ref.invalidate(_orderTrackingProvider(widget.orderId));
+    } catch (e) {
+      if (mounted) {
+        showErrorDialog(context, e);
+      }
+    }
   }
 
   void _goBack() {
@@ -146,6 +170,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
           orderId: widget.orderId,
           onBack: _goBack,
           clientName: ref.watch(currentUserProvider)?.name ?? 'Client',
+          onConfirmPickup: () => _confirmPickup(),
         ),
       ),
     );
@@ -159,16 +184,23 @@ class _TrackingBody extends StatelessWidget {
   final String orderId;
   final VoidCallback onBack;
   final String clientName;
+  final VoidCallback? onConfirmPickup;
 
   const _TrackingBody({
     required this.order,
     required this.orderId,
     required this.onBack,
     required this.clientName,
+    this.onConfirmPickup,
   });
 
   String get _status => order['status'] as String? ?? 'pending';
-  int get _step => _statusSteps[_status] ?? 0;
+  bool get _isPickup =>
+      order['orderType'] == 'pickup' ||
+      (order['orderType'] == null && order['deliveryAddress'] == 'À emporter');
+  int get _step => _isPickup
+      ? (_pickupStatusSteps[_status] ?? 0)
+      : (_statusSteps[_status] ?? 0);
   bool get _isCancelled => _status == 'cancelled';
   bool get _isDelivered => _status == 'delivered';
 
@@ -191,32 +223,51 @@ class _TrackingBody extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Informations client ─────────────────────────────
+          // ── Informations client / pickup ─────────────────────
           Text(
-            'Informations client',
+            _isPickup ? 'Commande à emporter' : 'Informations client',
             style: AmaraTextStyles.labelLarge.copyWith(
               fontWeight: FontWeight.w800,
               color: AmaraColors.textPrimary,
             ),
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _InfoChip(
-                  label: 'Nom du destinataire',
-                  value: clientName,
+          if (_isPickup)
+            Row(
+              children: [
+                Expanded(
+                  child: _InfoChip(
+                    label: 'Restaurant',
+                    value: restaurantName,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _InfoChip(
-                  label: 'Adresse',
-                  value: address.isNotEmpty ? address : 'Cocody, Abidjan',
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _InfoChip(
+                    label: 'Adresse du restaurant',
+                    value: address.isNotEmpty ? address : 'Voir sur la carte',
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            )
+          else
+            Row(
+              children: [
+                Expanded(
+                  child: _InfoChip(
+                    label: 'Nom du destinataire',
+                    value: clientName,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _InfoChip(
+                    label: 'Adresse',
+                    value: address.isNotEmpty ? address : 'Cocody, Abidjan',
+                  ),
+                ),
+              ],
+            ),
 
           const SizedBox(height: 28),
 
@@ -224,12 +275,14 @@ class _TrackingBody extends StatelessWidget {
           _HorizontalProgress(
             currentStep: _step,
             isCancelled: _isCancelled,
+            isPickup: _isPickup,
           ),
 
           const SizedBox(height: 28),
 
-          // ── Carte tracking livreur (si en livraison) ──────────
-          if ((_status == 'delivering' || _status == 'picked_up') &&
+          // ── Carte tracking livreur (livraison uniquement) ──────────
+          if (!_isPickup &&
+              (_status == 'delivering' || _status == 'picked_up') &&
               order['livreurId'] != null)
             _DriverTrackingMap(
               livreurId: order['livreurId'] as String,
@@ -240,7 +293,8 @@ class _TrackingBody extends StatelessWidget {
               deliveryAddress: address,
             ),
 
-          if ((_status == 'delivering' || _status == 'picked_up') &&
+          if (!_isPickup &&
+              (_status == 'delivering' || _status == 'picked_up') &&
               order['livreurId'] != null)
             const SizedBox(height: 20),
 
@@ -251,7 +305,32 @@ class _TrackingBody extends StatelessWidget {
             estimatedTime: estimatedTime,
             isCancelled: _isCancelled,
             isDelivered: _isDelivered,
+            isPickup: _isPickup,
           ),
+
+          // ── Bouton "J'ai récupéré" (pickup + ready) ──────────
+          if (_isPickup && _status == 'ready' && onConfirmPickup != null) ...[
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                onPressed: onConfirmPickup,
+                icon: const Icon(Icons.check_circle_rounded, size: 22),
+                label: const Text(
+                  'J\'ai recupere ma commande',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AmaraColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+            ),
+          ],
 
           const SizedBox(height: 28),
 
@@ -744,19 +823,30 @@ class _InfoChip extends StatelessWidget {
 class _HorizontalProgress extends StatelessWidget {
   final int currentStep;
   final bool isCancelled;
+  final bool isPickup;
 
   const _HorizontalProgress({
     required this.currentStep,
     required this.isCancelled,
+    this.isPickup = false,
   });
 
-  static const _steps = [
+  static const _deliverySteps = [
     (Icons.receipt_long_rounded, 'En attente'),
     (Icons.restaurant_rounded, 'Preparation'),
     (Icons.inventory_2_rounded, 'Prete'),
     (Icons.delivery_dining_rounded, 'En livraison'),
     (Icons.home_rounded, 'Livree'),
   ];
+
+  static const _pickupSteps = [
+    (Icons.receipt_long_rounded, 'Commandee'),
+    (Icons.restaurant_rounded, 'Preparation'),
+    (Icons.inventory_2_rounded, 'Prete'),
+    (Icons.shopping_bag_rounded, 'Recuperee'),
+  ];
+
+  List<(IconData, String)> get _steps => isPickup ? _pickupSteps : _deliverySteps;
 
   @override
   Widget build(BuildContext context) {
@@ -837,6 +927,7 @@ class _ChefSection extends StatelessWidget {
   final int estimatedTime;
   final bool isCancelled;
   final bool isDelivered;
+  final bool isPickup;
 
   const _ChefSection({
     required this.status,
@@ -844,10 +935,20 @@ class _ChefSection extends StatelessWidget {
     required this.estimatedTime,
     required this.isCancelled,
     required this.isDelivered,
+    this.isPickup = false,
   });
 
   String get _emoji {
     if (isCancelled) return '❌';
+    if (isPickup) {
+      return switch (status) {
+        'pending' || 'confirmed' => '⏳',
+        'preparing' => '👨‍🍳',
+        'ready' => '🥡',
+        'picked_up' || 'delivered' => '🎉',
+        _ => '📋',
+      };
+    }
     return switch (status) {
       'pending' || 'confirmed' => '⏳',
       'preparing' => '👨‍🍳',
@@ -860,6 +961,15 @@ class _ChefSection extends StatelessWidget {
 
   String get _title {
     if (isCancelled) return 'Commande annulee';
+    if (isPickup) {
+      return switch (status) {
+        'pending' || 'confirmed' => 'En attente de confirmation',
+        'preparing' => 'Le chef prepare votre commande',
+        'ready' => 'Votre commande est prete !',
+        'picked_up' || 'delivered' => 'Commande recuperee !',
+        _ => 'En cours de traitement',
+      };
+    }
     return switch (status) {
       'pending' || 'confirmed' => 'En attente de confirmation',
       'preparing' => 'Le chef prepare votre commande',
@@ -872,6 +982,19 @@ class _ChefSection extends StatelessWidget {
 
   String get _subtitle {
     if (isCancelled) return 'Votre commande a ete annulee.';
+    if (isPickup) {
+      return switch (status) {
+        'pending' || 'confirmed' =>
+          '$restaurantName va bientot confirmer votre commande.',
+        'preparing' =>
+          'Votre repas sera pret dans ~$estimatedTime min.',
+        'ready' =>
+          'Rendez-vous chez $restaurantName pour recuperer votre commande !',
+        'picked_up' || 'delivered' =>
+          'Bon appetit !',
+        _ => '',
+      };
+    }
     return switch (status) {
       'pending' || 'confirmed' =>
         '$restaurantName va bientot confirmer votre commande.',
@@ -882,7 +1005,7 @@ class _ChefSection extends StatelessWidget {
       'delivering' =>
         'Votre commande est en chemin. Restez disponible !',
       'delivered' =>
-        'Votre commande a ete livree. Bon appetit ! 🎉',
+        'Votre commande a ete livree. Bon appetit !',
       _ => '',
     };
   }
@@ -1036,6 +1159,8 @@ class _OrderSummary extends StatelessWidget {
         0;
     final address = order['deliveryAddress'] as String? ?? '';
     final payment = order['paymentMethod'] as String? ?? '';
+    final isPickup = order['orderType'] == 'pickup' ||
+        (order['orderType'] == null && address == 'À emporter');
     final shortId = orderId.length > 10
         ? '#${orderId.substring(0, 8).toUpperCase()}...'
         : '#$orderId';
@@ -1053,14 +1178,12 @@ class _OrderSummary extends StatelessWidget {
             label: 'Commande',
             value: shortId,
           ),
-          if (address.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            _SummaryRow(
-              icon: Icons.location_on_rounded,
-              label: 'Livraison',
-              value: address,
-            ),
-          ],
+          const SizedBox(height: 10),
+          _SummaryRow(
+            icon: isPickup ? Icons.store_rounded : Icons.location_on_rounded,
+            label: isPickup ? 'Mode' : 'Livraison',
+            value: isPickup ? 'A emporter' : (address.isNotEmpty ? address : 'Non renseignee'),
+          ),
           if (payment.isNotEmpty) ...[
             const SizedBox(height: 10),
             _SummaryRow(

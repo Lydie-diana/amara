@@ -8,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/widgets/error_dialog.dart';
 import '../../app/providers/address_suggestions_provider.dart';
 import '../../app/models/cart_model.dart';
 import '../../app/providers/address_provider.dart';
@@ -148,12 +149,21 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
       final targetRestaurantId = widget.restaurantId ?? cart.restaurantId;
 
+      // Agréger les notes des articles du panier
+      final itemNotes = cart.items
+          .where((ci) => ci.note != null && ci.note!.trim().isNotEmpty)
+          .map((ci) => '${ci.item.name}: ${ci.note!.trim()}')
+          .toList();
+      final clientNote = itemNotes.isNotEmpty ? itemNotes.join(' | ') : null;
+
       String orderId;
       if (authState.isAuthenticated && targetRestaurantId != null) {
+        final isDelivery = _selectedService == 'Livraison';
         orderId = await client.createOrder(
           restaurantId: targetRestaurantId,
           items: items,
-          deliveryAddress: _selectedService == 'Livraison'
+          orderType: isDelivery ? 'delivery' : 'pickup',
+          deliveryAddress: isDelivery
               ? [
                   _addressController.text.trim(),
                   if (_streetController.text.trim().isNotEmpty)
@@ -161,11 +171,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   if (_instructionsController.text.trim().isNotEmpty)
                     _instructionsController.text.trim(),
                 ].join(' — ')
-              : 'À emporter',
+              : null,
           paymentMethod: _paymentMethods
               .firstWhere((m) => m['name'] == _selectedPayment)['value'] as String,
-          deliveryLatitude: _deliveryLatLng.latitude,
-          deliveryLongitude: _deliveryLatLng.longitude,
+          deliveryLatitude: isDelivery ? _deliveryLatLng.latitude : null,
+          deliveryLongitude: isDelivery ? _deliveryLatLng.longitude : null,
+          clientNote: clientNote,
         );
       } else {
         await Future.delayed(const Duration(seconds: 1));
@@ -203,18 +214,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Erreur : ${e.toString().replaceFirst('Exception: ', '')}',
-                style:
-                    AmaraTextStyles.bodySmall.copyWith(color: Colors.white)),
-            backgroundColor: AmaraColors.error,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12)),
-          ),
-        );
+        showErrorDialog(context, e);
       }
     }
   }

@@ -245,19 +245,22 @@ class ConvexClient {
   Future<String> createOrder({
     required String restaurantId,
     required List<Map<String, dynamic>> items,
-    required String deliveryAddress,
     required String paymentMethod,
+    String? deliveryAddress,
     double? deliveryLatitude,
     double? deliveryLongitude,
     String? clientNote,
+    String? orderType,
   }) async {
     final data = await post('/api/orders', body: {
       'restaurantId': restaurantId,
       'items': items,
-      'deliveryAddress': deliveryAddress,
-      'deliveryLatitude': deliveryLatitude ?? 5.3484,
-      'deliveryLongitude': deliveryLongitude ?? -4.0083,
       'paymentMethod': paymentMethod,
+      'orderType': orderType ?? 'delivery',
+      if (deliveryAddress != null && deliveryAddress.isNotEmpty)
+        'deliveryAddress': deliveryAddress,
+      if (deliveryLatitude != null) 'deliveryLatitude': deliveryLatitude,
+      if (deliveryLongitude != null) 'deliveryLongitude': deliveryLongitude,
       if (clientNote != null) 'clientNote': clientNote,
     });
     final result = Map<String, dynamic>.from(data as Map);
@@ -276,6 +279,14 @@ class ConvexClient {
       'orderId': orderId,
       'status': 'cancelled',
       if (reason != null) 'reason': reason,
+    });
+  }
+
+  /// Confirmer la récupération d'une commande à emporter (client, pickup + ready)
+  Future<void> confirmPickup(String orderId) async {
+    await post('/api/order/status', body: {
+      'orderId': orderId,
+      'status': 'picked_up',
     });
   }
 

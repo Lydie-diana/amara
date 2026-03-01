@@ -125,7 +125,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             error: (e, _) => SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(20),
-                child: Text('Erreur : $e',
+                child: Text(
+                    'Impossible de charger les restaurants. Vérifiez votre connexion internet.',
                     style: AmaraTextStyles.bodySmall.copyWith(
                         color: AmaraColors.error)),
               ),

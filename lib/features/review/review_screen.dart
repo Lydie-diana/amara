@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/widgets/error_dialog.dart';
 import '../../app/services/convex_client.dart';
 
 /// Ecran de notation après livraison — restaurant (obligatoire) + livreur (optionnel)
@@ -65,16 +66,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isSubmitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              e.toString().contains('déjà noté')
-                  ? 'Vous avez deja note cette commande'
-                  : 'Erreur lors de la soumission',
-            ),
-            backgroundColor: AmaraColors.error,
-          ),
-        );
+        showErrorDialog(context, e);
       }
     }
   }

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/widgets/error_dialog.dart';
 import '../../app/providers/auth_provider.dart';
 
 class PersonalInfoScreen extends ConsumerStatefulWidget {
@@ -119,17 +120,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                 if (!mounted) return;
                 setState(() => _isSaving = false);
                 if (error != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(error,
-                          style: AmaraTextStyles.bodyMedium
-                              .copyWith(color: Colors.white)),
-                      backgroundColor: AmaraColors.error,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                  );
+                  showErrorDialog(context, error, title: 'Mise à jour échouée');
                   return;
                 }
                 // Sync controllers avec les valeurs retournées par le serveur

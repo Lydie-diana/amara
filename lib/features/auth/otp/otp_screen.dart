@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
+import '../../../app/core/widgets/error_dialog.dart';
 import '../../../app/providers/auth_provider.dart';
 import '../../../app/router/app_routes.dart';
 
@@ -90,7 +91,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       setState(() {
         _isLoading = false;
         _hasError = true;
-        _errorMessage = e.toString().replaceFirst('Exception: ', '');
+        _errorMessage = 'Une erreur est survenue. Vérifiez votre connexion et réessayez.';
       });
       _pinController.clear();
       _focusNode.requestFocus();
@@ -116,17 +117,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Erreur lors du renvoi',
-              style: AmaraTextStyles.bodyMedium),
-          backgroundColor: AmaraColors.error,
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
+      showErrorDialog(context, e, title: 'Envoi échoué');
     }
   }
 
