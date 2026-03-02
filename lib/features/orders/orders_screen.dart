@@ -11,6 +11,7 @@ import '../../app/providers/auth_provider.dart';
 import '../../app/providers/restaurant_provider.dart';
 import '../../app/services/convex_client.dart';
 import '../menu_item/menu_item_detail_screen.dart';
+import '../order_tracking/order_tracking_screen.dart';
 
 // ─── Provider commandes (polling 5s pour temps réel) ──────────────────────────
 
@@ -648,16 +649,9 @@ class _OrderTile extends ConsumerWidget {
                 await client.cancelOrder(orderId,
                     reason: AppLocalizations.of(context).ordersCancelledByClient);
                 ref.invalidate(myOrdersProvider);
+                ref.invalidate(orderTrackingProvider(orderId));
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(AppLocalizations.of(context).ordersCancelledSuccess),
-                      backgroundColor: AmaraColors.success,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                    ),
-                  );
+                  context.push('/order/$orderId/tracking');
                 }
               } catch (e) {
                 if (context.mounted) {

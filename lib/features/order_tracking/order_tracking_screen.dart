@@ -20,7 +20,7 @@ import 'receipt_screen.dart';
 
 // ─── Provider de suivi commande (polling toutes les 10s) ─────────────────────
 
-final _orderTrackingProvider =
+final orderTrackingProvider =
     FutureProvider.family<Map<String, dynamic>, String>((ref, orderId) async {
   if (RegExp(r'^\d+$').hasMatch(orderId) || orderId.startsWith('ORD')) {
     return {
@@ -103,7 +103,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
   void initState() {
     super.initState();
     _pollingTimer = Timer.periodic(const Duration(seconds: 5), (_) {
-      ref.invalidate(_orderTrackingProvider(widget.orderId));
+      ref.invalidate(orderTrackingProvider(widget.orderId));
     });
   }
 
@@ -113,11 +113,66 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
     super.dispose();
   }
 
+  Future<void> _cancelOrder() async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(l10n.ordersCancelTitle,
+            style: AmaraTextStyles.h3.copyWith(fontWeight: FontWeight.w700)),
+        content: Text(
+          l10n.ordersCancelMessage,
+          style: AmaraTextStyles.bodySmall
+              .copyWith(color: AmaraColors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.ordersCancelNo,
+                style: TextStyle(
+                    color: AmaraColors.textSecondary,
+                    fontWeight: FontWeight.w600)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.ordersCancelYes,
+                style: TextStyle(
+                    color: AmaraColors.error, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    try {
+      final client = ref.read(convexClientProvider);
+      await client.cancelOrder(widget.orderId,
+          reason: l10n.ordersCancelledByClient);
+      ref.invalidate(orderTrackingProvider(widget.orderId));
+      if (mounted) {
+        HapticFeedback.mediumImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.ordersCancelledSuccess,
+                style: AmaraTextStyles.bodySmall.copyWith(color: Colors.white)),
+            backgroundColor: AmaraColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) showErrorDialog(context, e);
+    }
+  }
+
   Future<void> _confirmPickup() async {
     try {
       final client = ref.read(convexClientProvider);
       await client.confirmPickup(widget.orderId);
-      ref.invalidate(_orderTrackingProvider(widget.orderId));
+      ref.invalidate(orderTrackingProvider(widget.orderId));
     } catch (e) {
       if (mounted) {
         showErrorDialog(context, e);
@@ -137,7 +192,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
   @override
   Widget build(BuildContext context) {
     final orderAsync =
-        ref.watch(_orderTrackingProvider(widget.orderId));
+        ref.watch(orderTrackingProvider(widget.orderId));
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -165,7 +220,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
         ),
         error: (e, _) => _ErrorView(
           onRetry: () =>
-              ref.invalidate(_orderTrackingProvider(widget.orderId)),
+              ref.invalidate(orderTrackingProvider(widget.orderId)),
         ),
         data: (order) => _TrackingBody(
           order: order,
@@ -174,6 +229,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
           clientName: ref.watch(currentUserProvider)?.name ?? 'Client',
           clientPhone: ref.watch(currentUserProvider)?.phone ?? '',
           onConfirmPickup: () => _confirmPickup(),
+          onCancelOrder: () => _cancelOrder(),
         ),
       ),
     );
@@ -189,6 +245,7 @@ class _TrackingBody extends StatelessWidget {
   final String clientName;
   final String clientPhone;
   final VoidCallback? onConfirmPickup;
+  final VoidCallback? onCancelOrder;
 
   const _TrackingBody({
     required this.order,
@@ -197,6 +254,7 @@ class _TrackingBody extends StatelessWidget {
     required this.clientName,
     this.clientPhone = '',
     this.onConfirmPickup,
+    this.onCancelOrder,
   });
 
   String get _status => order['status'] as String? ?? 'pending';
@@ -317,6 +375,30 @@ class _TrackingBody extends StatelessWidget {
             isDelivered: _isDelivered,
             isPickup: _isPickup,
           ),
+
+          // ── Bouton "Annuler la commande" (pending/confirmed) ──────
+          if ((_status == 'pending' || _status == 'confirmed') && onCancelOrder != null) ...[
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: OutlinedButton.icon(
+                onPressed: onCancelOrder,
+                icon: const Icon(Icons.close_rounded, size: 20),
+                label: Text(
+                  AppLocalizations.of(context).ordersCancelButton,
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AmaraColors.error,
+                  side: const BorderSide(color: AmaraColors.error, width: 1.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+            ),
+          ],
 
           // ── Bouton "J'ai récupéré" (pickup + ready) ──────────
           if (_isPickup && _status == 'ready' && onConfirmPickup != null) ...[

@@ -58,6 +58,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     {'name': 'Carte bancaire', 'value': 'card', 'icon': Icons.credit_card_rounded, 'key': 'Carte'},
   ];
 
+  bool _addressInitialized = false;
+
   @override
   void initState() {
     super.initState();
@@ -69,8 +71,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     _phoneController = TextEditingController(
       text: user?.phone ?? '',
     );
-    if (defaultAddr?.lat != null && defaultAddr?.lng != null) {
-      _deliveryLatLng = LatLng(defaultAddr!.lat!, defaultAddr.lng!);
+    if (defaultAddr != null) {
+      _addressInitialized = true;
+      if (defaultAddr.lat != null && defaultAddr.lng != null) {
+        _deliveryLatLng = LatLng(defaultAddr.lat!, defaultAddr.lng!);
+      }
     }
   }
 
@@ -519,6 +524,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch default address — syncs when async load from SharedPreferences completes
+    final defaultAddr = ref.watch(defaultAddressProvider);
+    if (!_addressInitialized && defaultAddr != null) {
+      _addressInitialized = true;
+      _addressController.text = defaultAddr.address;
+      if (defaultAddr.lat != null && defaultAddr.lng != null) {
+        _deliveryLatLng = LatLng(defaultAddr.lat!, defaultAddr.lng!);
+      }
+    }
+
     final fullCart = ref.watch(cartProvider);
     final cart = _filteredCart(fullCart);
     final subtotal = cart.subtotal;
