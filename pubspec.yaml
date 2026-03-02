@@ -55,6 +55,11 @@ dependencies:
   geocoding: ^3.0.0
   share_plus: ^12.0.1
 
+  # PDF receipt
+  pdf: ^3.10.0
+  printing: ^5.11.0
+  path_provider: ^2.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

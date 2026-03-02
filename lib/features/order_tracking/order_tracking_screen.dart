@@ -15,6 +15,7 @@ import '../../app/router/app_routes.dart';
 import '../../app/services/convex_client.dart';
 import '../review/review_screen.dart';
 import '../shell/main_shell.dart';
+import 'receipt_screen.dart';
 
 // ─── Provider de suivi commande (polling toutes les 10s) ─────────────────────
 
@@ -657,6 +658,42 @@ class _DeliveredViewState extends State<_DeliveredView> {
                       ),
                     ),
                   ],
+                ),
+
+                // ── Bouton Reçu ────────────────────────────────────
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => ReceiptScreen(
+                            orderId: widget.orderId,
+                            order: widget.order,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.receipt_long_rounded, size: 20),
+                    label: Text(
+                      'Voir le reçu',
+                      style: AmaraTextStyles.labelMedium.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AmaraColors.primary,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AmaraColors.primary,
+                      side: const BorderSide(
+                          color: AmaraColors.primary, width: 1.5),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                  ),
                 ),
 
                 // ── Info livreur ────────────────────────────────────
