@@ -14,6 +14,8 @@ import '../../app/models/cart_model.dart';
 import '../../app/providers/address_provider.dart';
 import '../../app/providers/cart_provider.dart';
 import '../../app/providers/auth_provider.dart';
+import '../../app/models/restaurant_model.dart';
+import '../../app/providers/restaurant_provider.dart';
 import '../../app/services/convex_client.dart';
 import '../orders/orders_screen.dart';
 
@@ -49,10 +51,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   late final TextEditingController _phoneController;
 
   final List<Map<String, dynamic>> _paymentMethods = [
-    {'name': 'Mobile Money', 'value': 'mobile_money', 'icon': Icons.phone_android_rounded},
-    {'name': 'Wave', 'value': 'mobile_money', 'icon': Icons.waves_rounded},
-    {'name': 'Cash', 'value': 'cash', 'icon': Icons.payments_rounded},
-    {'name': 'Carte bancaire', 'value': 'card', 'icon': Icons.credit_card_rounded},
+    {'name': 'Mobile Money', 'value': 'mobile_money', 'icon': Icons.phone_android_rounded, 'key': 'Mobile Money'},
+    {'name': 'Wave', 'value': 'mobile_money', 'icon': Icons.waves_rounded, 'key': 'Mobile Money'},
+    {'name': 'Cash', 'value': 'cash', 'icon': Icons.payments_rounded, 'key': 'Cash'},
+    {'name': 'Carte bancaire', 'value': 'card', 'icon': Icons.credit_card_rounded, 'key': 'Carte'},
   ];
 
   @override
@@ -528,6 +530,42 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
     final group = cart.groups.isNotEmpty ? cart.groups.first : null;
 
+    // Charger les modes supportés par le restaurant
+    final targetRestaurantId = widget.restaurantId ?? cart.restaurantId;
+    final restaurantAsync = targetRestaurantId != null
+        ? ref.watch(restaurantDetailProvider(targetRestaurantId))
+        : null;
+    final restaurant = restaurantAsync?.valueOrNull;
+    final supportedServices = restaurant?.serviceModes ?? ServiceMode.values.toList();
+    final supportedPayments = restaurant?.paymentMethods ?? ['Mobile Money', 'Cash'];
+    final deliveryEnabled = supportedServices.contains(ServiceMode.delivery);
+    final takeawayEnabled = supportedServices.contains(ServiceMode.takeaway);
+
+    // Auto-sélectionner le premier mode disponible si le courant est grisé
+    if (_selectedService == 'Livraison' && !deliveryEnabled && takeawayEnabled) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _selectedService = 'À emporter');
+      });
+    } else if (_selectedService == 'À emporter' && !takeawayEnabled && deliveryEnabled) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _selectedService = 'Livraison');
+      });
+    }
+
+    // Auto-sélectionner le premier mode de paiement disponible si le courant est grisé
+    final currentPaymentKey = _paymentMethods
+        .firstWhere((m) => m['name'] == _selectedPayment, orElse: () => _paymentMethods.first)['key'] as String;
+    if (!supportedPayments.contains(currentPaymentKey)) {
+      final firstAvailable = _paymentMethods
+          .where((m) => supportedPayments.contains(m['key'] as String))
+          .firstOrNull;
+      if (firstAvailable != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) setState(() => _selectedPayment = firstAvailable['name'] as String);
+        });
+      }
+    }
+
     return Scaffold(
       backgroundColor: AmaraColors.bg,
       body: Column(
@@ -558,6 +596,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             label: 'Livraison',
                             icon: Icons.delivery_dining_rounded,
                             isSelected: _selectedService == 'Livraison',
+                            enabled: deliveryEnabled,
                             onTap: () => setState(
                                 () => _selectedService = 'Livraison'),
                           ),
@@ -566,6 +605,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             label: 'À emporter',
                             icon: Icons.takeout_dining_rounded,
                             isSelected: _selectedService == 'À emporter',
+                            enabled: takeawayEnabled,
                             onTap: () => setState(
                                 () => _selectedService = 'À emporter'),
                           ),
@@ -1115,68 +1155,107 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             ..._paymentMethods.map((method) {
                               final isSelected =
                                   _selectedPayment == method['name'];
+                              final isEnabled = supportedPayments
+                                  .contains(method['key'] as String);
                               return GestureDetector(
-                                onTap: () {
-                                  HapticFeedback.selectionClick();
-                                  setState(() => _selectedPayment =
-                                      method['name']);
-                                },
-                                child: Container(
-                                  margin:
-                                      const EdgeInsets.only(bottom: 8),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 14),
-                                  decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? AmaraColors.primary
-                                            .withValues(alpha: 0.06)
-                                        : AmaraColors.bg,
-                                    borderRadius:
-                                        BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? AmaraColors.primary
-                                          : AmaraColors.divider,
-                                      width: isSelected ? 1.5 : 1,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        method['icon'] as IconData,
-                                        color: isSelected
-                                            ? AmaraColors.primary
-                                            : AmaraColors.textSecondary,
-                                        size: 22,
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          method['name'] as String,
-                                          style: AmaraTextStyles
-                                              .labelMedium
-                                              .copyWith(
-                                            fontWeight: isSelected
-                                                ? FontWeight.w700
-                                                : FontWeight.w500,
-                                            color: isSelected
+                                onTap: isEnabled
+                                    ? () {
+                                        HapticFeedback.selectionClick();
+                                        setState(() => _selectedPayment =
+                                            method['name']);
+                                      }
+                                    : null,
+                                child: Opacity(
+                                  opacity: isEnabled ? 1.0 : 0.4,
+                                  child: Container(
+                                    margin:
+                                        const EdgeInsets.only(bottom: 8),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 14),
+                                    decoration: BoxDecoration(
+                                      color: !isEnabled
+                                          ? AmaraColors.bgAlt
+                                          : isSelected
+                                              ? AmaraColors.primary
+                                                  .withValues(alpha: 0.06)
+                                              : AmaraColors.bg,
+                                      borderRadius:
+                                          BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: !isEnabled
+                                            ? AmaraColors.divider
+                                            : isSelected
                                                 ? AmaraColors.primary
-                                                : AmaraColors
-                                                    .textPrimary,
+                                                : AmaraColors.divider,
+                                        width: isSelected && isEnabled
+                                            ? 1.5
+                                            : 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          method['icon'] as IconData,
+                                          color: !isEnabled
+                                              ? AmaraColors.muted
+                                              : isSelected
+                                                  ? AmaraColors.primary
+                                                  : AmaraColors
+                                                      .textSecondary,
+                                          size: 22,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                method['name'] as String,
+                                                style: AmaraTextStyles
+                                                    .labelMedium
+                                                    .copyWith(
+                                                  fontWeight: isSelected &&
+                                                          isEnabled
+                                                      ? FontWeight.w700
+                                                      : FontWeight.w500,
+                                                  color: !isEnabled
+                                                      ? AmaraColors.muted
+                                                      : isSelected
+                                                          ? AmaraColors
+                                                              .primary
+                                                          : AmaraColors
+                                                              .textPrimary,
+                                                ),
+                                              ),
+                                              if (!isEnabled)
+                                                Text(
+                                                  'Non disponible',
+                                                  style: AmaraTextStyles
+                                                      .caption
+                                                      .copyWith(
+                                                    color:
+                                                        AmaraColors.muted,
+                                                    fontSize: 10,
+                                                  ),
+                                                ),
+                                            ],
                                           ),
                                         ),
-                                      ),
-                                      if (isSelected)
-                                        const Icon(
-                                            Icons.check_circle_rounded,
-                                            color: AmaraColors.primary,
-                                            size: 20)
-                                      else
-                                        const Icon(
-                                            Icons.circle_outlined,
-                                            color: AmaraColors.divider,
-                                            size: 20),
-                                    ],
+                                        if (isSelected && isEnabled)
+                                          const Icon(
+                                              Icons.check_circle_rounded,
+                                              color: AmaraColors.primary,
+                                              size: 20)
+                                        else
+                                          Icon(
+                                              Icons.circle_outlined,
+                                              color: !isEnabled
+                                                  ? AmaraColors.muted
+                                                  : AmaraColors.divider,
+                                              size: 20),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               );
@@ -1264,46 +1343,71 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     required IconData icon,
     required bool isSelected,
     required VoidCallback onTap,
+    bool enabled = true,
   }) {
     return Expanded(
       child: GestureDetector(
-        onTap: () {
-          HapticFeedback.selectionClick();
-          onTap();
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? AmaraColors.primary.withValues(alpha: 0.08)
-                : AmaraColors.bgAlt,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color:
-                  isSelected ? AmaraColors.primary : AmaraColors.divider,
-              width: isSelected ? 1.5 : 1,
-            ),
-          ),
-          child: Column(
-            children: [
-              Icon(icon,
-                  color: isSelected
-                      ? AmaraColors.primary
-                      : AmaraColors.muted,
-                  size: 22),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: AmaraTextStyles.caption.copyWith(
-                  color: isSelected
-                      ? AmaraColors.primary
-                      : AmaraColors.textSecondary,
-                  fontWeight:
-                      isSelected ? FontWeight.w700 : FontWeight.w400,
-                ),
+        onTap: enabled
+            ? () {
+                HapticFeedback.selectionClick();
+                onTap();
+              }
+            : null,
+        child: Opacity(
+          opacity: enabled ? 1.0 : 0.4,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            decoration: BoxDecoration(
+              color: !enabled
+                  ? AmaraColors.bgAlt
+                  : isSelected
+                      ? AmaraColors.primary.withValues(alpha: 0.08)
+                      : AmaraColors.bgAlt,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: !enabled
+                    ? AmaraColors.divider
+                    : isSelected
+                        ? AmaraColors.primary
+                        : AmaraColors.divider,
+                width: isSelected && enabled ? 1.5 : 1,
               ),
-            ],
+            ),
+            child: Column(
+              children: [
+                Icon(icon,
+                    color: !enabled
+                        ? AmaraColors.muted
+                        : isSelected
+                            ? AmaraColors.primary
+                            : AmaraColors.muted,
+                    size: 22),
+                const SizedBox(height: 4),
+                Text(
+                  label,
+                  style: AmaraTextStyles.caption.copyWith(
+                    color: !enabled
+                        ? AmaraColors.muted
+                        : isSelected
+                            ? AmaraColors.primary
+                            : AmaraColors.textSecondary,
+                    fontWeight:
+                        isSelected && enabled ? FontWeight.w700 : FontWeight.w400,
+                  ),
+                ),
+                if (!enabled) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    'Non disponible',
+                    style: AmaraTextStyles.caption.copyWith(
+                      color: AmaraColors.muted,
+                      fontSize: 9,
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
         ),
       ),

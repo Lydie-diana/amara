@@ -117,6 +117,13 @@ class Restaurant {
       hasOrdered: json['hasOrdered'] as bool? ?? false,
       paymentMethods:
           List<String>.from(json['paymentMethods'] as List? ?? ['Mobile Money', 'Cash']),
+      serviceModes: (json['serviceModes'] as List?)
+              ?.map((s) => ServiceMode.values.firstWhere(
+                    (e) => e.name == s,
+                    orElse: () => ServiceMode.delivery,
+                  ))
+              .toList() ??
+          [ServiceMode.delivery, ServiceMode.takeaway],
     );
   }
 }

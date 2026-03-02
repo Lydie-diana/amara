@@ -21,13 +21,6 @@ class CartDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _CartDetailScreenState extends ConsumerState<CartDetailScreen> {
-  final _noteController = TextEditingController();
-
-  @override
-  void dispose() {
-    _noteController.dispose();
-    super.dispose();
-  }
 
   CartRestaurantGroup? _findGroup(CartState cart) {
     try {
@@ -104,42 +97,6 @@ class _CartDetailScreenState extends ConsumerState<CartDetailScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 16),
-                Container(height: 1, color: AmaraColors.divider),
-                const SizedBox(height: 16),
-
-                // Note de commande
-                GestureDetector(
-                  onTap: () => _showNoteSheet(context),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.sticky_note_2_outlined,
-                          size: 20, color: AmaraColors.textSecondary),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Ajoutez un message à la commande',
-                              style: AmaraTextStyles.labelMedium.copyWith(
-                                  fontWeight: FontWeight.w600),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Ustensiles, instructions spéciales, etc.',
-                              style: AmaraTextStyles.caption
-                                  .copyWith(color: AmaraColors.muted),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Icon(Icons.chevron_right_rounded,
-                          size: 20, color: AmaraColors.muted),
-                    ],
-                  ),
-                ),
-
                 const SizedBox(height: 20),
                 Container(height: 1, color: AmaraColors.divider),
                 const SizedBox(height: 20),
@@ -201,79 +158,6 @@ class _CartDetailScreenState extends ConsumerState<CartDetailScreen> {
     );
   }
 
-  void _showNoteSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => Padding(
-        padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom),
-        child: Container(
-          padding: EdgeInsets.fromLTRB(
-              20, 20, 20, MediaQuery.of(context).padding.bottom + 20),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: AmaraColors.divider,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Text('Note pour le restaurant',
-                  style: AmaraTextStyles.labelMedium
-                      .copyWith(fontWeight: FontWeight.w800)),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _noteController,
-                maxLines: 3,
-                style: AmaraTextStyles.bodySmall,
-                decoration: InputDecoration(
-                  hintText: 'Ex: Pas de piment, couverts pour 2...',
-                  hintStyle: AmaraTextStyles.bodySmall
-                      .copyWith(color: AmaraColors.muted),
-                  filled: true,
-                  fillColor: AmaraColors.bgAlt,
-                  contentPadding: const EdgeInsets.all(14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  decoration: BoxDecoration(
-                    color: AmaraColors.primary,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Center(
-                    child: Text('Enregistrer',
-                        style: AmaraTextStyles.labelMedium.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700)),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 // ─── Header ──────────────────────────────────────────────────────────────────

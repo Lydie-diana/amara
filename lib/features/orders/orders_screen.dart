@@ -671,6 +671,22 @@ class _OrderTile extends ConsumerWidget {
     );
   }
 
+  String get _allItemNames {
+    final items = order['items'] as List?;
+    if (items == null || items.isEmpty) return '';
+    return items
+        .map((i) => (i as Map<String, dynamic>)['name'] as String? ?? '')
+        .where((n) => n.isNotEmpty)
+        .join(', ');
+  }
+
+  String get _firstItemImage {
+    final items = order['items'] as List?;
+    if (items == null || items.isEmpty) return '';
+    final first = items.first as Map<String, dynamic>;
+    return first['imageUrl'] as String? ?? '';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final orderId = order['_id'] as String? ?? '';
@@ -679,7 +695,9 @@ class _OrderTile extends ConsumerWidget {
         ref.watch(restaurantDetailProvider(restaurantId));
     final restaurant = restaurantAsync.valueOrNull;
     final restaurantName = restaurant?.name ?? 'Restaurant';
-    final restaurantImage = restaurant?.imageUrl;
+    final imageUrl = _firstItemImage.isNotEmpty
+        ? _firstItemImage
+        : restaurant?.imageUrl;
 
     return GestureDetector(
       onTap: () {
@@ -688,130 +706,120 @@ class _OrderTile extends ConsumerWidget {
           context.push('/order/$orderId/tracking');
         }
       },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: _canCancel
-                ? AmaraColors.warning.withValues(alpha: 0.3)
-                : AmaraColors.divider,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Row(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Restaurant image
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                // Image ronde
+                ClipOval(
                   child: SizedBox(
-                    width: 50,
-                    height: 50,
-                    child: restaurantImage != null
+                    width: 70,
+                    height: 70,
+                    child: imageUrl != null
                         ? Image.network(
-                            restaurantImage,
+                            imageUrl,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              color:
-                                  AmaraColors.primary.withValues(alpha: 0.1),
-                              child: const Icon(Icons.receipt_long_rounded,
-                                  color: AmaraColors.primary, size: 22),
-                            ),
+                            errorBuilder: (_, __, ___) =>
+                                _placeholderImage(),
                           )
-                        : Container(
-                            color:
-                                AmaraColors.primary.withValues(alpha: 0.1),
-                            child: const Icon(Icons.receipt_long_rounded,
-                                color: AmaraColors.primary, size: 22),
-                          ),
+                        : _placeholderImage(),
                   ),
                 ),
-                const SizedBox(width: 12),
-                // Info
+                const SizedBox(width: 14),
+                // Infos
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Restaurant name
                       Text(
                         restaurantName,
                         style: AmaraTextStyles.labelMedium.copyWith(
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w800,
                           color: AmaraColors.textPrimary,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 3),
+                      // Date + prix + nb articles
                       Text(
-                        '$_itemCount article${_itemCount > 1 ? 's' : ''} • $_formattedTotal • $_formattedDate',
+                        '$_formattedDate · $_formattedTotal · $_itemCount article${_itemCount > 1 ? 's' : ''}',
                         style: AmaraTextStyles.caption.copyWith(
                           color: AmaraColors.textSecondary,
                         ),
                       ),
+                      const SizedBox(height: 3),
+                      // Noms des plats
+                      if (_allItemNames.isNotEmpty)
+                        Text(
+                          _allItemNames,
+                          style: AmaraTextStyles.caption.copyWith(
+                            color: AmaraColors.textSecondary,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                     ],
                   ),
                 ),
-                // Status badge
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: _statusColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    _statusLabel,
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      color: _statusColor,
-                    ),
-                  ),
+                const SizedBox(width: 10),
+                // Bouton action à droite
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: _canCancel
+                      ? GestureDetector(
+                          onTap: () => _showCancelDialog(context, ref),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: AmaraColors.error.withValues(alpha: 0.08),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'Annuler',
+                              style: AmaraTextStyles.caption.copyWith(
+                                color: AmaraColors.error,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        )
+                      : Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: AmaraColors.bgAlt,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            _status == 'delivered' ? 'Commander' : _statusLabel,
+                            style: AmaraTextStyles.caption.copyWith(
+                              color: AmaraColors.textPrimary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
                 ),
               ],
             ),
-            // Bouton annuler si pending
-            if (_canCancel) ...[
-              const SizedBox(height: 10),
-              GestureDetector(
-                onTap: () => _showCancelDialog(context, ref),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  decoration: BoxDecoration(
-                    color: AmaraColors.error.withValues(alpha: 0.06),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                        color: AmaraColors.error.withValues(alpha: 0.2)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.close_rounded,
-                          color: AmaraColors.error, size: 16),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Annuler la commande',
-                        style: AmaraTextStyles.labelSmall.copyWith(
-                          color: AmaraColors.error,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
+          ),
+          const Divider(height: 1, color: AmaraColors.divider),
+        ],
+      ),
+    );
+  }
+
+  Widget _placeholderImage() {
+    return Container(
+      color: AmaraColors.primary.withValues(alpha: 0.06),
+      child: const Center(
+        child: Icon(Icons.restaurant_rounded,
+            color: AmaraColors.primary, size: 28),
       ),
     );
   }

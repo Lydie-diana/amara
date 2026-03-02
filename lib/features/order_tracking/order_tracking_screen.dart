@@ -170,6 +170,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
           orderId: widget.orderId,
           onBack: _goBack,
           clientName: ref.watch(currentUserProvider)?.name ?? 'Client',
+          clientPhone: ref.watch(currentUserProvider)?.phone ?? '',
           onConfirmPickup: () => _confirmPickup(),
         ),
       ),
@@ -184,6 +185,7 @@ class _TrackingBody extends StatelessWidget {
   final String orderId;
   final VoidCallback onBack;
   final String clientName;
+  final String clientPhone;
   final VoidCallback? onConfirmPickup;
 
   const _TrackingBody({
@@ -191,6 +193,7 @@ class _TrackingBody extends StatelessWidget {
     required this.orderId,
     required this.onBack,
     required this.clientName,
+    this.clientPhone = '',
     this.onConfirmPickup,
   });
 
@@ -262,8 +265,8 @@ class _TrackingBody extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: _InfoChip(
-                    label: 'Adresse',
-                    value: address.isNotEmpty ? address : 'Cocody, Abidjan',
+                    label: 'Téléphone',
+                    value: clientPhone.isNotEmpty ? clientPhone : 'Non renseigné',
                   ),
                 ),
               ],
