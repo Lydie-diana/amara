@@ -300,11 +300,17 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen>
         const SizedBox(height: 12),
         Align(
           alignment: Alignment.centerRight,
-          child: Text(
-            'Mot de passe oublié ?',
-            style: AmaraTextStyles.bodySmall.copyWith(
-              color: AmaraColors.primary,
-              fontWeight: FontWeight.w600,
+          child: GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              context.push(AppRoutes.forgotPassword);
+            },
+            child: Text(
+              'Mot de passe oublié ?',
+              style: AmaraTextStyles.bodySmall.copyWith(
+                color: AmaraColors.primary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),

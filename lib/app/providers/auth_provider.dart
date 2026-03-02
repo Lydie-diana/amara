@@ -211,6 +211,52 @@ class AuthNotifier extends Notifier<AuthState> {
     await client.resendVerification(pendingUserId: pendingUserId);
   }
 
+  // ─── Mot de passe oublié ──────────────────────────────────────────────────
+
+  /// Demande de réinitialisation de mot de passe
+  Future<String?> forgotPassword({required String email}) async {
+    try {
+      final client = ref.read(convexClientProvider);
+      await client.forgotPassword(email: email);
+      return null;
+    } catch (e) {
+      return _extractError(e);
+    }
+  }
+
+  /// Vérification du code de réinitialisation
+  Future<String?> verifyResetCode({
+    required String email,
+    required String code,
+  }) async {
+    try {
+      final client = ref.read(convexClientProvider);
+      await client.verifyResetCode(email: email, code: code);
+      return null;
+    } catch (e) {
+      return _extractError(e);
+    }
+  }
+
+  /// Réinitialisation du mot de passe
+  Future<String?> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    try {
+      final client = ref.read(convexClientProvider);
+      await client.resetPassword(
+        email: email,
+        code: code,
+        newPassword: newPassword,
+      );
+      return null;
+    } catch (e) {
+      return _extractError(e);
+    }
+  }
+
   /// Connexion email/password
   Future<void> login({
     required String email,

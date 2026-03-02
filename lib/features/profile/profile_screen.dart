@@ -108,6 +108,12 @@ class ProfileScreen extends ConsumerWidget {
                       label: 'Aide & FAQ',
                       onTap: () => context.push(AppRoutes.helpFaq),
                     ),
+                    const _MenuDivider(),
+                    _ProfileMenuItem(
+                      icon: Icons.gavel_rounded,
+                      label: 'Legal',
+                      onTap: () => context.push(AppRoutes.legal),
+                    ),
                     const SizedBox(height: 40),
 
                     // ── Bouton déconnexion ─────────────────────────────

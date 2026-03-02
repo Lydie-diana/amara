@@ -8,6 +8,9 @@ import '../../features/splash/splash_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
 import '../../features/auth/phone/phone_screen.dart';
 import '../../features/auth/otp/otp_screen.dart';
+import '../../features/auth/forgot_password/forgot_password_screen.dart';
+import '../../features/auth/forgot_password/forgot_password_otp_screen.dart';
+import '../../features/auth/forgot_password/forgot_password_reset_screen.dart';
 import '../../features/shell/main_shell.dart';
 import '../../features/restaurant/restaurant_detail_screen.dart';
 import '../../features/cart/cart_screen.dart';
@@ -21,6 +24,7 @@ import '../../features/profile/personal_info_screen.dart';
 import '../../features/profile/my_addresses_screen.dart';
 import '../../features/profile/help_faq_screen.dart';
 import '../../features/notifications/notifications_screen.dart';
+import '../../features/legal/legal_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -60,6 +64,40 @@ final routerProvider = Provider<GoRouter>((ref) {
             child: OtpScreen(
               pendingUserId: extra['pendingUserId'] as String? ?? '',
               email: extra['email'] as String? ?? '',
+            ),
+          );
+        },
+      ),
+
+      // Forgot password flow
+      GoRoute(
+        path: AppRoutes.forgotPassword,
+        pageBuilder: (context, state) => _buildSlideUpPage(
+          state: state,
+          child: const ForgotPasswordScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.forgotPasswordOtp,
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return _buildSlideUpPage(
+            state: state,
+            child: ForgotPasswordOtpScreen(
+              email: extra['email'] as String? ?? '',
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.forgotPasswordReset,
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          return _buildSlideUpPage(
+            state: state,
+            child: ForgotPasswordResetScreen(
+              email: extra['email'] as String? ?? '',
+              code: extra['code'] as String? ?? '',
             ),
           );
         },
@@ -175,6 +213,18 @@ final routerProvider = Provider<GoRouter>((ref) {
           state: state,
           child: const NotificationsScreen(),
         ),
+      ),
+      GoRoute(
+        path: AppRoutes.legal,
+        pageBuilder: (context, state) {
+          final tab = state.uri.queryParameters['tab'];
+          return _buildSlideUpPage(
+            state: state,
+            child: LegalScreen(
+              initialTab: int.tryParse(tab ?? '0') ?? 0,
+            ),
+          );
+        },
       ),
 
       // Order tracking

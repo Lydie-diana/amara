@@ -8,6 +8,9 @@ class AppRoutes {
   static const String authPhone = '/auth/phone';
   static const String authOtp = '/auth/otp';
   static const String authProfile = '/auth/profile';
+  static const String forgotPassword = '/auth/forgot-password';
+  static const String forgotPasswordOtp = '/auth/forgot-password/otp';
+  static const String forgotPasswordReset = '/auth/forgot-password/reset';
 
   // Main
   static const String home = '/home';
@@ -44,4 +47,5 @@ class AppRoutes {
   static const String myAddresses = '/profile/addresses';
   static const String helpFaq = '/profile/help-faq';
   static const String notifications = '/profile/notifications';
+  static const String legal = '/profile/legal';
 }
