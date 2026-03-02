@@ -23,6 +23,7 @@ final _maxDeliveryFeeProvider = StateProvider<bool>((ref) => false);
 final _openNowProvider = StateProvider<bool>((ref) => false);
 final _minRatingProvider = StateProvider<double>((ref) => 0.0);
 final _takeawayProvider = StateProvider<bool>((ref) => false);
+final _promoProvider = StateProvider<bool>((ref) => false);
 
 enum _SortOption { recommended, rating, distance, deliveryTime, price }
 
@@ -93,10 +94,15 @@ final _filteredProvider = Provider<AsyncValue<List<Restaurant>>>(
     final openOnly = ref.watch(_openNowProvider);
     final minRating = ref.watch(_minRatingProvider);
     final takeaway = ref.watch(_takeawayProvider);
+    final promo = ref.watch(_promoProvider);
+    final promoIds = ref.watch(promoRestaurantIdsProvider).valueOrNull ?? <String>{};
     final sort = ref.watch(_sortProvider);
 
     return allAsync.whenData((list) {
       var r = list;
+      if (promo) {
+        r = r.where((x) => promoIds.contains(x.id)).toList();
+      }
       if (foodType != null) {
         r = r
             .where((x) =>
@@ -187,6 +193,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     ref.read(_openNowProvider.notifier).state = false;
     ref.read(_minRatingProvider.notifier).state = 0.0;
     ref.read(_takeawayProvider.notifier).state = false;
+    ref.read(_promoProvider.notifier).state = false;
   }
 
   @override
@@ -201,6 +208,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final freeOnly = ref.watch(_maxDeliveryFeeProvider);
     final openOnly = ref.watch(_openNowProvider);
     final takeaway = ref.watch(_takeawayProvider);
+    final promo = ref.watch(_promoProvider);
     final minRating = ref.watch(_minRatingProvider);
     final filtered = ref.watch(_filteredProvider);
 
@@ -208,6 +216,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         freeOnly ||
         openOnly ||
         takeaway ||
+        promo ||
         minRating > 0 ||
         sort != _SortOption.recommended;
 
@@ -234,6 +243,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             freeOnly: freeOnly,
             openOnly: openOnly,
             takeaway: takeaway,
+            promo: promo,
             hasFilters: hasFilters,
             onSortTap: () => _showSortSheet(context),
             onFreeTap: () => ref
@@ -243,6 +253,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 ref.read(_openNowProvider.notifier).state = !openOnly,
             onTakeawayTap: () =>
                 ref.read(_takeawayProvider.notifier).state = !takeaway,
+            onPromoTap: () =>
+                ref.read(_promoProvider.notifier).state = !promo,
             onBestRatedTap: () {
               final current = ref.read(_sortProvider);
               ref.read(_sortProvider.notifier).state =
@@ -439,11 +451,13 @@ class _FilterChips extends StatelessWidget {
   final bool freeOnly;
   final bool openOnly;
   final bool takeaway;
+  final bool promo;
   final bool hasFilters;
   final VoidCallback onSortTap;
   final VoidCallback onFreeTap;
   final VoidCallback onOpenTap;
   final VoidCallback onTakeawayTap;
+  final VoidCallback onPromoTap;
   final VoidCallback onBestRatedTap;
   final VoidCallback onResetFilters;
 
@@ -452,11 +466,13 @@ class _FilterChips extends StatelessWidget {
     required this.freeOnly,
     required this.openOnly,
     required this.takeaway,
+    required this.promo,
     required this.hasFilters,
     required this.onSortTap,
     required this.onFreeTap,
     required this.onOpenTap,
     required this.onTakeawayTap,
+    required this.onPromoTap,
     required this.onBestRatedTap,
     required this.onResetFilters,
   });
@@ -511,6 +527,13 @@ class _FilterChips extends StatelessWidget {
               label: 'Mieux notés',
               isActive: sort == _SortOption.rating,
               onTap: onBestRatedTap,
+            ),
+            const SizedBox(width: 6),
+            _Chip(
+              icon: Icons.local_offer_rounded,
+              label: 'Promo',
+              isActive: promo,
+              onTap: onPromoTap,
             ),
           ],
         ),
@@ -589,16 +612,22 @@ class _Chip extends StatelessWidget {
 
 // ─── Vue découverte ──────────────────────────────────────────────────────────
 
-class _DiscoverView extends StatelessWidget {
+class _DiscoverView extends ConsumerWidget {
   final List<Restaurant> restaurants;
   final ValueChanged<String?> onFoodType;
   const _DiscoverView(
       {required this.restaurants, required this.onFoodType});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final topRated = [...restaurants]
       ..sort((a, b) => b.rating.compareTo(a.rating));
+
+    // Restaurants avec promos/réductions
+    final promoIdsAsync = ref.watch(promoRestaurantIdsProvider);
+    final promoIds = promoIdsAsync.valueOrNull ?? <String>{};
+    final promoRestaurants =
+        restaurants.where((r) => promoIds.contains(r.id)).toList();
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -611,16 +640,12 @@ class _DiscoverView extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                const Text('⭐', style: TextStyle(fontSize: 20)),
+                const SizedBox(width: 6),
                 Text('Mieux notés',
                     style: AmaraTextStyles.h3
                         .copyWith(fontWeight: FontWeight.w800)),
-                Text('Voir tout',
-                    style: AmaraTextStyles.labelSmall.copyWith(
-                      color: AmaraColors.primary,
-                      fontWeight: FontWeight.w600,
-                    )),
               ],
             ),
           ),
@@ -642,14 +667,54 @@ class _DiscoverView extends StatelessWidget {
             ),
           ),
 
+          // ── Section "Promo" — restaurants avec réductions ──
+          if (promoRestaurants.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  const Text('🔥', style: TextStyle(fontSize: 20)),
+                  const SizedBox(width: 6),
+                  Text('Promo',
+                      style: AmaraTextStyles.h3
+                          .copyWith(fontWeight: FontWeight.w800)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 230,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                physics: const BouncingScrollPhysics(),
+                itemCount: promoRestaurants.length,
+                itemBuilder: (context, i) => Padding(
+                  padding: const EdgeInsets.only(right: 14),
+                  child: RestaurantCard(
+                    restaurant: promoRestaurants[i],
+                    compact: true,
+                  ),
+                ),
+              ),
+            ),
+          ],
+
           const SizedBox(height: 20),
 
           // ── Section "Tous les restaurants" — full cards ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text('Tous les restaurants',
-                style: AmaraTextStyles.h3
-                    .copyWith(fontWeight: FontWeight.w800)),
+            child: Row(
+              children: [
+                const Text('🍽️', style: TextStyle(fontSize: 20)),
+                const SizedBox(width: 6),
+                Text('Tous les restaurants',
+                    style: AmaraTextStyles.h3
+                        .copyWith(fontWeight: FontWeight.w800)),
+              ],
+            ),
           ),
           const SizedBox(height: 12),
           ListView.builder(
