@@ -27,6 +27,7 @@ export default defineSchema({
 
     // Statut du compte
     isActive: v.boolean(),
+    isEmailVerified: v.optional(v.boolean()),
     createdAt: v.number(),
 
     // Adresse par défaut
@@ -58,6 +59,29 @@ export default defineSchema({
   })
     .index("by_token", ["token"])
     .index("by_userId", ["userId"]),
+
+  // ============ VÉRIFICATION EMAIL ============
+  email_verifications: defineTable({
+    userId: v.id("users"),
+    email: v.string(),
+    code: v.string(),
+    expiresAt: v.number(),
+    usedAt: v.optional(v.number()),
+    attempts: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_email", ["email"]),
+
+  // ============ REINITIALISATION MOT DE PASSE ============
+  password_resets: defineTable({
+    email: v.string(),
+    code: v.string(),
+    expiresAt: v.number(),
+    usedAt: v.optional(v.number()),
+    attempts: v.number(),
+    createdAt: v.number(),
+  }).index("by_email", ["email"]),
 
   // ============ RESTAURANTS ============
   restaurants: defineTable({
@@ -148,6 +172,9 @@ export default defineSchema({
     clientId: v.id("users"),
     restaurantId: v.id("restaurants"),
     livreurId: v.optional(v.id("users")),
+
+    // Type de commande (delivery par défaut pour rétrocompatibilité)
+    orderType: v.optional(v.union(v.literal("delivery"), v.literal("pickup"))),
 
     // Contenu
     items: v.array(

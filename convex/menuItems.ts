@@ -34,6 +34,55 @@ export const byCategory = query({
   },
 });
 
+/** Rechercher des plats par nom (retourne restaurantIds + plats matchés) */
+export const searchByName = query({
+  args: { query: v.string() },
+  handler: async (ctx, args) => {
+    const q = args.query.toLowerCase().trim();
+    if (q.length < 2) return [];
+
+    // Récupérer tous les menuItems et filtrer par nom
+    const allItems = await ctx.db.query("menuItems").collect();
+    const matched = allItems.filter(
+      (item) =>
+        item.name.toLowerCase().includes(q) ||
+        item.category.toLowerCase().includes(q) ||
+        (item.tags ?? []).some((t: string) => t.toLowerCase().includes(q))
+    );
+
+    // Grouper par restaurantId pour retourner les IDs uniques + noms des plats
+    const byRestaurant: Record<string, { name: string; category: string }[]> = {};
+    for (const item of matched) {
+      const rid = item.restaurantId as string;
+      if (!byRestaurant[rid]) byRestaurant[rid] = [];
+      byRestaurant[rid].push({ name: item.name, category: item.category });
+    }
+
+    return Object.entries(byRestaurant).map(([restaurantId, dishes]) => ({
+      restaurantId,
+      dishes,
+    }));
+  },
+});
+
+/** Retourne les IDs de restaurants ayant au moins un plat avec réduction active */
+export const restaurantsWithPromos = query({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const allItems = await ctx.db.query("menuItems").collect();
+    const withDiscount = allItems.filter((item) => {
+      if (!item.discountPercent || item.discountPercent <= 0) return false;
+      if (item.discountStartDate && now < item.discountStartDate) return false;
+      if (item.discountEndDate && now > item.discountEndDate) return false;
+      return true;
+    });
+
+    const restaurantIds = [...new Set(withDiscount.map((i) => i.restaurantId as string))];
+    return restaurantIds;
+  },
+});
+
 // ============ HELPERS ============
 
 /** Vérifier que l'utilisateur est propriétaire du restaurant */

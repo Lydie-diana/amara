@@ -36,6 +36,9 @@ export const findAndDispatch = internalMutation({
     const order = await ctx.db.get(args.orderId);
     if (!order) return;
 
+    // Ne pas dispatcher les commandes à emporter
+    if ((order as any).orderType === "pickup") return;
+
     // Ne dispatcher que si la commande est toujours "ready" et sans livreur
     if (order.status !== "ready" || order.livreurId) return;
 

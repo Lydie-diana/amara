@@ -35,7 +35,7 @@ const preflight = httpAction(async () => {
 
 // ============ AUTH ============
 
-/** POST /api/auth/signup — Inscription email/password */
+/** POST /api/auth/signup — Inscription email/password avec vérification email */
 http.route({
   path: "/api/auth/signup",
   method: "POST",
@@ -47,11 +47,28 @@ http.route({
         return error("Champs requis: name, email, phone, password");
       }
       const role = body.role; // "client" | "restaurant" | "livreur" (optionnel)
+
+      // 1. Créer user inactif + code OTP (mutation)
       const result = await ctx.runMutation(api.auth.signup, {
         name, email, phone, password,
         ...(role ? { role } : {}),
       });
-      return json(result);
+
+      // 2. Envoyer email de vérification via Resend (non-bloquant si domaine non vérifié)
+      let emailSent = true;
+      try {
+        await ctx.runAction(internal.auth.sendVerificationEmail, {
+          email: result.email,
+          name: result.name,
+          code: result.code,
+        });
+      } catch (emailErr: any) {
+        console.error("[signup] Échec envoi email:", emailErr.message);
+        emailSent = false;
+      }
+
+      // 3. Retourner au client Flutter (sans le code !)
+      return json({ pendingUserId: result.pendingUserId, email: result.email, emailSent });
     } catch (e: any) {
       return error(e.message ?? "Erreur signup", 400);
     }
@@ -59,6 +76,61 @@ http.route({
 });
 
 http.route({ path: "/api/auth/signup", method: "OPTIONS", handler: preflight });
+
+/** POST /api/auth/verify-email — Vérification du code OTP */
+http.route({
+  path: "/api/auth/verify-email",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const body = await request.json();
+      const { pendingUserId, code } = body;
+      if (!pendingUserId || !code) {
+        return error("Champs requis: pendingUserId, code");
+      }
+      const result = await ctx.runMutation(api.auth.verifyEmail, {
+        pendingUserId,
+        code,
+      });
+      return json(result); // { token, userId }
+    } catch (e: any) {
+      return error(e.message ?? "Code invalide", 400);
+    }
+  }),
+});
+
+http.route({ path: "/api/auth/verify-email", method: "OPTIONS", handler: preflight });
+
+/** POST /api/auth/resend-verification — Renvoi du code OTP */
+http.route({
+  path: "/api/auth/resend-verification",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const body = await request.json();
+      const { pendingUserId } = body;
+      if (!pendingUserId) return error("pendingUserId requis");
+
+      const result = await ctx.runMutation(api.auth.resendVerification, { pendingUserId });
+
+      try {
+        await ctx.runAction(internal.auth.sendVerificationEmail, {
+          email: result.email,
+          name: result.name,
+          code: result.code,
+        });
+      } catch (emailErr: any) {
+        console.error("[resend] Échec envoi email:", emailErr.message);
+      }
+
+      return json({ success: true });
+    } catch (e: any) {
+      return error(e.message ?? "Erreur renvoi", 400);
+    }
+  }),
+});
+
+http.route({ path: "/api/auth/resend-verification", method: "OPTIONS", handler: preflight });
 
 /** POST /api/auth/login — Connexion email/password */
 http.route({
@@ -143,6 +215,87 @@ http.route({
 });
 
 http.route({ path: "/api/auth/update-profile", method: "OPTIONS", handler: preflight });
+
+// ============ MOT DE PASSE OUBLIÉ ============
+
+/** POST /api/auth/forgot-password — Demande de réinitialisation */
+http.route({
+  path: "/api/auth/forgot-password",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const body = await request.json();
+      const { email } = body;
+      if (!email) return error("Email requis");
+
+      const result = await ctx.runMutation(api.auth.requestPasswordReset, { email });
+
+      // Envoyer email si user trouvé (code + name non null)
+      if (result.code && result.name) {
+        try {
+          await ctx.runAction(internal.auth.sendPasswordResetEmail, {
+            email: result.email,
+            name: result.name,
+            code: result.code,
+          });
+        } catch (emailErr: any) {
+          console.error("[forgot-password] Échec envoi email:", emailErr.message);
+        }
+      }
+
+      // Toujours retourner succès (anti-enumeration)
+      return json({ success: true, email: result.email });
+    } catch (e: any) {
+      return error(e.message ?? "Erreur", 400);
+    }
+  }),
+});
+
+http.route({ path: "/api/auth/forgot-password", method: "OPTIONS", handler: preflight });
+
+/** POST /api/auth/verify-reset-code — Vérification du code OTP de réinitialisation */
+http.route({
+  path: "/api/auth/verify-reset-code",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const body = await request.json();
+      const { email, code } = body;
+      if (!email || !code) return error("Champs requis: email, code");
+
+      const result = await ctx.runMutation(api.auth.verifyResetCode, { email, code });
+      return json(result);
+    } catch (e: any) {
+      return error(e.message ?? "Code invalide", 400);
+    }
+  }),
+});
+
+http.route({ path: "/api/auth/verify-reset-code", method: "OPTIONS", handler: preflight });
+
+/** POST /api/auth/reset-password — Réinitialisation du mot de passe */
+http.route({
+  path: "/api/auth/reset-password",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const body = await request.json();
+      const { email, code, newPassword } = body;
+      if (!email || !code || !newPassword) {
+        return error("Champs requis: email, code, newPassword");
+      }
+
+      const result = await ctx.runMutation(api.auth.resetPassword, {
+        email, code, newPassword,
+      });
+      return json(result);
+    } catch (e: any) {
+      return error(e.message ?? "Erreur réinitialisation", 400);
+    }
+  }),
+});
+
+http.route({ path: "/api/auth/reset-password", method: "OPTIONS", handler: preflight });
 
 // ============ FAVORIS ============
 
@@ -266,6 +419,31 @@ http.route({
 
 http.route({ path: "/api/restaurants", method: "OPTIONS", handler: preflight });
 
+/** GET /api/restaurants/nearby?lat=5.35&lng=-4.00&radius=15 — Restaurants à proximité GPS */
+http.route({
+  path: "/api/restaurants/nearby",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const url = new URL(request.url);
+      const lat = parseFloat(url.searchParams.get("lat") ?? "");
+      const lng = parseFloat(url.searchParams.get("lng") ?? "");
+      const radius = parseFloat(url.searchParams.get("radius") ?? "15");
+      if (isNaN(lat) || isNaN(lng)) return error("Paramètres lat et lng requis");
+      const restaurants = await ctx.runQuery(api.restaurants.listNearby, {
+        latitude: lat,
+        longitude: lng,
+        radiusKm: isNaN(radius) ? 15 : radius,
+      });
+      return json(restaurants);
+    } catch (e: any) {
+      return error(e.message ?? "Erreur restaurants nearby");
+    }
+  }),
+});
+
+http.route({ path: "/api/restaurants/nearby", method: "OPTIONS", handler: preflight });
+
 /** GET /api/restaurants/:id — Détail d'un restaurant */
 http.route({
   path: "/api/restaurant",
@@ -287,6 +465,27 @@ http.route({
 });
 
 http.route({ path: "/api/restaurant", method: "OPTIONS", handler: preflight });
+
+/** GET /api/restaurant/stats?id=xxx — Stats restaurant (clients uniques, total commandes) */
+http.route({
+  path: "/api/restaurant/stats",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const url = new URL(request.url);
+      const restaurantId = url.searchParams.get("id");
+      if (!restaurantId) return error("id requis");
+      const stats = await ctx.runQuery(api.restaurants.stats, {
+        restaurantId: restaurantId as any,
+      });
+      return json(stats);
+    } catch (e: any) {
+      return error(e.message ?? "Erreur stats restaurant");
+    }
+  }),
+});
+
+http.route({ path: "/api/restaurant/stats", method: "OPTIONS", handler: preflight });
 
 // ============ MENU ============
 
@@ -310,6 +509,41 @@ http.route({
 });
 
 http.route({ path: "/api/menu", method: "OPTIONS", handler: preflight });
+
+/** GET /api/search?q=eru — Recherche de plats par nom, retourne les restaurantIds */
+http.route({
+  path: "/api/search",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const url = new URL(request.url);
+      const query = url.searchParams.get("q") ?? "";
+      if (query.length < 2) return json([]);
+      const results = await ctx.runQuery(api.menuItems.searchByName, { query });
+      return json(results);
+    } catch (e: any) {
+      return error(e.message ?? "Erreur recherche");
+    }
+  }),
+});
+
+http.route({ path: "/api/search", method: "OPTIONS", handler: preflight });
+
+/** GET /api/restaurants/promos — IDs des restaurants ayant des plats en promo */
+http.route({
+  path: "/api/restaurants/promos",
+  method: "GET",
+  handler: httpAction(async (ctx, _request) => {
+    try {
+      const ids = await ctx.runQuery(api.menuItems.restaurantsWithPromos, {});
+      return json(ids);
+    } catch (e: any) {
+      return error(e.message ?? "Erreur promos");
+    }
+  }),
+});
+
+http.route({ path: "/api/restaurants/promos", method: "OPTIONS", handler: preflight });
 
 // ============ COMMANDES ============
 
@@ -348,18 +582,24 @@ http.route({
         deliveryLongitude,
         paymentMethod,
         clientNote,
+        orderType,
       } = body;
-      if (!restaurantId || !items || !deliveryAddress || !paymentMethod) {
+      const isPickup = orderType === "pickup";
+      if (!restaurantId || !items || !paymentMethod) {
         return error("Champs requis manquants");
+      }
+      if (!isPickup && !deliveryAddress) {
+        return error("Adresse de livraison requise pour une commande en livraison");
       }
       const orderId = await ctx.runMutation(api.orders.create, {
         restaurantId,
         items,
-        deliveryAddress,
-        deliveryLatitude: deliveryLatitude ?? 5.3484,
-        deliveryLongitude: deliveryLongitude ?? -4.0083,
+        deliveryAddress: deliveryAddress ?? undefined,
+        deliveryLatitude: deliveryLatitude ?? undefined,
+        deliveryLongitude: deliveryLongitude ?? undefined,
         paymentMethod,
         clientNote,
+        orderType: isPickup ? "pickup" : "delivery",
         token,
       });
       return json({ orderId });
@@ -1582,6 +1822,105 @@ http.route({
   }),
 });
 http.route({ path: "/api/admin/business-rules/update", method: "OPTIONS", handler: preflight });
+
+// ============ NOTIFICATIONS ============
+
+/** GET /api/notifications — Liste des notifications de l'utilisateur */
+http.route({
+  path: "/api/notifications",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const token = extractToken(request);
+      if (!token) return error("Token requis", 401);
+      const notifications = await ctx.runQuery(api.notifications.list, { token });
+      return json(notifications);
+    } catch (e: any) {
+      return error(e.message ?? "Erreur notifications", 400);
+    }
+  }),
+});
+http.route({ path: "/api/notifications", method: "OPTIONS", handler: preflight });
+
+/** GET /api/notifications/unread-count — Nombre de notifications non lues */
+http.route({
+  path: "/api/notifications/unread-count",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const token = extractToken(request);
+      if (!token) return error("Token requis", 401);
+      const count = await ctx.runQuery(api.notifications.unreadCount, { token });
+      return json({ count });
+    } catch (e: any) {
+      return error(e.message ?? "Erreur unread count", 400);
+    }
+  }),
+});
+http.route({ path: "/api/notifications/unread-count", method: "OPTIONS", handler: preflight });
+
+/** POST /api/notifications/read — Marquer une notification comme lue */
+http.route({
+  path: "/api/notifications/read",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const token = extractToken(request);
+      if (!token) return error("Token requis", 401);
+      const body = await request.json();
+      const { notificationId } = body;
+      if (!notificationId) return error("notificationId requis");
+      await ctx.runMutation(api.notifications.markAsRead, {
+        notificationId: notificationId as any,
+        token,
+      });
+      return json({ success: true });
+    } catch (e: any) {
+      return error(e.message ?? "Erreur mark as read", 400);
+    }
+  }),
+});
+http.route({ path: "/api/notifications/read", method: "OPTIONS", handler: preflight });
+
+/** POST /api/notifications/read-all — Marquer toutes les notifications comme lues */
+http.route({
+  path: "/api/notifications/read-all",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const token = extractToken(request);
+      if (!token) return error("Token requis", 401);
+      const result = await ctx.runMutation(api.notifications.markAllAsRead, { token });
+      return json(result);
+    } catch (e: any) {
+      return error(e.message ?? "Erreur mark all read", 400);
+    }
+  }),
+});
+http.route({ path: "/api/notifications/read-all", method: "OPTIONS", handler: preflight });
+
+/** POST /api/notifications/delete — Supprimer une notification */
+http.route({
+  path: "/api/notifications/delete",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const token = extractToken(request);
+      if (!token) return error("Token requis", 401);
+      const body = await request.json();
+      const { notificationId } = body;
+      if (!notificationId) return error("notificationId requis");
+      await ctx.runMutation(api.notifications.deleteOne, {
+        notificationId: notificationId as any,
+        token,
+      });
+      return json({ success: true });
+    } catch (e: any) {
+      return error(e.message ?? "Erreur suppression notification", 400);
+    }
+  }),
+});
+http.route({ path: "/api/notifications/delete", method: "OPTIONS", handler: preflight });
 
 // ============ HELPERS ============
 

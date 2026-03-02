@@ -8,7 +8,42 @@ import {
 } from "./helpers/errors";
 import { sanitizeString } from "./helpers/validators";
 
+// ============ HELPERS ============
+
+/** Calcul de distance haversine en km entre deux coordonnées GPS */
+function haversineKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 // ============ QUERIES ============
+
+/** Lister les restaurants à proximité d'une position GPS (public) */
+export const listNearby = query({
+  args: {
+    latitude: v.number(),
+    longitude: v.number(),
+    radiusKm: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const radius = args.radiusKm ?? 15;
+    const allRestaurants = await ctx.db.query("restaurants").collect();
+    return allRestaurants
+      .filter((r) => r.latitude != null && r.longitude != null)
+      .map((r) => ({
+        ...r,
+        distanceKm: haversineKm(args.latitude, args.longitude, r.latitude, r.longitude),
+      }))
+      .filter((r) => r.distanceKm <= radius)
+      .sort((a, b) => a.distanceKm - b.distanceKm);
+  },
+});
 
 /** Lister les restaurants d'une ville (public) */
 export const listByCity = query({
@@ -26,6 +61,23 @@ export const getById = query({
   args: { restaurantId: v.id("restaurants") },
   handler: async (ctx, args) => {
     return await ctx.db.get(args.restaurantId);
+  },
+});
+
+/** Stats d'un restaurant : clients uniques + total commandes */
+export const stats = query({
+  args: { restaurantId: v.id("restaurants") },
+  handler: async (ctx, args) => {
+    const orders = await ctx.db
+      .query("orders")
+      .withIndex("by_restaurant", (q) => q.eq("restaurantId", args.restaurantId))
+      .collect();
+
+    const uniqueClients = new Set(orders.map((o) => o.clientId as string));
+    return {
+      uniqueCustomers: uniqueClients.size,
+      totalOrders: orders.length,
+    };
   },
 });
 
@@ -166,6 +218,8 @@ export const update = mutation({
     address: v.optional(v.string()),
     city: v.optional(v.string()),
     country: v.optional(v.string()),
+    latitude: v.optional(v.number()),
+    longitude: v.optional(v.number()),
     cuisineType: v.optional(v.array(v.string())),
     deliveryFee: v.optional(v.number()),
     minOrderAmount: v.optional(v.number()),

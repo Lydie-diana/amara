@@ -231,6 +231,14 @@ export const create = mutation({
       }
     );
 
+    // Notification client : commande envoyée
+    await ctx.scheduler.runAfter(0, internal.notifications.createInternal, {
+      userId: user._id,
+      title: "Commande envoyee",
+      message: "Votre commande a ete envoyee au restaurant. En attente de confirmation.",
+      type: "order_update" as const,
+    });
+
     return orderId;
   },
 });
@@ -322,6 +330,26 @@ export const updateStatus = mutation({
         reason: args.reason,
       }),
     });
+
+    // Notification client : changement de statut
+    const statusNotifs: Record<string, { title: string; message: string }> = {
+      confirmed: { title: "Commande confirmee", message: "Votre commande a ete acceptee par le restaurant." },
+      preparing: { title: "En preparation", message: "Le restaurant prepare votre commande." },
+      ready: { title: "Commande prete", message: "Votre commande est prete !" },
+      picked_up: { title: "Commande recuperee", message: "Le livreur a recupere votre commande." },
+      delivering: { title: "En livraison", message: "Votre commande est en route vers vous !" },
+      delivered: { title: "Commande livree", message: "Votre commande a ete livree. Bon appetit !" },
+      cancelled: { title: "Commande annulee", message: args.reason ?? "Votre commande a ete annulee." },
+    };
+    const notifContent = statusNotifs[args.status];
+    if (notifContent) {
+      await ctx.scheduler.runAfter(0, internal.notifications.createInternal, {
+        userId: order.clientId,
+        title: notifContent.title,
+        message: notifContent.message,
+        type: "order_update" as const,
+      });
+    }
 
     // Auto-dispatch : uniquement pour les commandes en livraison
     if (args.status === "ready") {

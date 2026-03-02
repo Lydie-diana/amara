@@ -7,11 +7,14 @@ import { InvalidStateTransitionError } from "./helpers/errors";
 const VALID_TRANSITIONS: Record<string, Record<string, string[]>> = {
   client: {
     pending: ["cancelled"],
+    ready: ["picked_up"],       // Pickup : le client confirme qu'il a récupéré
   },
   restaurant: {
     pending: ["confirmed", "cancelled"],
     confirmed: ["preparing"],
     preparing: ["ready"],
+    ready: ["picked_up"],       // Pickup : le restaurant marque "client a récupéré"
+    picked_up: ["delivered"],   // Pickup : le restaurant finalise la commande
   },
   livreur: {
     ready: ["picked_up"],
