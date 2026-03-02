@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/models/notification_model.dart';
 import '../../app/providers/notification_provider.dart';
 import '../../app/services/convex_client.dart';
@@ -81,25 +82,25 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Tout supprimer ?',
+        title: Text(AppLocalizations.of(context).notificationsDeleteAllTitle,
             style:
                 AmaraTextStyles.h3.copyWith(fontWeight: FontWeight.w700)),
         content: Text(
-          'Toutes vos notifications seront supprimees.',
+          AppLocalizations.of(context).notificationsDeleteAllMessage,
           style: AmaraTextStyles.bodySmall
               .copyWith(color: AmaraColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Annuler',
+            child: Text(AppLocalizations.of(context).notificationsCancel,
                 style: TextStyle(
                     color: AmaraColors.textSecondary,
                     fontWeight: FontWeight.w600)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Supprimer',
+            child: Text(AppLocalizations.of(context).notificationsDelete,
                 style: TextStyle(
                     color: AmaraColors.error, fontWeight: FontWeight.w700)),
           ),
@@ -145,8 +146,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
         centerTitle: true,
         title: Text(
           _isSelecting
-              ? '${_selected.length} selectionne${_selected.length > 1 ? 's' : ''}'
-              : 'Notifications',
+              ? AppLocalizations.of(context).notificationsSelectedCount(_selected.length)
+              : AppLocalizations.of(context).notificationsTitle,
           style: AmaraTextStyles.labelLarge.copyWith(
             fontWeight: FontWeight.w700,
             color: AmaraColors.textPrimary,
@@ -222,7 +223,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                   break;
               }
             },
-            itemBuilder: (_) => [
+            itemBuilder: (_) {
+              final l10n = AppLocalizations.of(context);
+              return [
               if (notifs.any((n) => !n.isRead))
                 PopupMenuItem(
                   value: 'read_all',
@@ -231,7 +234,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                       const Icon(Icons.done_all_rounded,
                           color: AmaraColors.primary, size: 20),
                       const SizedBox(width: 12),
-                      Text('Tout marquer comme lu',
+                      Text(l10n.notificationsMarkAllRead,
                           style: AmaraTextStyles.bodyMedium.copyWith(
                               color: AmaraColors.textPrimary)),
                     ],
@@ -244,7 +247,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     const Icon(Icons.checklist_rounded,
                         color: AmaraColors.textPrimary, size: 20),
                     const SizedBox(width: 12),
-                    Text('Selectionner',
+                    Text(l10n.notificationsSelect,
                         style: AmaraTextStyles.bodyMedium
                             .copyWith(color: AmaraColors.textPrimary)),
                   ],
@@ -257,13 +260,13 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     const Icon(Icons.delete_sweep_rounded,
                         color: AmaraColors.error, size: 20),
                     const SizedBox(width: 12),
-                    Text('Tout supprimer',
+                    Text(l10n.notificationsDeleteAll,
                         style: AmaraTextStyles.bodyMedium
                             .copyWith(color: AmaraColors.error)),
                   ],
                 ),
               ),
-            ],
+            ];},
           );
         },
         loading: () => const SizedBox.shrink(),
@@ -309,7 +312,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  allSelected ? 'Tout desélectionner' : 'Tout selectionner',
+                  allSelected ? AppLocalizations.of(context).notificationsDeselectAll : AppLocalizations.of(context).notificationsSelectAll,
                   style: AmaraTextStyles.labelSmall.copyWith(
                     color: AmaraColors.primary,
                     fontWeight: FontWeight.w700,
@@ -335,7 +338,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                         color: AmaraColors.error, size: 16),
                     const SizedBox(width: 4),
                     Text(
-                      'Supprimer (${_selected.length})',
+                      AppLocalizations.of(context).notificationsDeleteCount(_selected.length),
                       style: AmaraTextStyles.labelSmall.copyWith(
                         color: AmaraColors.error,
                         fontWeight: FontWeight.w700,
@@ -382,6 +385,16 @@ class _NotificationsList extends StatelessWidget {
 
   static const _sectionOrder = ["Aujourd'hui", 'Cette semaine', 'Plus ancien'];
 
+  static String _localizedSectionTitle(BuildContext context, String key) {
+    final l10n = AppLocalizations.of(context);
+    return switch (key) {
+      "Aujourd'hui" => l10n.notificationsSectionToday,
+      'Cette semaine' => l10n.notificationsSectionThisWeek,
+      'Plus ancien' => l10n.notificationsSectionOlder,
+      _ => key,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final sections = _sectionOrder
@@ -402,7 +415,7 @@ class _NotificationsList extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
               child: Text(
-                sectionTitle,
+                _localizedSectionTitle(context, sectionTitle),
                 style: AmaraTextStyles.labelMedium.copyWith(
                   fontWeight: FontWeight.w800,
                   color: AmaraColors.textPrimary,
@@ -457,6 +470,7 @@ class _NotificationTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final tile = InkWell(
       onTap: isSelecting ? onToggle : () => _markAsRead(ref),
       onLongPress: isSelecting ? null : onLongPress,
@@ -511,7 +525,7 @@ class _NotificationTile extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    notification.title,
+                    notification.localizedTitle(l10n),
                     style: AmaraTextStyles.labelMedium.copyWith(
                       fontWeight: notification.isRead
                           ? FontWeight.w500
@@ -521,7 +535,7 @@ class _NotificationTile extends ConsumerWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    notification.message,
+                    notification.localizedMessage(l10n),
                     style: AmaraTextStyles.bodySmall.copyWith(
                       color: AmaraColors.textSecondary,
                     ),
@@ -530,7 +544,7 @@ class _NotificationTile extends ConsumerWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    notification.timeAgo,
+                    notification.localizedTimeAgo(l10n),
                     style: AmaraTextStyles.caption.copyWith(
                       color: AmaraColors.muted,
                     ),
@@ -614,12 +628,12 @@ class _EmptyNotifications extends StatelessWidget {
                   size: 36, color: AmaraColors.primary),
             ),
             const SizedBox(height: 20),
-            Text('Aucune notification',
+            Text(AppLocalizations.of(context).notificationsEmptyTitle,
                 style: AmaraTextStyles.h3
                     .copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Text(
-              'Vos notifications apparaitront ici',
+              AppLocalizations.of(context).notificationsEmptyMessage,
               style: AmaraTextStyles.bodySmall
                   .copyWith(color: AmaraColors.textSecondary),
               textAlign: TextAlign.center,
@@ -648,7 +662,7 @@ class _ErrorState extends StatelessWidget {
             const Icon(Icons.wifi_off_rounded,
                 size: 48, color: AmaraColors.muted),
             const SizedBox(height: 16),
-            Text('Erreur de connexion', style: AmaraTextStyles.h3),
+            Text(AppLocalizations.of(context).notificationsConnectionError, style: AmaraTextStyles.h3),
             const SizedBox(height: 8),
             Text(error,
                 style: AmaraTextStyles.bodySmall

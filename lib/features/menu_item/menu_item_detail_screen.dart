@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/models/restaurant_model.dart';
 import '../../app/providers/cart_provider.dart';
 
@@ -244,12 +245,12 @@ class _MenuItemDetailScreenState extends ConsumerState<MenuItemDetailScreen> {
                 children: [
                   if (widget.item.isPopular)
                     _HeroBadge(
-                        label: '⭐ Populaire',
+                        label: AppLocalizations.of(context).menuItemPopularBadge,
                         color: const Color(0xFFF39C12)),
                   if (widget.item.isVegetarian)
-                    _HeroBadge(label: '🌱 Végétarien', color: AmaraColors.success),
+                    _HeroBadge(label: AppLocalizations.of(context).menuItemVegetarianBadge, color: AmaraColors.success),
                   if (widget.item.isSpicy)
-                    _HeroBadge(label: '🌶️ Épicé', color: AmaraColors.error),
+                    _HeroBadge(label: AppLocalizations.of(context).menuItemSpicyBadge, color: AmaraColors.error),
                 ],
               ),
             ),
@@ -328,7 +329,7 @@ class _MenuItemDetailScreenState extends ConsumerState<MenuItemDetailScreen> {
                           ),
                         if (_extraPrice > 0)
                           Text(
-                            '+${_extraPrice.toStringAsFixed(0)} F options',
+                            AppLocalizations.of(context).menuItemExtraOptions(_extraPrice.toStringAsFixed(0)),
                             style: AmaraTextStyles.caption
                                 .copyWith(color: AmaraColors.muted),
                           ),
@@ -345,7 +346,7 @@ class _MenuItemDetailScreenState extends ConsumerState<MenuItemDetailScreen> {
                       const Icon(Icons.star_rounded,
                           size: 14, color: Color(0xFFF39C12)),
                       const SizedBox(width: 4),
-                      Text('${widget.item.rating.toStringAsFixed(1)} (${widget.item.totalRatings} avis)',
+                      Text(AppLocalizations.of(context).menuItemRatingReviews(widget.item.rating.toStringAsFixed(1), widget.item.totalRatings),
                           style: AmaraTextStyles.caption
                               .copyWith(color: AmaraColors.muted)),
                       const SizedBox(width: 12),
@@ -354,7 +355,7 @@ class _MenuItemDetailScreenState extends ConsumerState<MenuItemDetailScreen> {
                       const Icon(Icons.people_alt_rounded,
                           size: 14, color: AmaraColors.muted),
                       const SizedBox(width: 4),
-                      Text('${widget.item.formattedOrderCount} clients',
+                      Text(AppLocalizations.of(context).menuItemCustomers(widget.item.formattedOrderCount),
                           style: AmaraTextStyles.caption
                               .copyWith(color: AmaraColors.muted)),
                       const SizedBox(width: 12),
@@ -481,7 +482,7 @@ class _MenuItemDetailScreenState extends ConsumerState<MenuItemDetailScreen> {
                         color: Colors.white, size: 18),
                     const SizedBox(width: 8),
                     Text(
-                      'Ajouter · ${_totalPrice.toStringAsFixed(0)} F',
+                      '${AppLocalizations.of(context).menuItemAddToCart} · ${_totalPrice.toStringAsFixed(0)} F',
                       style: AmaraTextStyles.labelMedium.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w700),
@@ -565,7 +566,7 @@ class _CompanionSection extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text('Parfait avec ce plat 😋',
+              Text(AppLocalizations.of(context).menuItemPerfectWith,
                   style: AmaraTextStyles.labelMedium
                       .copyWith(fontWeight: FontWeight.w700)),
             ],
@@ -690,7 +691,7 @@ class _OptionsSection extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text('Ingrédients & accompagnements',
+              Text(AppLocalizations.of(context).menuItemIngredientsAndSides,
                   style: AmaraTextStyles.labelMedium
                       .copyWith(fontWeight: FontWeight.w700)),
             ],
@@ -718,9 +719,9 @@ class _OptionGroup extends StatelessWidget {
     required this.onToggle,
   });
 
-  String get _subtitle {
-    if (group.maxSelections == 1) return 'Choisissez 1 option';
-    return 'Jusqu\'à ${group.maxSelections} choix';
+  String _subtitle(BuildContext context) {
+    if (group.maxSelections == 1) return AppLocalizations.of(context).menuItemChooseOneOption;
+    return AppLocalizations.of(context).menuItemUpToChoices(group.maxSelections);
   }
 
   bool get _isFulfilled => !group.required || selected.isNotEmpty;
@@ -742,7 +743,7 @@ class _OptionGroup extends StatelessWidget {
                         style: AmaraTextStyles.bodySmall
                             .copyWith(fontWeight: FontWeight.w700)),
                     const SizedBox(height: 2),
-                    Text(_subtitle,
+                    Text(_subtitle(context),
                         style: AmaraTextStyles.caption
                             .copyWith(color: AmaraColors.muted, fontSize: 11)),
                   ],
@@ -772,8 +773,8 @@ class _OptionGroup extends StatelessWidget {
                       group.required
                           ? (_isFulfilled
                               ? '${selected.length}/${group.maxSelections}'
-                              : 'Requis')
-                          : 'Optionnel',
+                              : AppLocalizations.of(context).menuItemRequired)
+                          : AppLocalizations.of(context).menuItemOptional,
                       style: AmaraTextStyles.caption.copyWith(
                         color: group.required
                             ? (_isFulfilled
@@ -860,7 +861,7 @@ class _OptionGroup extends StatelessWidget {
                   Text(
                     option.extraPrice > 0
                         ? '+${option.extraPrice.toStringAsFixed(0)} F'
-                        : 'Inclus',
+                        : AppLocalizations.of(context).menuItemIncluded,
                     style: AmaraTextStyles.caption.copyWith(
                       color: option.extraPrice > 0
                           ? AmaraColors.primary
@@ -902,7 +903,7 @@ class _NoteSection extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text('Note pour le restaurant',
+              Text(AppLocalizations.of(context).menuItemNoteForRestaurant,
                   style: AmaraTextStyles.labelMedium
                       .copyWith(fontWeight: FontWeight.w700)),
             ],
@@ -920,7 +921,7 @@ class _NoteSection extends StatelessWidget {
               style: AmaraTextStyles.bodySmall,
               decoration: InputDecoration(
                 hintText:
-                    'Ex: sans oignons, cuisson bien cuite, sauce à part...',
+                    AppLocalizations.of(context).menuItemNoteHint,
                 hintStyle: AmaraTextStyles.bodySmall
                     .copyWith(color: AmaraColors.muted),
                 border: InputBorder.none,

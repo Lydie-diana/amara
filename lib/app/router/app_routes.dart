@@ -48,4 +48,5 @@ class AppRoutes {
   static const String helpFaq = '/profile/help-faq';
   static const String notifications = '/profile/notifications';
   static const String legal = '/profile/legal';
+  static const String language = '/profile/language';
 }

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
+import '../../../app/core/l10n/app_localizations.dart';
 import '../../../app/providers/auth_provider.dart';
 import '../../../app/router/app_routes.dart';
 
@@ -99,7 +100,7 @@ class _ForgotPasswordOtpScreenState
       _startTimer();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Code renvoyé à ${widget.email}',
+          content: Text(AppLocalizations.of(context).authCodeResent(widget.email),
               style: AmaraTextStyles.bodyMedium),
           backgroundColor: AmaraColors.success,
           behavior: SnackBarBehavior.floating,
@@ -181,7 +182,7 @@ class _ForgotPasswordOtpScreenState
 
               // Header
               Text(
-                'Vérification',
+                AppLocalizations.of(context).authVerification,
                 style: AmaraTextStyles.display2.copyWith(
                   color: AmaraColors.textPrimary,
                 ),
@@ -192,22 +193,11 @@ class _ForgotPasswordOtpScreenState
 
               const SizedBox(height: 12),
 
-              RichText(
-                text: TextSpan(
-                  style: AmaraTextStyles.bodyMedium.copyWith(
-                    color: AmaraColors.textSecondary,
-                    height: 1.5,
-                  ),
-                  children: [
-                    const TextSpan(text: 'Code envoyé à\n'),
-                    TextSpan(
-                      text: widget.email,
-                      style: AmaraTextStyles.bodyLarge.copyWith(
-                        color: AmaraColors.textPrimary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+              Text(
+                AppLocalizations.of(context).authOtpSubtitleEmail(widget.email),
+                style: AmaraTextStyles.bodyMedium.copyWith(
+                  color: AmaraColors.textSecondary,
+                  height: 1.5,
                 ),
               )
                   .animate()
@@ -229,7 +219,7 @@ class _ForgotPasswordOtpScreenState
                   errorPinTheme: errorPinTheme,
                   forceErrorState: _hasError,
                   errorText: _hasError
-                      ? (_errorMessage ?? 'Code incorrect')
+                      ? (_errorMessage ?? AppLocalizations.of(context).authOtpIncorrect)
                       : null,
                   errorTextStyle: AmaraTextStyles.bodySmall.copyWith(
                     color: AmaraColors.error,
@@ -261,7 +251,7 @@ class _ForgotPasswordOtpScreenState
                             color: AmaraColors.textSecondary,
                           ),
                           children: [
-                            const TextSpan(text: 'Renvoyer dans '),
+                            TextSpan(text: AppLocalizations.of(context).authResendIn),
                             TextSpan(
                               text: '${_resendTimer}s',
                               style: AmaraTextStyles.labelSmall.copyWith(
@@ -274,7 +264,7 @@ class _ForgotPasswordOtpScreenState
                     : TextButton(
                         onPressed: _resend,
                         child: Text(
-                          'Renvoyer le code',
+                          AppLocalizations.of(context).authResendCode,
                           style: AmaraTextStyles.labelMedium.copyWith(
                             color: AmaraColors.primary,
                           ),
@@ -310,7 +300,7 @@ class _ForgotPasswordOtpScreenState
                             child: CircularProgressIndicator(
                                 strokeWidth: 2.5, color: Colors.white),
                           )
-                        : Text('Vérifier',
+                        : Text(AppLocalizations.of(context).authVerify,
                             style: AmaraTextStyles.labelLarge
                                 .copyWith(color: Colors.white)),
                   ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
+import '../../../app/core/l10n/app_localizations.dart';
 import '../../../app/providers/auth_provider.dart';
 import '../../../app/providers/location_provider.dart';
 import '../../../app/providers/notification_provider.dart';
@@ -157,7 +158,7 @@ class HomeHeader extends ConsumerWidget {
           const SizedBox(height: 18),
           // ── Message accroche ──
           Text(
-            'Qu\'est-ce qui vous\nfait envie aujourd\'hui ?',
+            AppLocalizations.of(context).homeHeaderQuestion,
             style: AmaraTextStyles.h1.copyWith(
               fontWeight: FontWeight.w800,
               color: AmaraColors.textPrimary,

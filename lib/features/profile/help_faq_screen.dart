@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 
 class HelpFaqScreen extends StatefulWidget {
   const HelpFaqScreen({super.key});
@@ -14,53 +15,49 @@ class HelpFaqScreen extends StatefulWidget {
 class _HelpFaqScreenState extends State<HelpFaqScreen> {
   int _expandedIndex = -1;
 
-  static const _faqItems = [
+  List<_FaqItem> _buildFaqItems(AppLocalizations l10n) => [
     _FaqItem(
-      question: 'Comment passer une commande ?',
-      answer:
-          'Parcourez les restaurants depuis l\'accueil, choisissez vos plats, ajoutez-les au panier puis validez votre commande. Vous pouvez suivre la livraison en temps réel.',
+      question: l10n.helpFaqQ1,
+      answer: l10n.helpFaqA1,
       icon: Icons.shopping_bag_outlined,
     ),
     _FaqItem(
-      question: 'Quels sont les délais de livraison ?',
-      answer:
-          'La livraison prend en moyenne 30 à 45 minutes selon la distance et la préparation du restaurant. Vous pouvez suivre votre commande en temps réel depuis l\'onglet Commandes.',
+      question: l10n.helpFaqQ2,
+      answer: l10n.helpFaqA2,
       icon: Icons.timer_outlined,
     ),
     _FaqItem(
-      question: 'Comment annuler une commande ?',
-      answer:
-          'Vous pouvez annuler votre commande depuis l\'onglet Commandes tant qu\'elle n\'a pas été prise en charge par le restaurant. Rendez-vous dans le détail de la commande et appuyez sur "Annuler".',
+      question: l10n.helpFaqQ3,
+      answer: l10n.helpFaqA3,
       icon: Icons.cancel_outlined,
     ),
     _FaqItem(
-      question: 'Quels moyens de paiement acceptez-vous ?',
-      answer:
-          'Amara accepte le paiement par Mobile Money (Orange Money, MTN Money, Wave), carte bancaire (Visa, Mastercard) et le paiement en espèces à la livraison.',
+      question: l10n.helpFaqQ4,
+      answer: l10n.helpFaqA4,
       icon: Icons.payment_outlined,
     ),
     _FaqItem(
-      question: 'Comment ajouter une adresse de livraison ?',
-      answer:
-          'Rendez-vous dans votre Profil > Mes adresses, puis appuyez sur "Ajouter". Vous pouvez enregistrer plusieurs adresses et définir une adresse par défaut.',
+      question: l10n.helpFaqQ5,
+      answer: l10n.helpFaqA5,
       icon: Icons.location_on_outlined,
     ),
     _FaqItem(
-      question: 'Ma commande n\'est pas arrivée, que faire ?',
-      answer:
-          'Contactez notre support via le chat en bas de cette page ou appelez-nous. Nous ferons le nécessaire pour résoudre votre problème rapidement.',
+      question: l10n.helpFaqQ6,
+      answer: l10n.helpFaqA6,
       icon: Icons.report_problem_outlined,
     ),
     _FaqItem(
-      question: 'Comment devenir restaurant partenaire ?',
-      answer:
-          'Envoyez-nous un email à partenaires@amara.app avec le nom de votre restaurant, votre localisation et votre menu. Notre équipe vous recontactera sous 48h.',
+      question: l10n.helpFaqQ7,
+      answer: l10n.helpFaqA7,
       icon: Icons.restaurant_outlined,
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final faqItems = _buildFaqItems(l10n);
+
     return Scaffold(
       backgroundColor: AmaraColors.bg,
       appBar: AppBar(
@@ -72,7 +69,7 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Aide & FAQ',
+          l10n.helpTitle,
           style: AmaraTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
         ),
         centerTitle: true,
@@ -84,17 +81,17 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── Header ────────────────────────────────────────────────
-            _buildHeader(),
+            _buildHeader(l10n),
             const SizedBox(height: 28),
 
             // ── FAQ ───────────────────────────────────────────────────
-            Text('Questions fréquentes',
+            Text(l10n.helpFaqSectionTitle,
                 style:
                     AmaraTextStyles.h2.copyWith(fontWeight: FontWeight.w800)),
             const SizedBox(height: 16),
 
-            ...List.generate(_faqItems.length, (index) {
-              final item = _faqItems[index];
+            ...List.generate(faqItems.length, (index) {
+              final item = faqItems[index];
               final isExpanded = _expandedIndex == index;
               return Padding(
                 padding: const EdgeInsets.only(bottom: 10),
@@ -114,20 +111,20 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
             const SizedBox(height: 32),
 
             // ── Contact support ───────────────────────────────────────
-            Text('Besoin d\'aide ?',
+            Text(l10n.helpNeedHelp,
                 style:
                     AmaraTextStyles.h2.copyWith(fontWeight: FontWeight.w800)),
             const SizedBox(height: 16),
 
             _ContactOption(
               icon: Icons.chat_bubble_outline_rounded,
-              label: 'Chat en direct',
-              subtitle: 'Réponse en quelques minutes',
+              label: l10n.helpContactChat,
+              subtitle: l10n.helpContactChatSubtitle,
               color: AmaraColors.primary,
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Chat bientôt disponible',
+                    content: Text(l10n.helpContactChatSoon,
                         style: AmaraTextStyles.bodyMedium
                             .copyWith(color: Colors.white)),
                     backgroundColor: AmaraColors.primary,
@@ -141,16 +138,16 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
             const SizedBox(height: 10),
             _ContactOption(
               icon: Icons.email_outlined,
-              label: 'Email',
-              subtitle: 'support@amara.app',
+              label: l10n.helpContactEmail,
+              subtitle: l10n.helpContactEmailAddress,
               color: AmaraColors.warning,
               onTap: () {},
             ),
             const SizedBox(height: 10),
             _ContactOption(
               icon: Icons.phone_outlined,
-              label: 'Téléphone',
-              subtitle: '+225 07 00 00 00 00',
+              label: l10n.helpContactPhone,
+              subtitle: l10n.helpContactPhoneNumber,
               color: AmaraColors.success,
               onTap: () {},
             ),
@@ -160,7 +157,7 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(AppLocalizations l10n) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
@@ -178,7 +175,7 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
               color: Colors.white, size: 44),
           const SizedBox(height: 12),
           Text(
-            'Comment pouvons-nous\nvous aider ?',
+            l10n.helpHeaderTitle,
             style: AmaraTextStyles.h2.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w800,
@@ -187,7 +184,7 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Trouvez des réponses à vos questions ou contactez notre support.',
+            l10n.helpHeaderSubtitle,
             style: AmaraTextStyles.bodyMedium.copyWith(
               color: Colors.white.withValues(alpha: 0.8),
             ),

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
+import '../../../app/core/l10n/app_localizations.dart';
 import '../../../app/router/app_routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -62,6 +63,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: Container(
         color: AmaraColors.bg,
@@ -104,7 +106,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                         const SizedBox(height: 40),
 
                         // Title
-                        Text('Votre profil', style: AmaraTextStyles.display2)
+                        Text(l10n.profileTitle, style: AmaraTextStyles.display2)
                             .animate()
                             .fadeIn(delay: 100.ms, duration: 400.ms)
                             .slideY(begin: 0.3, end: 0),
@@ -112,7 +114,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                         const SizedBox(height: 8),
 
                         Text(
-                          'Dites-nous comment vous appeler',
+                          l10n.profileSubtitle,
                           style: AmaraTextStyles.bodyMedium.copyWith(
                             color: AmaraColors.muted,
                           ),
@@ -129,15 +131,15 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                         const SizedBox(height: 40),
 
                         // Name field
-                        _buildLabel('Prénom et nom *'),
+                        _buildLabel(l10n.profileNameLabel),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _nameController,
                           style: AmaraTextStyles.bodyLarge,
                           textCapitalization: TextCapitalization.words,
-                          decoration: const InputDecoration(
-                            hintText: 'ex: Kofi Mensah',
-                            prefixIcon: Icon(
+                          decoration: InputDecoration(
+                            hintText: l10n.profileNameHint,
+                            prefixIcon: const Icon(
                               Icons.person_outline_rounded,
                               color: AmaraColors.muted,
                               size: 20,
@@ -145,10 +147,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                           ),
                           validator: (v) {
                             if (v == null || v.trim().isEmpty) {
-                              return 'Ce champ est requis';
+                              return l10n.profileNameRequired;
                             }
                             if (v.trim().length < 2) {
-                              return 'Minimum 2 caractères';
+                              return l10n.profileNameTooShort;
                             }
                             return null;
                           },
@@ -160,15 +162,15 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                         const SizedBox(height: 24),
 
                         // Email field
-                        _buildLabel('Email (optionnel)'),
+                        _buildLabel(l10n.profileEmailLabel),
                         const SizedBox(height: 8),
                         TextFormField(
                           controller: _emailController,
                           style: AmaraTextStyles.bodyLarge,
                           keyboardType: TextInputType.emailAddress,
-                          decoration: const InputDecoration(
-                            hintText: 'votre@email.com',
-                            prefixIcon: Icon(
+                          decoration: InputDecoration(
+                            hintText: l10n.profileEmailHint,
+                            prefixIcon: const Icon(
                               Icons.mail_outline_rounded,
                               color: AmaraColors.muted,
                               size: 20,
@@ -179,7 +181,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                               final emailRegex =
                                   RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$');
                               if (!emailRegex.hasMatch(v)) {
-                                return 'Email invalide';
+                                return l10n.profileEmailInvalid;
                               }
                             }
                             return null;
@@ -204,7 +206,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                   ),
                                 )
                               : Text(
-                                  "C'est parti ! 🚀",
+                                  l10n.profileSave,
                                   style: AmaraTextStyles.button,
                                 ),
                         )

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
+import '../../../app/core/l10n/app_localizations.dart';
 import '../../../app/providers/auth_provider.dart';
 import '../../../app/router/app_routes.dart';
 
@@ -45,11 +46,11 @@ class _ForgotPasswordResetScreenState
 
     if (pass.length < 6) {
       setState(
-          () => _errorMsg = 'Le mot de passe doit avoir au moins 6 caractères');
+          () => _errorMsg = AppLocalizations.of(context).authPasswordMinLength);
       return;
     }
     if (pass != confirm) {
-      setState(() => _errorMsg = 'Les mots de passe ne correspondent pas');
+      setState(() => _errorMsg = AppLocalizations.of(context).authPasswordMismatch);
       return;
     }
 
@@ -72,7 +73,7 @@ class _ForgotPasswordResetScreenState
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Mot de passe réinitialisé avec succès',
+          content: Text(AppLocalizations.of(context).authPasswordResetSuccess,
               style: AmaraTextStyles.bodyMedium),
           backgroundColor: AmaraColors.success,
           behavior: SnackBarBehavior.floating,
@@ -123,7 +124,7 @@ class _ForgotPasswordResetScreenState
 
               // Header
               Text(
-                'Nouveau mot de passe',
+                AppLocalizations.of(context).authNewPasswordTitle,
                 style: AmaraTextStyles.display2.copyWith(
                   color: AmaraColors.textPrimary,
                 ),
@@ -135,7 +136,7 @@ class _ForgotPasswordResetScreenState
               const SizedBox(height: 12),
 
               Text(
-                'Définissez votre nouveau mot de passe pour ${widget.email}',
+                AppLocalizations.of(context).authNewPasswordDesc(widget.email),
                 style: AmaraTextStyles.bodyMedium.copyWith(
                   color: AmaraColors.textSecondary,
                   height: 1.5,
@@ -178,7 +179,7 @@ class _ForgotPasswordResetScreenState
               // New password
               _buildField(
                 controller: _passCtrl,
-                hint: 'Nouveau mot de passe',
+                hint: AppLocalizations.of(context).authNewPasswordLabel,
                 icon: Icons.lock_outline_rounded,
                 obscure: !_passVisible,
                 suffix: IconButton(
@@ -201,7 +202,7 @@ class _ForgotPasswordResetScreenState
               // Confirm password
               _buildField(
                 controller: _confirmCtrl,
-                hint: 'Confirmer le mot de passe',
+                hint: AppLocalizations.of(context).authConfirmPasswordLabel,
                 icon: Icons.lock_outline_rounded,
                 obscure: !_confirmVisible,
                 suffix: IconButton(
@@ -242,7 +243,7 @@ class _ForgotPasswordResetScreenState
                           child: CircularProgressIndicator(
                               strokeWidth: 2.5, color: Colors.white),
                         )
-                      : Text('Réinitialiser',
+                      : Text(AppLocalizations.of(context).authResetPassword,
                           style: AmaraTextStyles.labelLarge
                               .copyWith(color: Colors.white)),
                 ),

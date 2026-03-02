@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
+import '../../../app/core/l10n/app_localizations.dart';
 import '../../../app/models/restaurant_model.dart';
 import '../../../app/providers/cart_provider.dart';
 import '../../menu_item/menu_item_detail_screen.dart';
@@ -36,10 +37,10 @@ class TopDishesSection extends StatelessWidget {
               children: [
                 const Text('🏆', style: TextStyle(fontSize: 16)),
                 const SizedBox(width: 6),
-                Text('Les plus aimés', style: AmaraTextStyles.h3),
+                Text(AppLocalizations.of(context).restaurantMostLoved, style: AmaraTextStyles.h3),
                 const Spacer(),
                 Text(
-                  'Par popularité',
+                  AppLocalizations.of(context).restaurantByPopularity,
                   style: AmaraTextStyles.caption
                       .copyWith(color: AmaraColors.textSecondary),
                 ),
@@ -259,7 +260,7 @@ class _TopDishCard extends ConsumerWidget {
                         if (item.orderCount > 0) ...[
                           const SizedBox(width: 5),
                           Text(
-                            '${item.formattedOrderCount} commandes',
+                            AppLocalizations.of(context).restaurantOrders(item.formattedOrderCount),
                             style: AmaraTextStyles.caption.copyWith(
                               color: AmaraColors.textSecondary,
                               fontWeight: FontWeight.w600,

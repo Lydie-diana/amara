@@ -6,6 +6,7 @@ import 'package:geocoding/geocoding.dart';
 
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
+import '../../../app/core/l10n/app_localizations.dart';
 import '../../../app/providers/location_provider.dart';
 import '../../../app/providers/restaurant_provider.dart';
 import '../../../app/services/location_service.dart';
@@ -94,19 +95,21 @@ class _LocationPickerSheetState extends ConsumerState<LocationPickerSheet> {
         } catch (_) {}
       }
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         setState(() {
           _suggestions = suggestions;
           _searching = false;
           if (suggestions.isEmpty && query.isNotEmpty) {
-            _errorMessage = 'Aucun résultat pour "$query"';
+            _errorMessage = l10n.locationNoResult(query);
           }
         });
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         setState(() {
           _searching = false;
-          _errorMessage = 'Adresse introuvable. Essayez d\'être plus précis.';
+          _errorMessage = l10n.locationNotFound;
           _suggestions = [];
         });
       }
@@ -130,6 +133,7 @@ class _LocationPickerSheetState extends ConsumerState<LocationPickerSheet> {
   @override
   Widget build(BuildContext context) {
     final location = ref.watch(locationProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       decoration: const BoxDecoration(
@@ -158,11 +162,11 @@ class _LocationPickerSheetState extends ConsumerState<LocationPickerSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Adresse de livraison',
+                Text(l10n.locationTitle,
                     style: AmaraTextStyles.h3
                         .copyWith(color: AmaraColors.textPrimary)),
                 const SizedBox(height: 4),
-                Text('Choisissez où vous faire livrer',
+                Text(l10n.locationSubtitle,
                     style: AmaraTextStyles.bodySmall),
                 const SizedBox(height: 20),
 
@@ -189,7 +193,7 @@ class _LocationPickerSheetState extends ConsumerState<LocationPickerSheet> {
                             color: AmaraColors.textPrimary,
                           ),
                           decoration: InputDecoration(
-                            hintText: 'Rechercher une adresse...',
+                            hintText: l10n.locationSearchHint,
                             hintStyle: AmaraTextStyles.bodyMedium.copyWith(
                               color: AmaraColors.muted,
                             ),
@@ -354,7 +358,7 @@ class _LocationPickerSheetState extends ConsumerState<LocationPickerSheet> {
                         child: Divider(color: AmaraColors.divider, height: 1)),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Text('ou',
+                      child: Text(l10n.locationOr,
                           style: AmaraTextStyles.bodySmall
                               .copyWith(color: AmaraColors.muted)),
                     ),
@@ -370,11 +374,11 @@ class _LocationPickerSheetState extends ConsumerState<LocationPickerSheet> {
                   icon: Icons.my_location_rounded,
                   iconColor: AmaraColors.primary,
                   title: _locating
-                      ? 'Localisation en cours…'
-                      : 'Utiliser ma position actuelle',
+                      ? l10n.locationLocating
+                      : l10n.locationUseGps,
                   subtitle: location.hasLocation && !_locating
                       ? location.displayAddress
-                      : 'GPS • Précision optimale',
+                      : l10n.locationGpsAccuracy,
                   trailing: _locating
                       ? const SizedBox(
                           width: 20,
@@ -419,7 +423,7 @@ class _LocationPickerSheetState extends ConsumerState<LocationPickerSheet> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Secteur actuel',
+                              Text(l10n.locationCurrentArea,
                                   style: AmaraTextStyles.labelSmall.copyWith(
                                       color: AmaraColors.primary,
                                       fontSize: 11)),
@@ -455,14 +459,14 @@ class _LocationPickerSheetState extends ConsumerState<LocationPickerSheet> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
-                            'Accès à la localisation refusé.\nActivez-le dans vos Réglages.',
+                            l10n.locationAccessDenied,
                             style: AmaraTextStyles.bodySmall.copyWith(
                                 color: AmaraColors.warning),
                           ),
                         ),
                         TextButton(
                           onPressed: () => LocationService.openAppSettings(),
-                          child: Text('Réglages',
+                          child: Text(l10n.locationSettings,
                               style: AmaraTextStyles.labelSmall.copyWith(
                                   color: AmaraColors.warning)),
                         ),

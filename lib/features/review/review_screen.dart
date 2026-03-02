@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/core/widgets/error_dialog.dart';
 import '../../app/services/convex_client.dart';
 
@@ -95,14 +96,14 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
               ),
               const SizedBox(height: 20),
               Text(
-                'Merci pour votre avis !',
+                AppLocalizations.of(context).reviewThankYou,
                 style: AmaraTextStyles.h2.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'Votre retour aide la communaute',
+                AppLocalizations.of(context).reviewFeedbackHelps,
                 style: AmaraTextStyles.bodyMedium,
               ),
             ],
@@ -124,7 +125,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
         ),
         centerTitle: true,
         title: Text(
-          'Votre avis',
+          AppLocalizations.of(context).reviewTitle,
           style: AmaraTextStyles.labelLarge.copyWith(
             fontWeight: FontWeight.w700,
           ),
@@ -154,7 +155,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Comment etait votre experience ?',
+              AppLocalizations.of(context).reviewExperienceQuestion,
               style: AmaraTextStyles.h2.copyWith(
                 fontWeight: FontWeight.w800,
               ),
@@ -174,7 +175,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
 
             // ── Note restaurant
             _RatingSection(
-              label: 'Note du restaurant',
+              label: AppLocalizations.of(context).reviewRestaurantRating,
               icon: Icons.restaurant_rounded,
               rating: _restaurantRating,
               onChanged: (r) => setState(() => _restaurantRating = r),
@@ -184,7 +185,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
             if (widget.hasDriver) ...[
               const SizedBox(height: 28),
               _RatingSection(
-                label: 'Note du livreur',
+                label: AppLocalizations.of(context).reviewDriverRating,
                 icon: Icons.delivery_dining_rounded,
                 rating: _driverRating,
                 onChanged: (r) => setState(() => _driverRating = r),
@@ -198,7 +199,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Un commentaire ? (optionnel)',
+                AppLocalizations.of(context).reviewCommentLabel,
                 style: AmaraTextStyles.labelMedium.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -211,7 +212,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
               maxLength: 300,
               style: AmaraTextStyles.bodyLarge.copyWith(fontSize: 14),
               decoration: InputDecoration(
-                hintText: 'Partagez votre experience...',
+                hintText: AppLocalizations.of(context).reviewCommentHint,
                 hintStyle: AmaraTextStyles.bodyMedium.copyWith(
                   color: AmaraColors.muted,
                 ),
@@ -264,7 +265,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
                         ),
                       )
                     : Text(
-                        'Envoyer mon avis',
+                        AppLocalizations.of(context).reviewSubmit,
                         style: AmaraTextStyles.button,
                       ),
               ),
@@ -277,7 +278,7 @@ class _ReviewScreenState extends ConsumerState<ReviewScreen> {
               onPressed: () =>
                   context.canPop() ? context.pop(false) : null,
               child: Text(
-                'Passer',
+                AppLocalizations.of(context).reviewSkip,
                 style: AmaraTextStyles.labelMedium.copyWith(
                   color: AmaraColors.muted,
                   fontWeight: FontWeight.w600,
@@ -308,7 +309,10 @@ class _RatingSection extends StatelessWidget {
     this.optional = false,
   });
 
-  static const _labels = ['', 'Mauvais', 'Moyen', 'Bien', 'Tres bien', 'Excellent'];
+  static List<String> _labels(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return ['', l10n.reviewRatingBad, l10n.reviewRatingAverage, l10n.reviewRatingGood, l10n.reviewRatingVeryGood, l10n.reviewRatingExcellent];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -337,7 +341,7 @@ class _RatingSection extends StatelessWidget {
               if (optional) ...[
                 const SizedBox(width: 6),
                 Text(
-                  '(optionnel)',
+                  AppLocalizations.of(context).reviewOptional,
                   style: AmaraTextStyles.caption.copyWith(
                     color: AmaraColors.muted,
                   ),
@@ -378,7 +382,7 @@ class _RatingSection extends StatelessWidget {
           if (rating > 0) ...[
             const SizedBox(height: 10),
             Text(
-              _labels[rating],
+              _labels(context)[rating],
               style: AmaraTextStyles.labelSmall.copyWith(
                 color: AmaraColors.primary,
                 fontWeight: FontWeight.w700,

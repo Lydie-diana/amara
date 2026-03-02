@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/providers/favorites_provider.dart';
 import '../../app/providers/restaurant_provider.dart';
 import '../home/widgets/restaurant_card.dart';
@@ -32,7 +33,7 @@ class FavoritesScreen extends ConsumerWidget {
         ),
         centerTitle: true,
         title: Text(
-          'Mes favoris',
+          AppLocalizations.of(context).favoritesTitle,
           style: AmaraTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
         ),
       ),
@@ -50,13 +51,13 @@ class FavoritesScreen extends ConsumerWidget {
                     color: AmaraColors.muted, size: 48),
                 const SizedBox(height: 16),
                 Text(
-                  'Erreur de chargement',
+                  AppLocalizations.of(context).favoritesLoadError,
                   style: AmaraTextStyles.h3
                       .copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Impossible de charger les restaurants.',
+                  AppLocalizations.of(context).favoritesLoadErrorMessage,
                   style: AmaraTextStyles.bodyMedium
                       .copyWith(color: AmaraColors.textSecondary),
                   textAlign: TextAlign.center,
@@ -110,13 +111,13 @@ class _EmptyFavorites extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'Aucun favori',
+              AppLocalizations.of(context).favoritesEmptyTitle,
               style:
                   AmaraTextStyles.h2.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
             Text(
-              'Appuyez sur le coeur d\'un restaurant pour l\'ajouter à vos favoris.',
+              AppLocalizations.of(context).favoritesEmptyMessage,
               style: AmaraTextStyles.bodySmall.copyWith(
                 color: AmaraColors.textSecondary,
                 height: 1.5,

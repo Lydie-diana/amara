@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/router/app_routes.dart';
 import '../shell/main_shell.dart';
 
@@ -156,7 +157,7 @@ class _HeroSectionState extends State<_HeroSection>
               ),
               const SizedBox(height: 24),
               Text(
-                'Commande envoyee !',
+                AppLocalizations.of(context).orderConfirmSent,
                 style: AmaraTextStyles.h1.copyWith(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
@@ -167,7 +168,7 @@ class _HeroSectionState extends State<_HeroSection>
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 40),
                 child: Text(
-                  'Merci d\'avoir commande chez ${widget.restaurantName}. Notre cuisine prepare votre repas. Nous vous informerons des qu\'il sera pret.',
+                  AppLocalizations.of(context).orderConfirmThankYou(widget.restaurantName),
                   style: AmaraTextStyles.bodySmall.copyWith(
                     color: AmaraColors.textSecondary,
                     height: 1.5,
@@ -198,7 +199,7 @@ class _OrderIdSection extends StatelessWidget {
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
-          'N DE COMMANDE\n#$displayId',
+          '${AppLocalizations.of(context).orderConfirmOrderNumber}\n#$displayId',
           style: AmaraTextStyles.labelLarge.copyWith(
             fontWeight: FontWeight.w800,
             color: AmaraColors.textPrimary,
@@ -239,14 +240,14 @@ class _DetailCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Nom du destinataire',
+              AppLocalizations.of(context).orderConfirmRecipientName,
               style: AmaraTextStyles.caption.copyWith(
                 color: AmaraColors.textSecondary,
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              'Client Amara',
+              AppLocalizations.of(context).orderConfirmClientName,
               style: AmaraTextStyles.labelLarge.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AmaraColors.textPrimary,
@@ -254,7 +255,7 @@ class _DetailCard extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              'Detail de la commande',
+              AppLocalizations.of(context).orderConfirmOrderDetail,
               style: AmaraTextStyles.labelMedium.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AmaraColors.textPrimary,
@@ -267,7 +268,7 @@ class _DetailCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Text(
-                  'Aucun article',
+                  AppLocalizations.of(context).orderConfirmNoItems,
                   style: AmaraTextStyles.bodySmall
                       .copyWith(color: AmaraColors.muted),
                 ),
@@ -394,7 +395,7 @@ class _Buttons extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  'Suivre ma commande',
+                  AppLocalizations.of(context).orderConfirmTrackOrder,
                   style: AmaraTextStyles.labelLarge.copyWith(
                     color: AmaraColors.primary,
                     fontWeight: FontWeight.w700,
@@ -418,7 +419,7 @@ class _Buttons extends StatelessWidget {
               ),
               child: Center(
                 child: Text(
-                  'Retour a l\'accueil',
+                  AppLocalizations.of(context).orderConfirmBackHome,
                   style: AmaraTextStyles.labelLarge.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,

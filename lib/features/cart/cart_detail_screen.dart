@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/models/cart_model.dart';
 import '../../app/providers/cart_provider.dart';
 import '../../app/router/app_routes.dart';
@@ -87,7 +88,7 @@ class _CartDetailScreenState extends ConsumerState<CartDetailScreen> {
                             size: 18, color: AmaraColors.primary),
                         const SizedBox(width: 6),
                         Text(
-                          'Ajouter des articles',
+                          AppLocalizations.of(context).cartAddItems,
                           style: AmaraTextStyles.labelSmall.copyWith(
                               fontWeight: FontWeight.w700,
                               color: AmaraColors.primary),
@@ -105,7 +106,7 @@ class _CartDetailScreenState extends ConsumerState<CartDetailScreen> {
                 Row(
                   children: [
                     Text(
-                      'Sous-total',
+                      AppLocalizations.of(context).cartSubtotal,
                       style: AmaraTextStyles.labelLarge
                           .copyWith(fontWeight: FontWeight.w600),
                     ),
@@ -146,7 +147,7 @@ class _CartDetailScreenState extends ConsumerState<CartDetailScreen> {
                 ),
                 child: Center(
                   child: Text(
-                    'Passer au paiement',
+                    AppLocalizations.of(context).cartProceedToPayment,
                     style: AmaraTextStyles.button,
                   ),
                 ),
@@ -280,7 +281,7 @@ class _CartItemTile extends ConsumerWidget {
                 if (cartItem.selectedOptions.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
-                    _optionsSummary(),
+                    _optionsSummary(context),
                     style: AmaraTextStyles.caption
                         .copyWith(color: AmaraColors.muted, fontSize: 10),
                     maxLines: 1,
@@ -299,10 +300,10 @@ class _CartItemTile extends ConsumerWidget {
     );
   }
 
-  String _optionsSummary() {
+  String _optionsSummary(BuildContext context) {
     final count = cartItem.selectedOptions.values
         .fold(0, (sum, list) => sum + list.length);
-    return '$count option${count > 1 ? 's' : ''} sélectionnée${count > 1 ? 's' : ''}';
+    return AppLocalizations.of(context).cartOptionsSelected(count);
   }
 
   Widget _fallbackImage(dynamic item) {

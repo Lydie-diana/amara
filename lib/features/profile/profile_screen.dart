@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/providers/auth_provider.dart';
 import '../../app/providers/notification_provider.dart';
 import '../../app/router/app_routes.dart';
@@ -32,6 +33,8 @@ class ProfileScreen extends ConsumerWidget {
       return _NotLoggedIn(onLogin: () => context.go(AppRoutes.authPhone));
     }
 
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: AmaraColors.bg,
       body: SafeArea(
@@ -43,7 +46,7 @@ class ProfileScreen extends ConsumerWidget {
               child: Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Mon Profil',
+                  l10n.profileScreenTitle,
                   style: AmaraTextStyles.h1
                       .copyWith(fontWeight: FontWeight.w800),
                 ),
@@ -66,19 +69,19 @@ class ProfileScreen extends ConsumerWidget {
                   children: [
                     _ProfileMenuItem(
                       icon: Icons.person_outline_rounded,
-                      label: 'Informations personnelles',
+                      label: l10n.profileMenuPersonalInfo,
                       onTap: () => context.push(AppRoutes.personalInfo),
                     ),
                     const _MenuDivider(),
                     _ProfileMenuItem(
                       icon: Icons.favorite_rounded,
-                      label: 'Mes favoris',
+                      label: l10n.profileMenuFavorites,
                       onTap: () => context.push(AppRoutes.favorites),
                     ),
                     const _MenuDivider(),
                     _ProfileMenuItem(
                       icon: Icons.location_on_rounded,
-                      label: 'Mes adresses',
+                      label: l10n.profileMenuAddresses,
                       onTap: () => context.push(AppRoutes.myAddresses),
                     ),
                     const _MenuDivider(),
@@ -89,7 +92,7 @@ class ProfileScreen extends ConsumerWidget {
                         final unreadCount = unreadAsync.valueOrNull ?? 0;
                         return _ProfileMenuItem(
                           icon: Icons.notifications_rounded,
-                          label: 'Notifications',
+                          label: l10n.profileMenuNotifications,
                           onTap: () =>
                               context.push(AppRoutes.notifications),
                           badgeCount: unreadCount,
@@ -99,19 +102,19 @@ class ProfileScreen extends ConsumerWidget {
                     const _MenuDivider(),
                     _ProfileMenuItem(
                       icon: Icons.language_rounded,
-                      label: 'Langue',
-                      onTap: () {},
+                      label: l10n.profileMenuLanguage,
+                      onTap: () => context.push(AppRoutes.language),
                     ),
                     const _MenuDivider(),
                     _ProfileMenuItem(
                       icon: Icons.help_outline_rounded,
-                      label: 'Aide & FAQ',
+                      label: l10n.profileMenuHelpFaq,
                       onTap: () => context.push(AppRoutes.helpFaq),
                     ),
                     const _MenuDivider(),
                     _ProfileMenuItem(
                       icon: Icons.gavel_rounded,
-                      label: 'Legal',
+                      label: l10n.profileMenuLegal,
                       onTap: () => context.push(AppRoutes.legal),
                     ),
                     const SizedBox(height: 40),
@@ -326,7 +329,7 @@ class _LogoutButton extends StatelessWidget {
             const Icon(Icons.logout_rounded, color: Colors.white, size: 20),
             const SizedBox(width: 10),
             Text(
-              'Se déconnecter',
+              AppLocalizations.of(context).profileLogout,
               style: AmaraTextStyles.button,
             ),
           ],
@@ -364,12 +367,12 @@ class _NotLoggedIn extends StatelessWidget {
                       color: AmaraColors.primary, size: 40),
                 ),
                 const SizedBox(height: 20),
-                Text('Connectez-vous',
+                Text(AppLocalizations.of(context).profileNotLoggedInTitle,
                     style: AmaraTextStyles.h2
                         .copyWith(fontWeight: FontWeight.w800)),
                 const SizedBox(height: 8),
                 Text(
-                  'Accédez à votre profil, vos commandes et vos favoris.',
+                  AppLocalizations.of(context).profileNotLoggedInSubtitle,
                   style: AmaraTextStyles.bodySmall.copyWith(
                       color: AmaraColors.textSecondary, height: 1.5),
                   textAlign: TextAlign.center,
@@ -385,7 +388,7 @@ class _NotLoggedIn extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Text(
-                      'Se connecter',
+                      AppLocalizations.of(context).profileNotLoggedInButton,
                       textAlign: TextAlign.center,
                       style: AmaraTextStyles.labelMedium.copyWith(
                           color: Colors.white, fontWeight: FontWeight.w700),

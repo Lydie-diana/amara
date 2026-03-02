@@ -76,6 +76,13 @@
   "categoryBurger": "Burger",
   "categoryDrink": "Drink",
   "categoryDessert": "Dessert",
+  "categoryChicken": "Chicken",
+  "categoryFish": "Fish",
+  "categoryVegetarian": "Vegetarian",
+  "categoryPasta": "Pasta",
+  "categorySpicy": "Spicy",
+  "categoryLocal": "Local dishes",
+  "categoryAfrican": "African",
 
   "restaurantOpen": "Open",
   "restaurantClosed": "Closed",
@@ -101,5 +108,800 @@
 
   "errorRequired": "This field is required",
   "errorNetwork": "Network error, please try again",
-  "errorGeneric": "An error occurred"
+  "errorGeneric": "An error occurred",
+
+  "profileScreenTitle": "My Profile",
+  "profileMenuPersonalInfo": "Personal information",
+  "profileMenuFavorites": "My favorites",
+  "profileMenuAddresses": "My addresses",
+  "profileMenuNotifications": "Notifications",
+  "profileMenuLanguage": "Language",
+  "profileMenuHelpFaq": "Help & FAQ",
+  "profileMenuLegal": "Legal",
+  "profileLogout": "Log out",
+  "profileNotLoggedInTitle": "Sign in",
+  "profileNotLoggedInSubtitle": "Access your profile, orders, and favorites.",
+  "profileNotLoggedInButton": "Sign in",
+
+  "languageTitle": "Language",
+  "languageSubtitle": "Choose the app language",
+  "languageFrench": "French",
+  "languageEnglish": "English",
+
+  "homeHeaderQuestion": "What are you\ncraving today?",
+  "homeCategories": "Categories",
+  "homeAllRestaurants": "All restaurants",
+  "homeErrorLoad": "Unable to load restaurants. Check your connection.",
+  "homeEmptyTitle": "No restaurant\nin your area",
+  "homeEmptySubtitle": "Try changing your address\nor come back later.",
+  "homeEmptyAction": "Change area",
+  "homeEmptyCategoryTitle": "No restaurant\nfor this category",
+  "homeEmptyCategorySubtitle": "Try another category",
+  "homeEmptyCategoryAction": "See all restaurants",
+
+  "cartMyCart": "My cart",
+  "cartRestaurantCount": "{count, plural, =1{1 restaurant} other{{count} restaurants}}",
+  "@cartRestaurantCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "cartItemCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "@cartItemCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "authLoginTab": "Login",
+  "authSignupTab": "Sign up",
+  "authLoginSubtitle": "Sign in to discover African flavors.",
+  "authSignupSubtitle": "Create your account and start ordering.",
+  "authEmailLabel": "Email",
+  "authEmailHint": "amanda.samantha@email.com",
+  "authPasswordLabel": "Password",
+  "authPasswordHint": "••••••••",
+  "authForgotPassword": "Forgot password?",
+  "authLoginButton": "Sign in",
+  "authFullNameLabel": "Full name",
+  "authFullNameHint": "Jean Kouassi",
+  "authPhoneLabel": "Phone",
+  "authPhoneFieldHint": "+225 07 00 00 00 00",
+  "authPasswordMinHint": "Min. 6 characters",
+  "authSignupButton": "Create my account",
+  "authOrContinueWith": "or continue with",
+  "authEmailAndPasswordRequired": "Email and password required",
+  "authAllFieldsRequired": "All fields are required",
+  "authPasswordMinLength": "Password must be at least 6 characters",
+  "authLoginError": "Login error",
+  "authSignupError": "Sign up error",
+
+  "authForgotPasswordTitle": "Forgot password",
+  "authForgotPasswordSubtitle": "Enter your email to receive a verification code.",
+  "authSendCode": "Send code",
+  "authNewPasswordTitle": "New password",
+  "authNewPasswordSubtitle": "Choose a new secure password.",
+  "authNewPasswordLabel": "New password",
+  "authConfirmPasswordLabel": "Confirm password",
+  "authResetPassword": "Reset",
+  "authPasswordMismatch": "Passwords do not match",
+
+  "authOtpSubtitleEmail": "Code sent to\n{email}",
+  "@authOtpSubtitleEmail": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "authCodeResent": "Code resent to {email}",
+  "@authCodeResent": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "authSendFailed": "Send failed",
+  "authOtpIncorrect": "Incorrect code, please try again",
+  "authOtpNetworkError": "An error occurred. Check your connection and try again.",
+  "authResendIn": "Resend in ",
+  "authResendCode": "Resend code",
+  "authVerify": "Verify",
+  "authVerification": "Verification",
+  "authEmailInvalid": "Please enter a valid email",
+  "authForgotPasswordDesc": "Enter your email address to receive a reset code.",
+  "authNewPasswordDesc": "Set your new password for {email}",
+  "@authNewPasswordDesc": {
+    "placeholders": {
+      "email": { "type": "String" }
+    }
+  },
+  "authPasswordResetSuccess": "Password reset successfully",
+
+  "ordersTitle": "Orders",
+  "ordersTabPastItems": "Past items",
+  "ordersTabOrders": "Orders",
+  "ordersDeliveryFee": "Delivery fee: {fee} · {time}",
+  "@ordersDeliveryFee": {
+    "placeholders": {
+      "fee": { "type": "String" },
+      "time": { "type": "String" }
+    }
+  },
+  "ordersStatusPending": "Pending",
+  "ordersStatusConfirmed": "Confirmed",
+  "ordersStatusPreparing": "Preparing",
+  "ordersStatusReady": "Ready",
+  "ordersStatusPickedUp": "Picked up",
+  "ordersStatusDelivering": "Delivering",
+  "ordersStatusDelivered": "Delivered",
+  "ordersStatusCancelled": "Cancelled",
+  "ordersStatusUnknown": "Unknown",
+  "ordersToday": "Today",
+  "ordersYesterday": "Yesterday",
+  "ordersItemCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "@ordersItemCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "ordersCancelTitle": "Cancel order?",
+  "ordersCancelMessage": "The restaurant has not yet accepted your order. Do you want to cancel it?",
+  "ordersCancelNo": "No",
+  "ordersCancelYes": "Yes, cancel",
+  "ordersCancelledByClient": "Cancelled by client",
+  "ordersCancelledSuccess": "Order cancelled",
+  "ordersCancelButton": "Cancel",
+  "ordersReorderButton": "Reorder",
+  "ordersLoginRequired": "Login required",
+  "ordersLoginMessage": "Sign in to view your orders",
+  "ordersEmptyTitle": "No orders",
+  "ordersEmptyMessage": "Your future orders will appear here",
+  "ordersConnectionError": "Connection error",
+
+  "orderTrackingTitle": "Order tracking",
+  "orderTrackingPickupOrder": "Pickup order",
+  "orderTrackingClientInfo": "Client information",
+  "orderTrackingRestaurant": "Restaurant",
+  "orderTrackingRestaurantAddress": "Restaurant address",
+  "orderTrackingSeeOnMap": "See on map",
+  "orderTrackingRecipientName": "Recipient name",
+  "orderTrackingPhone": "Phone",
+  "orderTrackingPhoneNotProvided": "Not provided",
+  "orderTrackingConfirmPickup": "I picked up my order",
+  "orderTrackingOrderDetail": "Order details",
+  "orderTrackingOrderCompleted": "Order completed · {date}",
+  "@orderTrackingOrderCompleted": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "orderTrackingReviewSubmitted": "Review submitted — thank you!",
+  "orderTrackingRateEstablishment": "Rate this establishment",
+  "orderTrackingDidYouLike": "Did you enjoy {name}?",
+  "@orderTrackingDidYouLike": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "orderTrackingYourOrder": "Your order",
+  "orderTrackingTotal": "Total",
+  "orderTrackingViewReceipt": "View receipt",
+  "orderTrackingYourDelivery": "Your delivery",
+  "orderTrackingByDriver": "by {name}",
+  "@orderTrackingByDriver": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "orderTrackingDefaultDriver": "Amara Driver",
+  "orderTrackingReorder": "Order again",
+  "orderTrackingOrderCancelled": "Order cancelled · {date}",
+  "@orderTrackingOrderCancelled": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "orderTrackingCancelledBadge": "This order has been cancelled",
+  "orderTrackingDelivery": "Delivery",
+  "orderTrackingPayment": "Payment",
+  "orderTrackingPaymentMobileMoney": "Mobile Money",
+  "orderTrackingPaymentCard": "Credit card",
+  "orderTrackingPaymentCash": "Cash",
+  "orderTrackingPaymentNotSpecified": "Not specified",
+  "orderTrackingStepPending": "Pending",
+  "orderTrackingStepPreparation": "Preparing",
+  "orderTrackingStepReady": "Ready",
+  "orderTrackingStepDelivering": "Delivering",
+  "orderTrackingStepDelivered": "Delivered",
+  "orderTrackingStepOrdered": "Ordered",
+  "orderTrackingStepPickedUp": "Picked up",
+  "orderTrackingChefCancelled": "Order cancelled",
+  "orderTrackingChefPending": "Waiting for confirmation",
+  "orderTrackingChefPreparing": "The chef is preparing your order",
+  "orderTrackingChefReady": "Your order is ready!",
+  "orderTrackingChefPickedUp": "Order picked up!",
+  "orderTrackingChefDelivering": "Your driver is on the way",
+  "orderTrackingChefDelivered": "Order delivered!",
+  "orderTrackingChefProcessing": "Processing",
+  "orderTrackingSubCancelled": "Your order has been cancelled.",
+  "orderTrackingSubPendingPickup": "{restaurant} will confirm your order soon.",
+  "@orderTrackingSubPendingPickup": {
+    "placeholders": {
+      "restaurant": { "type": "String" }
+    }
+  },
+  "orderTrackingSubPreparingPickup": "Your meal will be ready in ~{minutes} min.",
+  "@orderTrackingSubPreparingPickup": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "orderTrackingSubReadyPickup": "Head to {restaurant} to pick up your order!",
+  "@orderTrackingSubReadyPickup": {
+    "placeholders": {
+      "restaurant": { "type": "String" }
+    }
+  },
+  "orderTrackingSubPickedUp": "Enjoy your meal!",
+  "orderTrackingSubPendingDelivery": "{restaurant} will confirm your order soon.",
+  "@orderTrackingSubPendingDelivery": {
+    "placeholders": {
+      "restaurant": { "type": "String" }
+    }
+  },
+  "orderTrackingSubPreparingDelivery": "Your meal will be ready in ~{minutes} min.\nEnjoy soon!",
+  "@orderTrackingSubPreparingDelivery": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "orderTrackingSubReadyDelivery": "A driver will pick up your order soon.",
+  "orderTrackingSubDeliveringDelivery": "Your order is on its way. Stay available!",
+  "orderTrackingSubDeliveredDelivery": "Your order has been delivered. Enjoy!",
+  "orderTrackingSummaryOrder": "Order",
+  "orderTrackingSummaryMode": "Mode",
+  "orderTrackingSummaryTakeaway": "Takeaway",
+  "orderTrackingSummaryNotProvided": "Not provided",
+  "orderTrackingMapDriver": "Driver",
+  "orderTrackingMapYou": "You",
+  "orderTrackingMapFollow": "Follow",
+  "orderTrackingLoadError": "Unable to load\nthe order",
+  "orderTrackingRetry": "Retry",
+  "orderTrackingRateOrder": "Rate this order",
+  "orderTrackingTodayAt": "today at {time}",
+  "@orderTrackingTodayAt": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "orderTrackingYesterdayAt": "yesterday at {time}",
+  "@orderTrackingYesterdayAt": {
+    "placeholders": {
+      "time": { "type": "String" }
+    }
+  },
+  "orderTrackingDateAt": "on {date} at {time}",
+  "@orderTrackingDateAt": {
+    "placeholders": {
+      "date": { "type": "String" },
+      "time": { "type": "String" }
+    }
+  },
+
+  "receiptTitle": "Receipt",
+  "receiptBrandSubtitle": "African cuisine delivery",
+  "receiptOrderTitle": "ORDER RECEIPT",
+  "receiptDate": "Date",
+  "receiptRestaurant": "Restaurant",
+  "receiptMode": "Mode",
+  "receiptModeTakeaway": "Takeaway",
+  "receiptModeDelivery": "Delivery",
+  "receiptAddress": "Address",
+  "receiptPayment": "Payment",
+  "receiptPaymentMobileMoney": "Mobile Money",
+  "receiptPaymentCard": "Credit card",
+  "receiptPaymentCash": "Cash",
+  "receiptPaymentNotSpecified": "Not specified",
+  "receiptQty": "Qty",
+  "receiptArticle": "Item",
+  "receiptPrice": "Price",
+  "receiptSubtotal": "Subtotal",
+  "receiptDeliveryFee": "Delivery fee",
+  "receiptFree": "Free",
+  "receiptTotal": "TOTAL",
+  "receiptThankYou": "Thank you for your order!",
+  "receiptFooter": "Amara — African flavors delivered to you",
+  "receiptDownload": "Download receipt",
+  "receiptGenerationError": "Error generating receipt",
+
+  "orderConfirmSent": "Order sent!",
+  "orderConfirmThankYou": "Thank you for ordering from {restaurant}. Our kitchen is preparing your meal. We will notify you when it's ready.",
+  "@orderConfirmThankYou": {
+    "placeholders": {
+      "restaurant": { "type": "String" }
+    }
+  },
+  "orderConfirmOrderNumber": "ORDER NUMBER",
+  "orderConfirmRecipientName": "Recipient name",
+  "orderConfirmClientName": "Amara Client",
+  "orderConfirmOrderDetail": "Order details",
+  "orderConfirmNoItems": "No items",
+  "orderConfirmTrackOrder": "Track my order",
+  "orderConfirmBackHome": "Back to home",
+
+  "reviewThankYou": "Thank you for your review!",
+  "reviewFeedbackHelps": "Your feedback helps the community",
+  "reviewTitle": "Your review",
+  "reviewExperienceQuestion": "How was your experience?",
+  "reviewRestaurantRating": "Restaurant rating",
+  "reviewDriverRating": "Driver rating",
+  "reviewOptional": "(optional)",
+  "reviewCommentLabel": "A comment? (optional)",
+  "reviewCommentHint": "Share your experience...",
+  "reviewSubmit": "Submit review",
+  "reviewSkip": "Skip",
+  "reviewRatingBad": "Bad",
+  "reviewRatingAverage": "Average",
+  "reviewRatingGood": "Good",
+  "reviewRatingVeryGood": "Very good",
+  "reviewRatingExcellent": "Excellent",
+
+  "favoritesTitle": "My favorites",
+  "favoritesLoadError": "Loading error",
+  "favoritesLoadErrorMessage": "Unable to load restaurants.",
+  "favoritesEmptyTitle": "No favorites",
+  "favoritesEmptyMessage": "Tap the heart on a restaurant to add it to your favorites.",
+
+  "notificationsTitle": "Notifications",
+  "notificationsSelectedCount": "{count} selected",
+  "@notificationsSelectedCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "notificationsDeleteAllTitle": "Delete all?",
+  "notificationsDeleteAllMessage": "All your notifications will be deleted.",
+  "notificationsCancel": "Cancel",
+  "notificationsDelete": "Delete",
+  "notificationsMarkAllRead": "Mark all as read",
+  "notificationsSelect": "Select",
+  "notificationsDeleteAll": "Delete all",
+  "notificationsDeselectAll": "Deselect all",
+  "notificationsSelectAll": "Select all",
+  "notificationsDeleteCount": "Delete ({count})",
+  "@notificationsDeleteCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "notificationsSectionToday": "Today",
+  "notificationsSectionThisWeek": "This week",
+  "notificationsSectionOlder": "Older",
+  "notificationsEmptyTitle": "No notifications",
+  "notificationsEmptyMessage": "Your notifications will appear here",
+  "notificationsConnectionError": "Connection error",
+
+  "addressesTitle": "My addresses",
+  "addressesEmpty": "No address",
+  "addressesEmptySubtitle": "Add a delivery address to order faster.",
+  "addressesAdd": "Add",
+  "addressesEditTitle": "Edit address",
+  "addressesNewTitle": "New address",
+  "addressesLabelField": "Address name",
+  "addressesLabelHint": "E.g.: Home, Office, Mom's place",
+  "addressesAddressField": "Address",
+  "addressesAddressHint": "Search an address...",
+  "addressesComplementField": "Additional info",
+  "addressesComplementHint": "Building, floor, apt, code, instructions...",
+  "addressesSaveChanges": "Save changes",
+  "addressesAddAddress": "Add address",
+  "addressesModified": "Address updated",
+  "addressesAdded": "Address added",
+  "addressesDefault": "Default",
+  "addressesEdit": "Edit",
+  "addressesSetDefault": "Set as default",
+  "addressesDelete": "Delete",
+
+  "personalInfoTitle": "Personal information",
+  "personalInfoSave": "Save",
+  "personalInfoEdit": "Edit",
+  "personalInfoFullName": "Full name",
+  "personalInfoEmail": "Email",
+  "personalInfoPhone": "Phone",
+  "personalInfoBirthDate": "Date of birth",
+  "personalInfoBirthDateEmpty": "Not provided",
+  "personalInfoMemberSince": "Member since",
+  "personalInfoMemberAmara": "Amara member",
+  "personalInfoUpdateFailed": "Update failed",
+  "personalInfoUpdated": "Profile updated",
+
+  "helpTitle": "Help & FAQ",
+  "helpHeaderTitle": "How can we\nhelp you?",
+  "helpHeaderSubtitle": "Find answers to your questions or contact our support.",
+  "helpFaqSectionTitle": "Frequently asked questions",
+  "helpNeedHelp": "Need help?",
+  "helpFaqQ1": "How do I place an order?",
+  "helpFaqA1": "Browse restaurants from the home screen, choose your dishes, add them to your cart and confirm your order. You can track your delivery in real time.",
+  "helpFaqQ2": "What are the delivery times?",
+  "helpFaqA2": "Delivery takes on average 30 to 45 minutes depending on distance and restaurant preparation time. You can track your order in real time from the Orders tab.",
+  "helpFaqQ3": "How do I cancel an order?",
+  "helpFaqA3": "You can cancel your order from the Orders tab as long as it hasn't been accepted by the restaurant. Go to the order details and tap \"Cancel\".",
+  "helpFaqQ4": "What payment methods do you accept?",
+  "helpFaqA4": "Amara accepts Mobile Money (Orange Money, MTN Money, Wave), credit cards (Visa, Mastercard) and cash on delivery.",
+  "helpFaqQ5": "How do I add a delivery address?",
+  "helpFaqA5": "Go to your Profile > My addresses, then tap \"Add\". You can save multiple addresses and set a default address.",
+  "helpFaqQ6": "My order hasn't arrived, what should I do?",
+  "helpFaqA6": "Contact our support via the chat at the bottom of this page or call us. We will do our best to resolve your issue quickly.",
+  "helpFaqQ7": "How can I become a partner restaurant?",
+  "helpFaqA7": "Send us an email at partners@amara.app with your restaurant name, location and menu. Our team will get back to you within 48 hours.",
+  "helpContactChat": "Live chat",
+  "helpContactChatSubtitle": "Response in a few minutes",
+  "helpContactChatSoon": "Chat coming soon",
+  "helpContactEmail": "Email",
+  "helpContactEmailAddress": "support@amara.app",
+  "helpContactPhone": "Phone",
+  "helpContactPhoneNumber": "+225 07 00 00 00 00",
+
+  "legalTitle": "Legal terms",
+  "legalTabCgu": "TOS",
+  "legalTabPrivacy": "Privacy",
+  "legalTabNotices": "Notices",
+  "legalLastUpdated": "Last updated: {date}",
+  "@legalLastUpdated": {
+    "placeholders": {
+      "date": { "type": "String" }
+    }
+  },
+  "legalCguTitle1": "Article 1 — Purpose",
+  "legalCguBody1": "These General Terms of Use (hereinafter \"TOS\") govern access to and use of the Amara mobile application (hereinafter \"the Application\") published by Amara Technologies SAS.\n\nThe Application is intended for individuals (hereinafter \"the Client\" or \"the User\") wishing to order meals from partner restaurants for home delivery or on-site pickup.",
+  "legalCguTitle2": "Article 2 — Acceptance of TOS",
+  "legalCguBody2": "Registration and use of the Application imply full and complete acceptance of these TOS. The User acknowledges having read them and agrees to comply with them.\n\nAmara Technologies reserves the right to modify these TOS at any time. Modifications take effect upon publication in the Application. Continued use of the Application after modification constitutes acceptance of the new TOS.",
+  "legalCguTitle3": "Article 3 — Registration and account",
+  "legalCguBody3": "3.1. To access the Application's services, the User must create an account by providing accurate and complete information (name, email address, phone number).\n\n3.2. The User is solely responsible for the confidentiality of their login credentials. Any activity carried out from their account is presumed to have been performed by them.\n\n3.3. The User must be at least 16 years old to create an account. Minors must obtain authorization from their parents or legal guardians.\n\n3.4. In case of suspected unauthorized use, the User must immediately inform Amara Technologies at: support@amara-food.com.",
+  "legalCguTitle4": "Article 4 — Services offered",
+  "legalCguBody4": "The Application allows the User to:\n\n• Browse partner restaurants and their menus\n• View detailed dish descriptions (description, price, allergens)\n• Add items to cart and place orders\n• Choose between home delivery and restaurant pickup\n• Track order status in real time\n• Save favorite delivery addresses\n• View order history\n• Leave reviews and ratings for restaurants\n• Receive notifications about order progress\n• Benefit from promotions and special offers",
+  "legalCguTitle5": "Article 5 — Orders and payment",
+  "legalCguBody5": "5.1. The User places an order by selecting desired items from a partner restaurant's menu, then confirming the cart.\n\n5.2. Prices displayed in the Application are in CFA Francs (FCFA) and include item prices. Delivery fees are shown separately before order confirmation.\n\n5.3. Payment can be made through payment methods offered in the Application (mobile payment, cash on delivery, credit card subject to availability).\n\n5.4. The order is confirmed once payment is accepted or, in case of cash on delivery, once the order is validated by the restaurant.",
+  "legalCguTitle6": "Article 6 — Delivery",
+  "legalCguBody6": "6.1. Delivery times shown in the Application are estimates and may vary depending on distance, demand and traffic conditions.\n\n6.2. The User must ensure they provide an accurate delivery address and are available to receive their order.\n\n6.3. If the Client is absent during delivery, the driver will attempt to contact them. If the Client remains unreachable, the order may be cancelled without refund of delivery fees.\n\n6.4. Amara Technologies cannot be held responsible for delivery delays due to circumstances beyond its control (weather conditions, traffic jams, force majeure).",
+  "legalCguTitle7": "Article 7 — Cancellation and refund",
+  "legalCguBody7": "7.1. The User can cancel their order as long as it has not been accepted by the restaurant.\n\n7.2. Once the order is accepted and being prepared, cancellation is no longer possible unless agreed by the restaurant.\n\n7.3. In case of a problem with the order (missing item, error, non-conforming quality), the User can report the issue through the Application within 24 hours. Amara Technologies will review the claim and may offer a partial or full refund, credit, or new delivery.\n\n7.4. Refunds are made through the same payment method used for the order, within 5 to 10 business days.",
+  "legalCguTitle8": "Article 8 — User obligations",
+  "legalCguBody8": "The User agrees to:\n\n• Provide accurate information during registration and ordering\n• Use the Application fairly and in accordance with these TOS\n• Not use the Application for fraudulent or illegal purposes\n• Not publish insulting, defamatory or immoral content in reviews\n• Respect drivers and partner restaurant staff\n• Not attempt to circumvent the Application's security systems",
+  "legalCguTitle9": "Article 9 — Intellectual property",
+  "legalCguBody9": "9.1. The Application, its design, features, algorithms, source code and all associated content are the exclusive property of Amara Technologies SAS and are protected by intellectual property laws.\n\n9.2. Any reproduction, representation, modification or distribution of the Application or its content, in whole or in part, without prior written authorization, is prohibited.",
+  "legalCguTitle10": "Article 10 — Liability",
+  "legalCguBody10": "10.1. Amara Technologies acts as an intermediary between the User and partner restaurants. The preparation and quality of dishes are the sole responsibility of the restaurants.\n\n10.2. Amara Technologies strives to ensure the availability and proper functioning of the Application, without guaranteeing uninterrupted availability.\n\n10.3. Amara Technologies cannot be held liable for direct or indirect damages resulting from the use or inability to use the Application.",
+  "legalCguTitle11": "Article 11 — Suspension and termination",
+  "legalCguBody11": "11.1. Amara Technologies may suspend or delete the User's account in case of:\n\n• Violation of these TOS\n• Fraudulent or abusive behavior\n• Repeated offensive content in reviews\n• Non-payment of orders\n\n11.2. The User can delete their account at any time by contacting Amara support at support@amara-food.com or from the Application settings.",
+  "legalCguTitle12": "Article 12 — Applicable law and disputes",
+  "legalCguBody12": "These TOS are governed by Ivorian law. In case of a dispute regarding the interpretation or execution of these terms, the parties will endeavor to find an amicable solution. Failing that, the dispute will be submitted to the competent courts of Abidjan, Ivory Coast.",
+  "legalPrivacyTitle1": "Article 1 — Data controller",
+  "legalPrivacyBody1": "The data controller for personal data collected through the Amara Application is:\n\nAmara Technologies SAS\nHeadquarters: Abidjan, Ivory Coast\nEmail: privacy@amara-food.com",
+  "legalPrivacyTitle2": "Article 2 — Data collected",
+  "legalPrivacyBody2": "In the course of using the Application, the following data is collected:\n\n• Identification data: name, first name, email address, phone number\n• Delivery data: saved addresses, delivery instructions\n• Order data: order history, ordered items, amounts\n• Payment data: payment method used (banking data is not stored by Amara)\n• Geolocation data: position for delivery (with consent)\n• Usage data: favorite restaurants, dietary preferences\n• Technical data: IP address, device type, application version, connection logs\n• Reviews and ratings: scores and comments left on restaurants",
+  "legalPrivacyTitle3": "Article 3 — Processing purposes",
+  "legalPrivacyBody3": "The collected data is used to:\n\n• Create and manage the User's account\n• Process and track orders\n• Ensure delivery to the specified address\n• Enable secure payment\n• Send notifications about order status\n• Offer personalized restaurant and dish recommendations\n• Send promotional offers (with consent)\n• Improve the Application and user experience\n• Ensure platform security and prevent fraud\n• Respond to customer support requests\n• Comply with legal and regulatory obligations",
+  "legalPrivacyTitle4": "Article 4 — Legal basis for processing",
+  "legalPrivacyBody4": "The processing of personal data is based on:\n\n• Contract execution: order processing, delivery, payment\n• User consent: geolocation, marketing notifications, cookies\n• Legitimate interest of Amara Technologies: service improvement, fraud prevention, anonymized statistics\n• Compliance with legal obligations: accounting, taxation",
+  "legalPrivacyTitle5": "Article 5 — Data sharing",
+  "legalPrivacyBody5": "Personal data may be shared with:\n\n• Partner restaurants: name, delivery address and order details (necessary for preparation)\n• Drivers: name, delivery address and phone number (necessary for delivery)\n• Payment providers: information necessary for payment processing\n• Internal Amara Technologies teams: support, technical, marketing\n• Technical providers: hosting, cloud infrastructure\n• Competent authorities in case of legal obligation\n\nAmara Technologies does not sell or rent User personal data to third parties for commercial purposes.",
+  "legalPrivacyTitle6": "Article 6 — Data retention",
+  "legalPrivacyBody6": "Personal data is retained for:\n\n• Account data: for the duration of account use, then 3 years after deletion\n• Order data: 5 years from the order date (accounting obligation)\n• Geolocation data: order session duration only\n• Technical data (logs): 12 months\n• Reviews and ratings: as long as the account is active or until deletion request\n\nUpon expiration of these periods, data is deleted or irreversibly anonymized.",
+  "legalPrivacyTitle7": "Article 7 — Data security",
+  "legalPrivacyBody7": "Amara Technologies implements appropriate technical and organizational measures to protect personal data, including:\n\n• Encryption of data in transit (HTTPS/TLS)\n• Password encryption (bcrypt hashing)\n• Secure token authentication\n• Secure storage of sensitive information on device\n• Restricted data access following the principle of least privilege\n• Hosting on certified cloud infrastructure",
+  "legalPrivacyTitle8": "Article 8 — User rights",
+  "legalPrivacyBody8": "In accordance with applicable regulations, the User has the following rights:\n\n• Right of access: obtain confirmation of data processing and obtain a copy\n• Right of rectification: correct inaccurate or incomplete data\n• Right of deletion: request erasure of data under conditions provided by law\n• Right to portability: receive data in a structured, commonly used format\n• Right of opposition: object to data processing for legitimate reasons\n• Right to restriction: request suspension of processing in certain cases\n• Right to withdraw consent: withdraw consent at any time for consent-based processing\n\nTo exercise these rights, the User can send their request to:\nprivacy@amara-food.com\n\nAmara Technologies commits to responding within 30 days.",
+  "legalPrivacyTitle9": "Article 9 — Geolocation",
+  "legalPrivacyBody9": "The Application may use the User's device geolocation to:\n\n• Identify nearby restaurants\n• Estimate delivery times and fees\n• Enable real-time delivery tracking\n\nAccess to geolocation is subject to User consent via device settings. The User can disable geolocation at any time, but some features may be limited.",
+  "legalPrivacyTitle10": "Article 10 — Notifications",
+  "legalPrivacyBody10": "The Application may send push notifications to:\n\n• Inform about order progress (confirmation, preparation, delivery)\n• Notify about promotions or special offers\n• Communicate important account-related information\n\nThe User can manage notification preferences from their device settings.",
+  "legalPrivacyTitle11": "Article 11 — Policy modification",
+  "legalPrivacyBody11": "Amara Technologies reserves the right to modify this privacy policy at any time. The User will be informed of any substantial modification by notification in the Application. Continued use of the Application after modification constitutes acceptance of the updated policy.",
+  "legalNoticesTitle1": "Application publisher",
+  "legalNoticesBody1": "Amara Technologies SAS\nSimplified Joint Stock Company with capital of 1,000,000 FCFA\nHeadquarters: Abidjan, Cocody, Ivory Coast\nRCCM: CI-ABJ-2026-B-XXXXX\n\nPublication director: Amara Technologies Team\nEmail: contact@amara-food.com\nPhone: +225 XX XX XX XX XX",
+  "legalNoticesTitle2": "Hosting",
+  "legalNoticesBody2": "The Application and its data are hosted by:\n\nConvex, Inc.\nSan Francisco, CA, United States\nWebsite: https://convex.dev\n\nCloud infrastructure: Region EU-West-1 (European Union)\n\nApplication distribution:\n• Apple App Store (iOS) — Apple Inc.\n• Google Play Store (Android) — Google LLC",
+  "legalNoticesTitle3": "Intellectual property",
+  "legalNoticesBody3": "All elements composing the Amara Application (design, texts, logos, icons, images, features, source code) are the exclusive property of Amara Technologies SAS or are used under authorization.\n\nAny reproduction, representation, modification or distribution, total or partial, of the Application elements without prior written authorization from Amara Technologies is prohibited and constitutes counterfeiting punishable by law.\n\nThe \"Amara\" brand and associated logo are registered trademarks. Their unauthorized use is strictly prohibited.",
+  "legalNoticesTitle4": "Personal data",
+  "legalNoticesBody4": "Amara Technologies is committed to complying with applicable legislation regarding the protection of personal data.\n\nFor any questions regarding the processing of your personal data, please refer to our Privacy Policy accessible from the \"Privacy\" tab of this page, or contact us at: privacy@amara-food.com.\n\nSupervisory authority: National Commission for Information Technology and Civil Liberties of Ivory Coast (ARTCI).",
+  "legalNoticesTitle5": "Limitation of liability",
+  "legalNoticesBody5": "Amara Technologies acts as an intermediation platform between Users and partner restaurants.\n\nAmara Technologies cannot be held responsible for:\n\n• The quality, taste or conformity of dishes prepared by restaurants\n• Allergens not declared by partner restaurants\n• Delivery delays related to external circumstances\n• Temporary service interruptions for maintenance or updates\n• Any malfunction related to the User's device or network\n• Indirect losses or damages related to the use of the Application",
+  "legalNoticesTitle6": "Applicable law",
+  "legalNoticesBody6": "These legal notices are governed by Ivorian law.\n\nFor any complaint, you can contact us:\n• By email: support@amara-food.com\n• By mail: Amara Technologies SAS, Abidjan, Cocody, Ivory Coast\n\nIn case of dispute, the parties will endeavor to find an amicable solution prior to any legal action. Failing amicable agreement, the courts of Abidjan will have jurisdiction.",
+  "legalNoticesTitle7": "Credits",
+  "legalNoticesBody7": "• Design and development: Amara Technologies SAS\n• Framework: Flutter (Google)\n• Typography: Urbanist (Google Fonts)\n• Icons: Material Design Icons (Google)\n• Infrastructure: Convex (Convex, Inc.)",
+  "legalDateMarch2026": "March 1, 2026",
+
+  "errorDialogDefaultTitle": "Oops!",
+  "errorDialogDismiss": "Got it",
+  "errorDialogDeliveryAddress": "Please enter your delivery address before ordering.",
+  "errorDialogRestaurantNotFound": "This restaurant is no longer available. Please try again.",
+  "errorDialogSessionExpired": "Your session has expired. Please sign in again.",
+  "errorDialogAlreadyReviewed": "You have already reviewed this order.",
+  "errorDialogInvalidTransition": "This action is no longer available. Please refresh the page.",
+  "errorDialogEmptyCart": "Your cart is empty. Add items before ordering.",
+  "errorDialogOrderNotFound": "This order cannot be found. It may have been deleted.",
+  "errorDialogNetwork": "Unable to connect to the server. Check your internet connection and try again.",
+  "errorDialogTimeout": "The connection took too long. Check your internet connection and try again.",
+  "errorDialogFallback": "An error occurred. Please try again.",
+
+  "onboardingSlide1Title": "Your favorite\ndishes delivered",
+  "onboardingSlide1Desc": "Discover hundreds of authentic dishes prepared by the best African restaurants in your city.",
+  "onboardingSlide2Title": "Fast\ndelivery",
+  "onboardingSlide2Desc": "Track your order in real time and receive your hot dishes directly at your door in less than 45 min.",
+  "onboardingSlide3Title": "Simple &\nsecure payment",
+  "onboardingSlide3Desc": "Mobile Money, bank card or cash — choose the payment method that suits you best.",
+  "onboardingStartButton": "Get Started",
+
+  "searchExplore": "Explore",
+  "searchSubtitle": "The best restaurants around you",
+  "searchHint": "Restaurant, dish, cuisine...",
+  "searchSortRecommended": "Recommended",
+  "searchSortRating": "Top rated",
+  "searchSortDistance": "Distance",
+  "searchSortDeliveryTime": "Speed",
+  "searchSortPrice": "Delivery price",
+  "searchFilterReset": "Reset",
+  "searchFilterFreeDelivery": "Free delivery",
+  "searchFilterOpen": "Open",
+  "searchFilterTakeaway": "Takeaway",
+  "searchFilterBestRated": "Top rated",
+  "searchFilterPromo": "Promo",
+  "searchSectionTopRated": "Top rated",
+  "searchSectionPromo": "Promo",
+  "searchSectionAll": "All restaurants",
+  "searchNoResults": "No results",
+  "searchNoResultsQuery": "No restaurant found for \"{query}\"",
+  "@searchNoResultsQuery": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "searchNoResultsFilters": "No restaurant matches your filters",
+  "searchResetButton": "Reset",
+  "searchErrorConnection": "Connection error",
+  "searchResultCount": "{count} restaurant{count, plural, =1{} other{s}}",
+  "@searchResultCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "searchSortBy": "Sort by",
+  "searchFilters": "Filters",
+  "searchFilterFreeDeliverySubtitle": "Only with free delivery",
+  "searchFilterOpenNow": "Open now",
+  "searchFilterOpenNowSubtitle": "Hide closed restaurants",
+  "searchFilterMinRating": "Minimum rating",
+  "searchFilterAllRatings": "All ratings",
+  "searchFilterRatingAndUp": "{rating} ★ and up",
+  "@searchFilterRatingAndUp": {
+    "placeholders": {
+      "rating": { "type": "String" }
+    }
+  },
+  "searchFilterApply": "Apply",
+  "searchFreeDeliveryBadge": "Free delivery",
+  "searchFreeDeliveryShort": "Free",
+
+  "restaurantAllCategory": "All",
+  "restaurantNoDishFound": "No dish found for \"{query}\"",
+  "@restaurantNoDishFound": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "restaurantSearchDish": "Search a dish...",
+  "restaurantShareText": "Check out this restaurant on Amara!",
+  "restaurantLoadError": "Unable to load restaurant",
+  "restaurantRetry": "Retry",
+  "restaurantAlreadyOrdered": "You have already ordered here",
+  "restaurantReviewsCount": "{count} reviews",
+  "@restaurantReviewsCount": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "restaurantReviews": "Reviews",
+  "restaurantClients": "Customers",
+  "restaurantDelivery": "Delivery",
+  "restaurantAsapTitle": "ASAP",
+  "restaurantAsapDescription": "Fill your cart to get a more accurate estimate based on selected items, real-time conditions, and delivery options at checkout. This estimate is the earliest arrival time, before item selection.",
+  "restaurantService": "Service",
+  "restaurantServiceDelivery": "Delivery",
+  "restaurantServiceTakeaway": "Takeaway",
+  "restaurantServiceDineIn": "Dine in",
+  "restaurantPayment": "Payment",
+  "restaurantMinOrder": "Min. order",
+  "restaurantCurrentPromos": "Current promotions",
+  "restaurantCodeCopied": "Code \"{code}\" copied!",
+  "@restaurantCodeCopied": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "restaurantInfo": "Restaurant info",
+  "restaurantScheduleInfo": "Hours & information",
+  "restaurantOpenNow": "Open now",
+  "restaurantCurrentlyClosed": "Currently closed",
+  "restaurantOpeningHours": "Opening hours",
+  "restaurantToday": "Today",
+  "restaurantMostLoved": "Most loved",
+  "restaurantByPopularity": "By popularity",
+  "restaurantOrders": "{count} orders",
+  "@restaurantOrders": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+  "restaurantUnavailable": "Unavailable",
+
+  "menuItemPopularBadge": "⭐ Popular",
+  "menuItemVegetarianBadge": "🌱 Vegetarian",
+  "menuItemSpicyBadge": "🌶️ Spicy",
+  "menuItemExtraOptions": "+{price} F options",
+  "@menuItemExtraOptions": {
+    "placeholders": {
+      "price": { "type": "String" }
+    }
+  },
+  "menuItemRatingReviews": "{rating} ({count} reviews)",
+  "@menuItemRatingReviews": {
+    "placeholders": {
+      "rating": { "type": "String" },
+      "count": { "type": "int" }
+    }
+  },
+  "menuItemCustomers": "{count} customers",
+  "@menuItemCustomers": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+  "menuItemPerfectWith": "Perfect with this dish 😋",
+  "menuItemIngredientsAndSides": "Ingredients & sides",
+  "menuItemChooseOneOption": "Choose 1 option",
+  "menuItemUpToChoices": "Up to {max} choices",
+  "@menuItemUpToChoices": {
+    "placeholders": {
+      "max": { "type": "int" }
+    }
+  },
+  "menuItemRequired": "Required",
+  "menuItemOptional": "Optional",
+  "menuItemIncluded": "Included",
+  "menuItemNoteForRestaurant": "Note for the restaurant",
+  "menuItemNoteHint": "E.g.: no onions, well done, sauce on the side...",
+  "menuItemAddToCart": "Add",
+
+  "cartCarts": "Carts",
+  "cartEmpty": "Your cart is empty",
+  "cartEmptySubtitle": "Add dishes from a restaurant\nto start your order",
+  "cartExploreRestaurants": "Explore restaurants",
+  "cartDeliverTo": "Deliver to Cocody, Abidjan",
+  "cartViewCart": "View cart",
+  "cartShowStoreOffer": "View store menu",
+  "cartClearCart": "Clear this cart",
+  "cartCancel": "Cancel",
+  "cartAddItems": "Add items",
+  "cartSubtotal": "Subtotal",
+  "cartProceedToPayment": "Proceed to payment",
+  "cartOptionsSelected": "{count, plural, =1{1 option selected} other{{count} options selected}}",
+  "@cartOptionsSelected": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+
+  "checkoutTitle": "Payment",
+  "checkoutInvalidCode": "Invalid code",
+  "checkoutEditInfo": "Edit information",
+  "checkoutDeliveryAddress": "Delivery address",
+  "checkoutSearchAddress": "Search an address...",
+  "checkoutStreetDistrict": "Street / District",
+  "checkoutStreetHint": "E.g.: Street 123, next to the market...",
+  "checkoutDriverInstructions": "Instructions for the driver",
+  "checkoutInstructionsHint": "E.g.: Building B, 2nd floor, door 5...",
+  "checkoutPhoneNumber": "Phone number",
+  "checkoutSave": "Save",
+  "checkoutServiceMode": "Service mode",
+  "checkoutDeliveryMode": "Delivery",
+  "checkoutTakeawayMode": "Takeaway",
+  "checkoutDeliverTo": "Deliver to",
+  "checkoutPickupAt": "Pick up at",
+  "checkoutPhone": "Phone",
+  "checkoutOrderSummary": "Order summary",
+  "checkoutCodeApplied": "Code \"{code}\" applied",
+  "@checkoutCodeApplied": {
+    "placeholders": {
+      "code": { "type": "String" }
+    }
+  },
+  "checkoutFreeDelivery": "Free delivery",
+  "checkoutRemove": "Remove",
+  "checkoutAddPromoCode": "Add a promo code",
+  "checkoutSubtotal": "Subtotal",
+  "checkoutServiceFee": "Service",
+  "checkoutDeliveryFee": "Delivery",
+  "checkoutFree": "Free",
+  "checkoutDiscount": "Discount",
+  "checkoutTotal": "Total",
+  "checkoutPaymentMethod": "Payment method",
+  "checkoutNotAvailable": "Not available",
+  "checkoutPlaceOrder": "Place order and pay",
+  "checkoutPromoCode": "Promo code",
+  "checkoutPromoHint": "Enter your promo code",
+  "checkoutApply": "Apply",
+
+  "movementYouSeem": "You seem to be at",
+  "movementSearchHere": "Search here",
+  "movementDismiss": "Dismiss",
+
+  "restaurantCardMin": "Min {amount} F",
+  "@restaurantCardMin": {
+    "placeholders": {
+      "amount": { "type": "String" }
+    }
+  },
+  "restaurantCardCustomers": "{count} customers",
+  "@restaurantCardCustomers": {
+    "placeholders": {
+      "count": { "type": "String" }
+    }
+  },
+
+  "notifOrderSentTitle": "Order sent",
+  "notifOrderSentMessage": "Your order has been sent to the restaurant. Waiting for confirmation.",
+  "notifConfirmedTitle": "Order confirmed",
+  "notifConfirmedMessage": "Your order has been accepted by the restaurant.",
+  "notifPreparingTitle": "Preparing",
+  "notifPreparingMessage": "The restaurant is preparing your order.",
+  "notifReadyTitle": "Order ready",
+  "notifReadyMessage": "Your order is ready!",
+  "notifPickedUpTitle": "Order picked up",
+  "notifPickedUpMessage": "The driver has picked up your order.",
+  "notifDeliveringTitle": "Delivering",
+  "notifDeliveringMessage": "Your order is on its way to you!",
+  "notifDeliveredTitle": "Order delivered",
+  "notifDeliveredMessage": "Your order has been delivered. Enjoy!",
+  "notifCancelledTitle": "Order cancelled",
+  "notifCancelledMessage": "Your order has been cancelled.",
+
+  "timeAgoJustNow": "Just now",
+  "timeAgoMinutes": "{minutes} min ago",
+  "@timeAgoMinutes": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "timeAgoHours": "{hours}h ago",
+  "@timeAgoHours": {
+    "placeholders": {
+      "hours": { "type": "int" }
+    }
+  },
+  "timeAgoYesterday": "Yesterday",
+  "timeAgoDays": "{days} days ago",
+  "@timeAgoDays": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+
+  "locationTitle": "Delivery address",
+  "locationSubtitle": "Choose where to deliver",
+  "locationSearchHint": "Search an address...",
+  "locationNoResult": "No results for \"{query}\"",
+  "@locationNoResult": {
+    "placeholders": {
+      "query": { "type": "String" }
+    }
+  },
+  "locationNotFound": "Address not found. Try being more specific.",
+  "locationOr": "or",
+  "locationLocating": "Locating…",
+  "locationUseGps": "Use my current location",
+  "locationGpsAccuracy": "GPS • Optimal accuracy",
+  "locationCurrentArea": "Current area",
+  "locationAccessDenied": "Location access denied.\nEnable it in your Settings.",
+  "locationSettings": "Settings"
 }

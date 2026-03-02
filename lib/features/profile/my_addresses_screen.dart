@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/providers/address_provider.dart';
 import '../../app/providers/address_suggestions_provider.dart';
 
@@ -13,6 +14,7 @@ class MyAddressesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final addresses = ref.watch(addressProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: AmaraColors.bg,
@@ -25,13 +27,13 @@ class MyAddressesScreen extends ConsumerWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Mes adresses',
+          l10n.addressesTitle,
           style: AmaraTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
         ),
         centerTitle: true,
       ),
       body: addresses.isEmpty
-          ? _buildEmpty()
+          ? _buildEmpty(l10n)
           : ListView.separated(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 100),
               physics: const BouncingScrollPhysics(),
@@ -57,7 +59,7 @@ class MyAddressesScreen extends ConsumerWidget {
         onPressed: () => _showAddEditSheet(context, ref),
         backgroundColor: AmaraColors.primary,
         icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: Text('Ajouter',
+        label: Text(l10n.addressesAdd,
             style:
                 AmaraTextStyles.labelMedium.copyWith(color: Colors.white)),
       ),
@@ -66,7 +68,7 @@ class MyAddressesScreen extends ConsumerWidget {
 
   // ── État vide ─────────────────────────────────────────────────────────
 
-  Widget _buildEmpty() {
+  Widget _buildEmpty(AppLocalizations l10n) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -84,12 +86,12 @@ class MyAddressesScreen extends ConsumerWidget {
                   color: AmaraColors.primary, size: 36),
             ),
             const SizedBox(height: 20),
-            Text('Aucune adresse',
+            Text(l10n.addressesEmpty,
                 style:
                     AmaraTextStyles.h2.copyWith(fontWeight: FontWeight.w800)),
             const SizedBox(height: 8),
             Text(
-              'Ajoutez une adresse de livraison pour commander plus rapidement.',
+              l10n.addressesEmptySubtitle,
               style: AmaraTextStyles.bodyMedium
                   .copyWith(color: AmaraColors.textSecondary, height: 1.5),
               textAlign: TextAlign.center,
@@ -105,6 +107,7 @@ class MyAddressesScreen extends ConsumerWidget {
   void _showAddEditSheet(BuildContext context, WidgetRef ref, {SavedAddress? editAddress}) {
     final isEdit = editAddress != null;
     final suggestions = ref.read(addressSuggestionsProvider).valueOrNull ?? [];
+    final l10n = AppLocalizations.of(context);
 
     final labelCtrl =
         TextEditingController(text: editAddress?.label ?? '');
@@ -165,28 +168,28 @@ class MyAddressesScreen extends ConsumerWidget {
                     const SizedBox(height: 20),
 
                     Text(
-                      isEdit ? 'Modifier l\'adresse' : 'Nouvelle adresse',
+                      isEdit ? l10n.addressesEditTitle : l10n.addressesNewTitle,
                       style: AmaraTextStyles.h2
                           .copyWith(fontWeight: FontWeight.w800),
                     ),
                     const SizedBox(height: 20),
 
                     // Nom de l'adresse
-                    _buildSheetLabel('Nom de l\'adresse'),
+                    _buildSheetLabel(l10n.addressesLabelField),
                     const SizedBox(height: 8),
                     _buildSheetInput(
                       controller: labelCtrl,
-                      hint: 'Ex: Maison, Bureau, Chez Maman',
+                      hint: l10n.addressesLabelHint,
                       icon: Icons.label_outline_rounded,
                     ),
                     const SizedBox(height: 16),
 
                     // Adresse avec autocomplétion
-                    _buildSheetLabel('Adresse'),
+                    _buildSheetLabel(l10n.addressesAddressField),
                     const SizedBox(height: 8),
                     _buildSheetInput(
                       controller: addressCtrl,
-                      hint: 'Rechercher une adresse...',
+                      hint: l10n.addressesAddressHint,
                       icon: Icons.search_rounded,
                       onChanged: onSearch,
                     ),
@@ -250,12 +253,11 @@ class MyAddressesScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
 
                     // Infos complémentaires
-                    _buildSheetLabel('Infos complémentaires'),
+                    _buildSheetLabel(l10n.addressesComplementField),
                     const SizedBox(height: 8),
                     _buildSheetInput(
                       controller: complementCtrl,
-                      hint:
-                          'Bâtiment, étage, apt, code, instructions...',
+                      hint: l10n.addressesComplementHint,
                       icon: Icons.info_outline_rounded,
                       maxLines: 2,
                     ),
@@ -296,8 +298,8 @@ class MyAddressesScreen extends ConsumerWidget {
                             SnackBar(
                               content: Text(
                                 isEdit
-                                    ? 'Adresse modifiée'
-                                    : 'Adresse ajoutée',
+                                    ? l10n.addressesModified
+                                    : l10n.addressesAdded,
                                 style: AmaraTextStyles.bodyMedium
                                     .copyWith(color: Colors.white),
                               ),
@@ -319,8 +321,8 @@ class MyAddressesScreen extends ConsumerWidget {
                         ),
                         child: Text(
                           isEdit
-                              ? 'Enregistrer les modifications'
-                              : 'Ajouter l\'adresse',
+                              ? l10n.addressesSaveChanges
+                              : l10n.addressesAddAddress,
                           style: AmaraTextStyles.button,
                         ),
                       ),
@@ -401,6 +403,8 @@ class _AddressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -467,7 +471,7 @@ class _AddressCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              'Par défaut',
+                              l10n.addressesDefault,
                               style: AmaraTextStyles.caption.copyWith(
                                 color: AmaraColors.primary,
                                 fontWeight: FontWeight.w600,
@@ -501,38 +505,38 @@ class _AddressCard extends StatelessWidget {
                   if (val == 'delete') onDelete();
                 },
                 itemBuilder: (_) => [
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'edit',
                     child: Row(
                       children: [
-                        Icon(Icons.edit_outlined,
+                        const Icon(Icons.edit_outlined,
                             size: 18, color: AmaraColors.textPrimary),
-                        SizedBox(width: 8),
-                        Text('Modifier'),
+                        const SizedBox(width: 8),
+                        Text(l10n.addressesEdit),
                       ],
                     ),
                   ),
                   if (!address.isDefault)
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'default',
                       child: Row(
                         children: [
-                          Icon(Icons.check_circle_outline_rounded,
+                          const Icon(Icons.check_circle_outline_rounded,
                               size: 18),
-                          SizedBox(width: 8),
-                          Text('Par défaut'),
+                          const SizedBox(width: 8),
+                          Text(l10n.addressesSetDefault),
                         ],
                       ),
                     ),
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'delete',
                     child: Row(
                       children: [
-                        Icon(Icons.delete_outline_rounded,
+                        const Icon(Icons.delete_outline_rounded,
                             size: 18, color: AmaraColors.error),
-                        SizedBox(width: 8),
-                        Text('Supprimer',
-                            style: TextStyle(color: AmaraColors.error)),
+                        const SizedBox(width: 8),
+                        Text(l10n.addressesDelete,
+                            style: const TextStyle(color: AmaraColors.error)),
                       ],
                     ),
                   ),

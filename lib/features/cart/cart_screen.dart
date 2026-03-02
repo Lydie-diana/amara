@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/models/cart_model.dart';
 import '../../app/providers/cart_provider.dart';
 import '../../app/router/app_routes.dart';
@@ -63,7 +64,7 @@ class _CartHeader extends StatelessWidget {
           const SizedBox(width: 14),
           Expanded(
             child: Text(
-              'Paniers',
+              AppLocalizations.of(context).cartCarts,
               style: AmaraTextStyles.h1.copyWith(
                   fontWeight: FontWeight.w800, color: Colors.white),
             ),
@@ -103,13 +104,13 @@ class _EmptyCart extends StatelessWidget {
               .animate()
               .scale(duration: 400.ms, curve: Curves.easeOutBack),
           const SizedBox(height: 24),
-          Text('Votre panier est vide',
+          Text(AppLocalizations.of(context).cartEmpty,
                   style: AmaraTextStyles.h3.copyWith(fontWeight: FontWeight.w800))
               .animate()
               .fadeIn(delay: 100.ms),
           const SizedBox(height: 8),
           Text(
-            'Ajoutez des plats depuis un restaurant\npour commencer votre commande',
+            AppLocalizations.of(context).cartEmptySubtitle,
             style: AmaraTextStyles.bodySmall
                 .copyWith(color: AmaraColors.textSecondary, height: 1.5),
             textAlign: TextAlign.center,
@@ -123,7 +124,7 @@ class _EmptyCart extends StatelessWidget {
                 color: AmaraColors.primary,
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Text('Explorer les restaurants',
+              child: Text(AppLocalizations.of(context).cartExploreRestaurants,
                   style: AmaraTextStyles.labelMedium
                       .copyWith(color: Colors.white)),
             ),
@@ -212,13 +213,13 @@ class _RestaurantCartCard extends ConsumerWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '${group.totalItems} article${group.totalItems > 1 ? 's' : ''} · ${group.subtotal.toStringAsFixed(0)} F',
+                      '${AppLocalizations.of(context).cartItemCount(group.totalItems)} · ${group.subtotal.toStringAsFixed(0)} F',
                       style: AmaraTextStyles.bodySmall
                           .copyWith(color: AmaraColors.textSecondary),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Livrer à l\'adresse Cocody, Abidjan',
+                      AppLocalizations.of(context).cartDeliverTo,
                       style: AmaraTextStyles.caption
                           .copyWith(color: AmaraColors.muted, fontSize: 11),
                       maxLines: 1,
@@ -262,7 +263,7 @@ class _RestaurantCartCard extends ConsumerWidget {
               ),
               child: Center(
                 child: Text(
-                  'Voir le panier',
+                  AppLocalizations.of(context).cartViewCart,
                   style: AmaraTextStyles.labelMedium.copyWith(
                       color: Colors.white, fontWeight: FontWeight.w700),
                 ),
@@ -287,7 +288,7 @@ class _RestaurantCartCard extends ConsumerWidget {
               ),
               child: Center(
                 child: Text(
-                  'Afficher l\'offre du magasin',
+                  AppLocalizations.of(context).cartShowStoreOffer,
                   style: AmaraTextStyles.labelMedium.copyWith(
                       color: AmaraColors.textPrimary,
                       fontWeight: FontWeight.w600),
@@ -359,7 +360,7 @@ class _RestaurantCartCard extends ConsumerWidget {
                 ),
                 child: Center(
                   child: Text(
-                    'Vider ce panier',
+                    AppLocalizations.of(context).cartClearCart,
                     style: AmaraTextStyles.labelMedium.copyWith(
                         color: AmaraColors.error, fontWeight: FontWeight.w700),
                   ),
@@ -378,7 +379,7 @@ class _RestaurantCartCard extends ConsumerWidget {
                 ),
                 child: Center(
                   child: Text(
-                    'Annuler',
+                    AppLocalizations.of(context).cartCancel,
                     style: AmaraTextStyles.labelMedium.copyWith(
                         color: AmaraColors.textPrimary,
                         fontWeight: FontWeight.w600),

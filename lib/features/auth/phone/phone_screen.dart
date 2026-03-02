@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
+import '../../../app/core/l10n/app_localizations.dart';
 import '../../../app/providers/auth_provider.dart';
 import '../../../app/router/app_routes.dart';
 
@@ -61,7 +62,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen>
     final email = _loginEmailCtrl.text.trim();
     final pass = _loginPassCtrl.text;
     if (email.isEmpty || pass.isEmpty) {
-      setState(() => _errorMsg = 'Email et mot de passe requis');
+      setState(() => _errorMsg = AppLocalizations.of(context).authEmailAndPasswordRequired);
       return;
     }
     setState(() {
@@ -75,7 +76,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen>
     if (authState.isAuthenticated) {
       context.go(AppRoutes.home);
     } else {
-      setState(() => _errorMsg = authState.error ?? 'Erreur de connexion');
+      setState(() => _errorMsg = authState.error ?? AppLocalizations.of(context).authLoginError);
     }
   }
 
@@ -85,12 +86,12 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen>
     final phone = _signupPhoneCtrl.text.trim();
     final pass = _signupPassCtrl.text;
     if (name.isEmpty || email.isEmpty || phone.isEmpty || pass.isEmpty) {
-      setState(() => _errorMsg = 'Tous les champs sont requis');
+      setState(() => _errorMsg = AppLocalizations.of(context).authAllFieldsRequired);
       return;
     }
     if (pass.length < 6) {
       setState(
-          () => _errorMsg = 'Le mot de passe doit avoir au moins 6 caractères');
+          () => _errorMsg = AppLocalizations.of(context).authPasswordMinLength);
       return;
     }
     setState(() {
@@ -113,13 +114,14 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen>
     } else {
       final authState = ref.read(authProvider);
       setState(
-          () => _errorMsg = authState.error ?? 'Erreur lors de l\'inscription');
+          () => _errorMsg = authState.error ?? AppLocalizations.of(context).authSignupError);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isLogin = _tab.index == 0;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: AmaraColors.bg,
@@ -158,7 +160,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen>
                       setState(() {});
                     },
                     child: Text(
-                      isLogin ? 'Inscription' : 'Connexion',
+                      isLogin ? l10n.authSignupTab : l10n.authLoginTab,
                       style: AmaraTextStyles.labelMedium
                           .copyWith(color: AmaraColors.primary),
                     ),
@@ -181,7 +183,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen>
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 300),
                       child: Text(
-                        isLogin ? 'Connexion' : 'Inscription',
+                        isLogin ? l10n.authLoginTab : l10n.authSignupTab,
                         key: ValueKey(isLogin),
                         style: AmaraTextStyles.display1.copyWith(
                           fontWeight: FontWeight.w800,
@@ -196,8 +198,8 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen>
                       duration: const Duration(milliseconds: 300),
                       child: Text(
                         isLogin
-                            ? 'Connectez-vous pour découvrir les saveurs africaines.'
-                            : 'Créez votre compte et commencez à commander.',
+                            ? l10n.authLoginSubtitle
+                            : l10n.authSignupSubtitle,
                         key: ValueKey('sub_$isLogin'),
                         style: AmaraTextStyles.bodyMedium
                             .copyWith(color: AmaraColors.textSecondary),
@@ -266,24 +268,25 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen>
   // ─── Login Form ──────────────────────────────────────────────────────────
 
   Widget _buildLoginForm() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       key: const ValueKey('login_form'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel('Email'),
+        _buildLabel(l10n.authEmailLabel),
         const SizedBox(height: 8),
         _AmaraField(
           controller: _loginEmailCtrl,
-          hint: 'amanda.samantha@email.com',
+          hint: l10n.authEmailHint,
           icon: Icons.email_outlined,
           keyboardType: TextInputType.emailAddress,
         ),
         const SizedBox(height: 20),
-        _buildLabel('Mot de passe'),
+        _buildLabel(l10n.authPasswordLabel),
         const SizedBox(height: 8),
         _AmaraField(
           controller: _loginPassCtrl,
-          hint: '••••••••',
+          hint: l10n.authPasswordHint,
           icon: Icons.lock_outline_rounded,
           obscure: !_loginPassVisible,
           suffix: IconButton(
@@ -306,7 +309,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen>
               context.push(AppRoutes.forgotPassword);
             },
             child: Text(
-              'Mot de passe oublié ?',
+              l10n.authForgotPassword,
               style: AmaraTextStyles.bodySmall.copyWith(
                 color: AmaraColors.primary,
                 fontWeight: FontWeight.w600,
@@ -316,7 +319,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen>
         ),
         const SizedBox(height: 32),
         _SubmitButton(
-            label: 'Se connecter', isLoading: _isLoading, onTap: _login),
+            label: l10n.authLoginButton, isLoading: _isLoading, onTap: _login),
       ],
     );
   }
@@ -324,19 +327,20 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen>
   // ─── Signup Form ─────────────────────────────────────────────────────────
 
   Widget _buildSignupForm() {
+    final l10n = AppLocalizations.of(context);
     return Column(
       key: const ValueKey('signup_form'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildLabel('Nom complet'),
+        _buildLabel(l10n.authFullNameLabel),
         const SizedBox(height: 8),
         _AmaraField(
           controller: _signupNameCtrl,
-          hint: 'Jean Kouassi',
+          hint: l10n.authFullNameHint,
           icon: Icons.person_outline_rounded,
         ),
         const SizedBox(height: 20),
-        _buildLabel('Email'),
+        _buildLabel(l10n.authEmailLabel),
         const SizedBox(height: 8),
         _AmaraField(
           controller: _signupEmailCtrl,
@@ -345,20 +349,20 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen>
           keyboardType: TextInputType.emailAddress,
         ),
         const SizedBox(height: 20),
-        _buildLabel('Téléphone'),
+        _buildLabel(l10n.authPhoneLabel),
         const SizedBox(height: 8),
         _AmaraField(
           controller: _signupPhoneCtrl,
-          hint: '+225 07 00 00 00 00',
+          hint: l10n.authPhoneFieldHint,
           icon: Icons.phone_outlined,
           keyboardType: TextInputType.phone,
         ),
         const SizedBox(height: 20),
-        _buildLabel('Mot de passe'),
+        _buildLabel(l10n.authPasswordLabel),
         const SizedBox(height: 8),
         _AmaraField(
           controller: _signupPassCtrl,
-          hint: 'Min. 6 caractères',
+          hint: l10n.authPasswordMinHint,
           icon: Icons.lock_outline_rounded,
           obscure: !_signupPassVisible,
           suffix: IconButton(
@@ -374,7 +378,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen>
         ),
         const SizedBox(height: 32),
         _SubmitButton(
-            label: 'Créer mon compte', isLoading: _isLoading, onTap: _signup),
+            label: l10n.authSignupButton, isLoading: _isLoading, onTap: _signup),
       ],
     );
   }
@@ -399,7 +403,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen>
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'ou continuer avec',
+            AppLocalizations.of(context).authOrContinueWith,
             style: AmaraTextStyles.bodySmall
                 .copyWith(color: AmaraColors.textSecondary),
           ),

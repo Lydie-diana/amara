@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
+import '../../../app/core/l10n/app_localizations.dart';
 import '../../../app/models/restaurant_model.dart';
 
 /// Header info restaurant — identité + infos dépliables.
@@ -97,7 +98,7 @@ class _InfoAccordion extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Infos du restaurant',
+                    AppLocalizations.of(context).restaurantInfo,
                     style: AmaraTextStyles.labelSmall.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -189,7 +190,7 @@ class _IdentityBlock extends StatelessWidget {
                     size: 13, color: AmaraColors.primary),
                 const SizedBox(width: 5),
                 Text(
-                  'Vous avez déjà commandé ici',
+                  AppLocalizations.of(context).restaurantAlreadyOrdered,
                   style: AmaraTextStyles.caption.copyWith(
                     color: AmaraColors.primary,
                     fontWeight: FontWeight.w600,
@@ -230,7 +231,7 @@ class _MetricsBlock extends StatelessWidget {
           // Note
           _Metric(
             value: restaurant.rating.toStringAsFixed(1),
-            label: '${restaurant.reviewCount} avis',
+            label: AppLocalizations.of(context).restaurantReviewsCount(restaurant.reviewCount),
             icon: Icons.star_rounded,
             iconColor: const Color(0xFFF39C12),
             onDark: true,
@@ -239,7 +240,7 @@ class _MetricsBlock extends StatelessWidget {
           // Nombre d'avis
           _Metric(
             value: '${restaurant.reviewCount}',
-            label: 'Avis',
+            label: AppLocalizations.of(context).restaurantReviews,
             icon: Icons.reviews_rounded,
             iconColor: const Color(0xFF80E5A8),
             onDark: true,
@@ -248,7 +249,7 @@ class _MetricsBlock extends StatelessWidget {
           // Nombre total de clients
           _Metric(
             value: _formatClients(totalClients),
-            label: 'Clients',
+            label: AppLocalizations.of(context).restaurantClients,
             icon: Icons.people_alt_rounded,
             iconColor: const Color(0xFF80D4FF),
             onDark: true,
@@ -257,7 +258,7 @@ class _MetricsBlock extends StatelessWidget {
           // Temps livraison (tappable → popup)
           _TappableMetric(
             value: restaurant.deliveryTime,
-            label: 'Livraison',
+            label: AppLocalizations.of(context).restaurantDelivery,
             icon: Icons.access_time_rounded,
             iconColor: Colors.white,
             onDark: true,
@@ -300,7 +301,7 @@ class _MetricsBlock extends StatelessWidget {
 
             // Titre
             Text(
-              'Au plus tôt',
+              AppLocalizations.of(context).restaurantAsapTitle,
               style: AmaraTextStyles.h2.copyWith(
                 fontWeight: FontWeight.w800,
               ),
@@ -325,12 +326,7 @@ class _MetricsBlock extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Text(
-                'Remplissez votre panier pour obtenir une estimation '
-                'plus précise en fonction des articles sélectionnés, des '
-                'conditions en temps réel et des options de livraison '
-                'lors du paiement. Cette estimation correspond à '
-                "l'heure d'arrivée au plus tôt, avant la sélection "
-                "d'articles.",
+                AppLocalizations.of(context).restaurantAsapDescription,
                 textAlign: TextAlign.center,
                 style: AmaraTextStyles.bodySmall.copyWith(
                   color: AmaraColors.textSecondary,
@@ -502,13 +498,13 @@ class _ServicesBlock extends StatelessWidget {
           if (restaurant.serviceModes.isNotEmpty)
             _InfoRow(
               icon: Icons.local_shipping_outlined,
-              label: 'Service',
+              label: AppLocalizations.of(context).restaurantService,
               child: Row(
                 children: restaurant.serviceModes.map((m) {
                   final (emoji, txt) = switch (m) {
-                    ServiceMode.delivery => ('🛵', 'Livraison'),
-                    ServiceMode.takeaway => ('🥡', 'À emporter'),
-                    ServiceMode.dineIn => ('🍽', 'Sur place'),
+                    ServiceMode.delivery => ('🛵', AppLocalizations.of(context).restaurantServiceDelivery),
+                    ServiceMode.takeaway => ('🥡', AppLocalizations.of(context).restaurantServiceTakeaway),
+                    ServiceMode.dineIn => ('🍽', AppLocalizations.of(context).restaurantServiceDineIn),
                   };
                   return Padding(
                     padding: const EdgeInsets.only(right: 10),
@@ -539,7 +535,7 @@ class _ServicesBlock extends StatelessWidget {
           if (restaurant.paymentMethods.isNotEmpty)
             _InfoRow(
               icon: Icons.payment_rounded,
-              label: 'Paiement',
+              label: AppLocalizations.of(context).restaurantPayment,
               child: Wrap(
                 spacing: 6,
                 runSpacing: 4,
@@ -554,7 +550,7 @@ class _ServicesBlock extends StatelessWidget {
             const SizedBox(height: 12),
             _InfoRow(
               icon: Icons.shopping_bag_outlined,
-              label: 'Min. commande',
+              label: AppLocalizations.of(context).restaurantMinOrder,
               child: Text(
                 '${restaurant.minOrder.toStringAsFixed(0)} F',
                 style: AmaraTextStyles.caption.copyWith(
@@ -569,7 +565,7 @@ class _ServicesBlock extends StatelessWidget {
           const SizedBox(height: 12),
           _InfoRow(
             icon: Icons.delivery_dining_rounded,
-            label: 'Livraison',
+            label: AppLocalizations.of(context).restaurantDelivery,
             child: Text(
               restaurant.deliveryFee,
               style: AmaraTextStyles.caption.copyWith(
@@ -687,7 +683,7 @@ class _PromosBlock extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Promotions en cours',
+                AppLocalizations.of(context).restaurantCurrentPromos,
                 style: AmaraTextStyles.labelSmall.copyWith(
                   fontWeight: FontWeight.w700,
                 ),
@@ -766,7 +762,7 @@ class _PromoCard extends StatelessWidget {
               Clipboard.setData(ClipboardData(text: promo.code));
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Code "${promo.code}" copié !'),
+                  content: Text(AppLocalizations.of(context).restaurantCodeCopied(promo.code)),
                   backgroundColor: AmaraColors.dark,
                   behavior: SnackBarBehavior.floating,
                   shape: RoundedRectangleBorder(
@@ -850,15 +846,15 @@ class _ScheduleBlockState extends State<_ScheduleBlock> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Horaires & informations',
+                          AppLocalizations.of(context).restaurantScheduleInfo,
                           style: AmaraTextStyles.labelSmall.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         Text(
                           widget.restaurant.isOpen
-                              ? 'Ouvert maintenant'
-                              : 'Actuellement fermé',
+                              ? AppLocalizations.of(context).restaurantOpenNow
+                              : AppLocalizations.of(context).restaurantCurrentlyClosed,
                           style: AmaraTextStyles.caption.copyWith(
                             color: widget.restaurant.isOpen
                                 ? AmaraColors.success
@@ -922,7 +918,7 @@ class _ExpandedSchedule extends StatelessWidget {
             const SizedBox(height: 16),
 
             Text(
-              'Horaires d\'ouverture',
+              AppLocalizations.of(context).restaurantOpeningHours,
               style: AmaraTextStyles.caption.copyWith(
                 fontWeight: FontWeight.w700,
                 color: AmaraColors.textPrimary,
@@ -1015,9 +1011,9 @@ class _DayRow extends StatelessWidget {
                 color: AmaraColors.primary,
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: const Text(
-                "Aujourd'hui",
-                style: TextStyle(
+              child: Text(
+                AppLocalizations.of(context).restaurantToday,
+                style: const TextStyle(
                     color: Colors.white,
                     fontSize: 9,
                     fontWeight: FontWeight.w700),
@@ -1063,7 +1059,7 @@ class _OpenBadge extends StatelessWidget {
           ),
           const SizedBox(width: 5),
           Text(
-            isOpen ? 'Ouvert' : 'Fermé',
+            isOpen ? AppLocalizations.of(context).restaurantOpen : AppLocalizations.of(context).restaurantClosed,
             style: AmaraTextStyles.caption.copyWith(
               color: isOpen ? AmaraColors.success : AmaraColors.muted,
               fontWeight: FontWeight.w700,

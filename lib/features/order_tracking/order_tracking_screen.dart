@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/core/widgets/error_dialog.dart';
 import '../../app/providers/auth_provider.dart';
 import '../../app/router/app_routes.dart';
@@ -151,7 +152,7 @@ class _OrderTrackingScreenState extends ConsumerState<OrderTrackingScreen> {
         ),
         centerTitle: true,
         title: Text(
-          'Suivi de commande',
+          AppLocalizations.of(context).orderTrackingTitle,
           style: AmaraTextStyles.labelLarge.copyWith(
             fontWeight: FontWeight.w700,
             color: AmaraColors.textPrimary,
@@ -234,7 +235,7 @@ class _TrackingBody extends StatelessWidget {
         children: [
           // ── Informations client / pickup ─────────────────────
           Text(
-            _isPickup ? 'Commande à emporter' : 'Informations client',
+            _isPickup ? AppLocalizations.of(context).orderTrackingPickupOrder : AppLocalizations.of(context).orderTrackingClientInfo,
             style: AmaraTextStyles.labelLarge.copyWith(
               fontWeight: FontWeight.w800,
               color: AmaraColors.textPrimary,
@@ -246,15 +247,15 @@ class _TrackingBody extends StatelessWidget {
               children: [
                 Expanded(
                   child: _InfoChip(
-                    label: 'Restaurant',
+                    label: AppLocalizations.of(context).orderTrackingRestaurant,
                     value: restaurantName,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _InfoChip(
-                    label: 'Adresse du restaurant',
-                    value: address.isNotEmpty ? address : 'Voir sur la carte',
+                    label: AppLocalizations.of(context).orderTrackingRestaurantAddress,
+                    value: address.isNotEmpty ? address : AppLocalizations.of(context).orderTrackingSeeOnMap,
                   ),
                 ),
               ],
@@ -264,15 +265,15 @@ class _TrackingBody extends StatelessWidget {
               children: [
                 Expanded(
                   child: _InfoChip(
-                    label: 'Nom du destinataire',
+                    label: AppLocalizations.of(context).orderTrackingRecipientName,
                     value: clientName,
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: _InfoChip(
-                    label: 'Téléphone',
-                    value: clientPhone.isNotEmpty ? clientPhone : 'Non renseigné',
+                    label: AppLocalizations.of(context).orderTrackingPhone,
+                    value: clientPhone.isNotEmpty ? clientPhone : AppLocalizations.of(context).orderTrackingPhoneNotProvided,
                   ),
                 ),
               ],
@@ -326,9 +327,9 @@ class _TrackingBody extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: onConfirmPickup,
                 icon: const Icon(Icons.check_circle_rounded, size: 22),
-                label: const Text(
-                  'J\'ai recupere ma commande',
-                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+                label: Text(
+                  AppLocalizations.of(context).orderTrackingConfirmPickup,
+                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AmaraColors.primary,
@@ -345,7 +346,7 @@ class _TrackingBody extends StatelessWidget {
 
           // ── Detail de la commande ───────────────────────────
           Text(
-            'Detail de la commande',
+            AppLocalizations.of(context).orderTrackingOrderDetail,
             style: AmaraTextStyles.labelLarge.copyWith(
               fontWeight: FontWeight.w800,
               color: AmaraColors.textPrimary,
@@ -421,7 +422,8 @@ class _DeliveredViewState extends State<_DeliveredView> {
     }
   }
 
-  String _formatDeliveryDate() {
+  String _formatDeliveryDate(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final createdAt = widget.order['createdAt'] as num?;
     if (createdAt == null) return '';
     final date = DateTime.fromMillisecondsSinceEpoch(createdAt.toInt());
@@ -432,9 +434,9 @@ class _DeliveredViewState extends State<_DeliveredView> {
 
     final time =
         '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-    if (diff == 0) return 'aujourd\'hui a $time';
-    if (diff == 1) return 'hier a $time';
-    return 'le ${date.day}/${date.month} a $time';
+    if (diff == 0) return l10n.orderTrackingTodayAt(time);
+    if (diff == 1) return l10n.orderTrackingYesterdayAt(time);
+    return l10n.orderTrackingDateAt('${date.day}/${date.month}', time);
   }
 
   @override
@@ -495,7 +497,7 @@ class _DeliveredViewState extends State<_DeliveredView> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Commande terminee · ${_formatDeliveryDate()}',
+                      AppLocalizations.of(context).orderTrackingOrderCompleted(_formatDeliveryDate(context)),
                       style: AmaraTextStyles.bodySmall.copyWith(
                         color: AmaraColors.textSecondary,
                       ),
@@ -526,7 +528,7 @@ class _DeliveredViewState extends State<_DeliveredView> {
                               color: AmaraColors.success, size: 20),
                           const SizedBox(width: 10),
                           Text(
-                            'Avis soumis — merci !',
+                            AppLocalizations.of(context).orderTrackingReviewSubmitted,
                             style: AmaraTextStyles.labelMedium.copyWith(
                               color: AmaraColors.success,
                               fontWeight: FontWeight.w700,
@@ -537,7 +539,7 @@ class _DeliveredViewState extends State<_DeliveredView> {
                     ),
                   ] else ...[
                     Text(
-                      'Noter cet etablissement',
+                      AppLocalizations.of(context).orderTrackingRateEstablishment,
                       style: AmaraTextStyles.labelLarge.copyWith(
                         fontWeight: FontWeight.w800,
                         color: AmaraColors.textPrimary,
@@ -545,7 +547,7 @@ class _DeliveredViewState extends State<_DeliveredView> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Avez-vous aime $restaurantName ?',
+                      AppLocalizations.of(context).orderTrackingDidYouLike(restaurantName),
                       style: AmaraTextStyles.bodySmall.copyWith(
                         color: AmaraColors.textSecondary,
                       ),
@@ -583,7 +585,7 @@ class _DeliveredViewState extends State<_DeliveredView> {
 
                 // ── Votre commande ──────────────────────────────────
                 Text(
-                  'Votre commande',
+                  AppLocalizations.of(context).orderTrackingYourOrder,
                   style: AmaraTextStyles.labelLarge.copyWith(
                     fontWeight: FontWeight.w800,
                     color: AmaraColors.textPrimary,
@@ -649,7 +651,7 @@ class _DeliveredViewState extends State<_DeliveredView> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Total',
+                      AppLocalizations.of(context).orderTrackingTotal,
                       style: AmaraTextStyles.labelLarge.copyWith(
                         fontWeight: FontWeight.w800,
                         color: AmaraColors.textPrimary,
@@ -684,7 +686,7 @@ class _DeliveredViewState extends State<_DeliveredView> {
                     },
                     icon: const Icon(Icons.receipt_long_rounded, size: 20),
                     label: Text(
-                      'Voir le reçu',
+                      AppLocalizations.of(context).orderTrackingViewReceipt,
                       style: AmaraTextStyles.labelMedium.copyWith(
                         fontWeight: FontWeight.w700,
                         color: AmaraColors.primary,
@@ -733,14 +735,14 @@ class _DeliveredViewState extends State<_DeliveredView> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Votre livraison',
+                                AppLocalizations.of(context).orderTrackingYourDelivery,
                                 style: AmaraTextStyles.caption.copyWith(
                                   color: AmaraColors.textSecondary,
                                 ),
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'par ${livreurName ?? "Livreur Amara"}',
+                                AppLocalizations.of(context).orderTrackingByDriver(livreurName ?? AppLocalizations.of(context).orderTrackingDefaultDriver),
                                 style:
                                     AmaraTextStyles.labelMedium.copyWith(
                                   fontWeight: FontWeight.w700,
@@ -779,7 +781,7 @@ class _DeliveredViewState extends State<_DeliveredView> {
                       elevation: 0,
                     ),
                     child: Text(
-                      'Commander a nouveau',
+                      AppLocalizations.of(context).orderTrackingReorder,
                       style: AmaraTextStyles.labelLarge.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -829,7 +831,8 @@ class _CancelledView extends StatelessWidget {
 
   const _CancelledView({required this.order, required this.orderId});
 
-  String _formatDate() {
+  String _formatDate(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final createdAt = order['createdAt'] as num?;
     if (createdAt == null) return '';
     final date = DateTime.fromMillisecondsSinceEpoch(createdAt.toInt());
@@ -840,9 +843,9 @@ class _CancelledView extends StatelessWidget {
 
     final time =
         '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-    if (diff == 0) return 'aujourd\'hui a $time';
-    if (diff == 1) return 'hier a $time';
-    return 'le ${date.day}/${date.month} a $time';
+    if (diff == 0) return l10n.orderTrackingTodayAt(time);
+    if (diff == 1) return l10n.orderTrackingYesterdayAt(time);
+    return l10n.orderTrackingDateAt('${date.day}/${date.month}', time);
   }
 
   @override
@@ -860,19 +863,20 @@ class _CancelledView extends StatelessWidget {
     final isPickup = order['orderType'] == 'pickup' ||
         address == 'À emporter';
 
+    final l10n = AppLocalizations.of(context);
     String paymentLabel;
     switch (paymentMethod) {
       case 'mobile_money':
-        paymentLabel = 'Mobile Money';
+        paymentLabel = l10n.orderTrackingPaymentMobileMoney;
         break;
       case 'card':
-        paymentLabel = 'Carte bancaire';
+        paymentLabel = l10n.orderTrackingPaymentCard;
         break;
       case 'cash':
-        paymentLabel = 'Cash';
+        paymentLabel = l10n.orderTrackingPaymentCash;
         break;
       default:
-        paymentLabel = paymentMethod.isNotEmpty ? paymentMethod : 'Non spécifié';
+        paymentLabel = paymentMethod.isNotEmpty ? paymentMethod : l10n.orderTrackingPaymentNotSpecified;
     }
 
     return SingleChildScrollView(
@@ -920,7 +924,7 @@ class _CancelledView extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'Commande annulee · ${_formatDate()}',
+                      l10n.orderTrackingOrderCancelled(_formatDate(context)),
                       style: AmaraTextStyles.bodySmall.copyWith(
                         color: AmaraColors.textSecondary,
                       ),
@@ -948,7 +952,7 @@ class _CancelledView extends StatelessWidget {
                           color: AmaraColors.error, size: 20),
                       const SizedBox(width: 10),
                       Text(
-                        'Cette commande a ete annulee',
+                        l10n.orderTrackingCancelledBadge,
                         style: AmaraTextStyles.labelMedium.copyWith(
                           color: AmaraColors.error,
                           fontWeight: FontWeight.w700,
@@ -962,7 +966,7 @@ class _CancelledView extends StatelessWidget {
 
                 // ── Votre commande ──────────────────────────────────
                 Text(
-                  'Votre commande',
+                  l10n.orderTrackingYourOrder,
                   style: AmaraTextStyles.labelLarge.copyWith(
                     fontWeight: FontWeight.w800,
                     color: AmaraColors.textPrimary,
@@ -1028,14 +1032,14 @@ class _CancelledView extends StatelessWidget {
                 if (!isPickup && address.isNotEmpty) ...[
                   _cancelledInfoRow(
                     Icons.location_on_outlined,
-                    'Livraison',
+                    l10n.orderTrackingDelivery,
                     address,
                   ),
                   const SizedBox(height: 8),
                 ],
                 _cancelledInfoRow(
                   Icons.payment_rounded,
-                  'Paiement',
+                  l10n.orderTrackingPayment,
                   paymentLabel,
                 ),
 
@@ -1048,7 +1052,7 @@ class _CancelledView extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Total',
+                      l10n.orderTrackingTotal,
                       style: AmaraTextStyles.labelLarge.copyWith(
                         fontWeight: FontWeight.w800,
                         color: AmaraColors.textPrimary,
@@ -1088,7 +1092,7 @@ class _CancelledView extends StatelessWidget {
                       elevation: 0,
                     ),
                     child: Text(
-                      'Commander a nouveau',
+                      l10n.orderTrackingReorder,
                       style: AmaraTextStyles.labelLarge.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -1218,27 +1222,34 @@ class _HorizontalProgress extends StatelessWidget {
     this.isPickup = false,
   });
 
-  static const _deliverySteps = [
-    (Icons.receipt_long_rounded, 'En attente'),
-    (Icons.restaurant_rounded, 'Preparation'),
-    (Icons.inventory_2_rounded, 'Prete'),
-    (Icons.delivery_dining_rounded, 'En livraison'),
-    (Icons.home_rounded, 'Livree'),
-  ];
+  static List<(IconData, String)> _deliverySteps(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return [
+      (Icons.receipt_long_rounded, l10n.orderTrackingStepPending),
+      (Icons.restaurant_rounded, l10n.orderTrackingStepPreparation),
+      (Icons.inventory_2_rounded, l10n.orderTrackingStepReady),
+      (Icons.delivery_dining_rounded, l10n.orderTrackingStepDelivering),
+      (Icons.home_rounded, l10n.orderTrackingStepDelivered),
+    ];
+  }
 
-  static const _pickupSteps = [
-    (Icons.receipt_long_rounded, 'Commandee'),
-    (Icons.restaurant_rounded, 'Preparation'),
-    (Icons.inventory_2_rounded, 'Prete'),
-    (Icons.shopping_bag_rounded, 'Recuperee'),
-  ];
+  static List<(IconData, String)> _pickupSteps(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return [
+      (Icons.receipt_long_rounded, l10n.orderTrackingStepOrdered),
+      (Icons.restaurant_rounded, l10n.orderTrackingStepPreparation),
+      (Icons.inventory_2_rounded, l10n.orderTrackingStepReady),
+      (Icons.shopping_bag_rounded, l10n.orderTrackingStepPickedUp),
+    ];
+  }
 
-  List<(IconData, String)> get _steps => isPickup ? _pickupSteps : _deliverySteps;
+  List<(IconData, String)> _steps(BuildContext context) => isPickup ? _pickupSteps(context) : _deliverySteps(context);
 
   @override
   Widget build(BuildContext context) {
+    final steps = _steps(context);
     return Row(
-      children: List.generate(_steps.length * 2 - 1, (index) {
+      children: List.generate(steps.length * 2 - 1, (index) {
         if (index.isOdd) {
           // Connector line
           final stepBefore = index ~/ 2;
@@ -1257,7 +1268,7 @@ class _HorizontalProgress extends StatelessWidget {
         }
 
         final stepIndex = index ~/ 2;
-        final (icon, label) = _steps[stepIndex];
+        final (icon, label) = steps[stepIndex];
         final isDone = !isCancelled && stepIndex < currentStep;
         final isActive = !isCancelled && stepIndex == currentStep;
 
@@ -1346,53 +1357,55 @@ class _ChefSection extends StatelessWidget {
     };
   }
 
-  String get _title {
-    if (isCancelled) return 'Commande annulee';
+  String _title(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    if (isCancelled) return l10n.orderTrackingChefCancelled;
     if (isPickup) {
       return switch (status) {
-        'pending' || 'confirmed' => 'En attente de confirmation',
-        'preparing' => 'Le chef prepare votre commande',
-        'ready' => 'Votre commande est prete !',
-        'picked_up' || 'delivered' => 'Commande recuperee !',
-        _ => 'En cours de traitement',
+        'pending' || 'confirmed' => l10n.orderTrackingChefPending,
+        'preparing' => l10n.orderTrackingChefPreparing,
+        'ready' => l10n.orderTrackingChefReady,
+        'picked_up' || 'delivered' => l10n.orderTrackingChefPickedUp,
+        _ => l10n.orderTrackingChefProcessing,
       };
     }
     return switch (status) {
-      'pending' || 'confirmed' => 'En attente de confirmation',
-      'preparing' => 'Le chef prepare votre commande',
-      'ready' => 'Votre commande est prete !',
-      'delivering' => 'Votre livreur est en route',
-      'delivered' => 'Commande livree !',
-      _ => 'En cours de traitement',
+      'pending' || 'confirmed' => l10n.orderTrackingChefPending,
+      'preparing' => l10n.orderTrackingChefPreparing,
+      'ready' => l10n.orderTrackingChefReady,
+      'delivering' => l10n.orderTrackingChefDelivering,
+      'delivered' => l10n.orderTrackingChefDelivered,
+      _ => l10n.orderTrackingChefProcessing,
     };
   }
 
-  String get _subtitle {
-    if (isCancelled) return 'Votre commande a ete annulee.';
+  String _subtitle(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    if (isCancelled) return l10n.orderTrackingSubCancelled;
     if (isPickup) {
       return switch (status) {
         'pending' || 'confirmed' =>
-          '$restaurantName va bientot confirmer votre commande.',
+          l10n.orderTrackingSubPendingPickup(restaurantName),
         'preparing' =>
-          'Votre repas sera pret dans ~$estimatedTime min.',
+          l10n.orderTrackingSubPreparingPickup(estimatedTime),
         'ready' =>
-          'Rendez-vous chez $restaurantName pour recuperer votre commande !',
+          l10n.orderTrackingSubReadyPickup(restaurantName),
         'picked_up' || 'delivered' =>
-          'Bon appetit !',
+          l10n.orderTrackingSubPickedUp,
         _ => '',
       };
     }
     return switch (status) {
       'pending' || 'confirmed' =>
-        '$restaurantName va bientot confirmer votre commande.',
+        l10n.orderTrackingSubPendingDelivery(restaurantName),
       'preparing' =>
-        'Votre repas sera pret dans ~$estimatedTime min.\nBon appetit bientot !',
+        l10n.orderTrackingSubPreparingDelivery(estimatedTime),
       'ready' =>
-        'Un livreur va bientot recuperer votre commande.',
+        l10n.orderTrackingSubReadyDelivery,
       'delivering' =>
-        'Votre commande est en chemin. Restez disponible !',
+        l10n.orderTrackingSubDeliveringDelivery,
       'delivered' =>
-        'Votre commande a ete livree. Bon appetit !',
+        l10n.orderTrackingSubDeliveredDelivery,
       _ => '',
     };
   }
@@ -1411,7 +1424,7 @@ class _ChefSection extends StatelessWidget {
           Text(_emoji, style: const TextStyle(fontSize: 72)),
           const SizedBox(height: 16),
           Text(
-            _title,
+            _title(context),
             style: AmaraTextStyles.h3.copyWith(
               fontWeight: FontWeight.w800,
               color: AmaraColors.textPrimary,
@@ -1420,7 +1433,7 @@ class _ChefSection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            _subtitle,
+            _subtitle(context),
             style: AmaraTextStyles.bodySmall.copyWith(
               color: AmaraColors.textSecondary,
               height: 1.5,
@@ -1562,21 +1575,21 @@ class _OrderSummary extends StatelessWidget {
         children: [
           _SummaryRow(
             icon: Icons.tag_rounded,
-            label: 'Commande',
+            label: AppLocalizations.of(context).orderTrackingSummaryOrder,
             value: shortId,
           ),
           const SizedBox(height: 10),
           _SummaryRow(
             icon: isPickup ? Icons.store_rounded : Icons.location_on_rounded,
-            label: isPickup ? 'Mode' : 'Livraison',
-            value: isPickup ? 'A emporter' : (address.isNotEmpty ? address : 'Non renseignee'),
+            label: isPickup ? AppLocalizations.of(context).orderTrackingSummaryMode : AppLocalizations.of(context).orderTrackingDelivery,
+            value: isPickup ? AppLocalizations.of(context).orderTrackingSummaryTakeaway : (address.isNotEmpty ? address : AppLocalizations.of(context).orderTrackingSummaryNotProvided),
           ),
           if (payment.isNotEmpty) ...[
             const SizedBox(height: 10),
             _SummaryRow(
               icon: Icons.payment_rounded,
-              label: 'Paiement',
-              value: _paymentLabel(payment),
+              label: AppLocalizations.of(context).orderTrackingPayment,
+              value: _paymentLabel(context, payment),
             ),
           ],
           const Padding(
@@ -1585,7 +1598,7 @@ class _OrderSummary extends StatelessWidget {
           ),
           _SummaryRow(
             icon: Icons.receipt_rounded,
-            label: 'Total',
+            label: AppLocalizations.of(context).orderTrackingTotal,
             value: '${total.toStringAsFixed(0)} F CFA',
             isBold: true,
             color: AmaraColors.primary,
@@ -1595,11 +1608,12 @@ class _OrderSummary extends StatelessWidget {
     );
   }
 
-  String _paymentLabel(String method) {
+  String _paymentLabel(BuildContext context, String method) {
+    final l10n = AppLocalizations.of(context);
     return switch (method) {
-      'mobile_money' => 'Mobile Money',
-      'card' => 'Carte bancaire',
-      'cash' => 'Especes',
+      'mobile_money' => l10n.orderTrackingPaymentMobileMoney,
+      'card' => l10n.orderTrackingPaymentCard,
+      'cash' => l10n.orderTrackingPaymentCash,
       _ => method,
     };
   }
@@ -1718,7 +1732,7 @@ class _ReviewButtonState extends State<_ReviewButton> {
                 color: AmaraColors.success, size: 18),
             const SizedBox(width: 8),
             Text(
-              'Avis soumis — merci !',
+              AppLocalizations.of(context).orderTrackingReviewSubmitted,
               style: AmaraTextStyles.labelMedium.copyWith(
                 color: AmaraColors.success,
                 fontWeight: FontWeight.w700,
@@ -1736,7 +1750,7 @@ class _ReviewButtonState extends State<_ReviewButton> {
         onPressed: _openReview,
         icon: const Icon(Icons.star_rounded, size: 20),
         label: Text(
-          'Noter cette commande',
+          AppLocalizations.of(context).orderTrackingRateOrder,
           style: AmaraTextStyles.labelMedium.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w700,
@@ -1998,7 +2012,7 @@ class _DriverTrackingMapState extends State<_DriverTrackingMap> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    'Livreur',
+                    AppLocalizations.of(context).orderTrackingMapDriver,
                     style: AmaraTextStyles.caption.copyWith(
                       fontWeight: FontWeight.w600,
                       fontSize: 10,
@@ -2015,7 +2029,7 @@ class _DriverTrackingMapState extends State<_DriverTrackingMap> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    'Vous',
+                    AppLocalizations.of(context).orderTrackingMapYou,
                     style: AmaraTextStyles.caption.copyWith(
                       fontWeight: FontWeight.w600,
                       fontSize: 10,
@@ -2033,7 +2047,7 @@ class _DriverTrackingMapState extends State<_DriverTrackingMap> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          'Suivre',
+                          AppLocalizations.of(context).orderTrackingMapFollow,
                           style: AmaraTextStyles.caption.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
@@ -2068,7 +2082,7 @@ class _ErrorView extends StatelessWidget {
           children: [
             const Text('📡', style: TextStyle(fontSize: 52)),
             const SizedBox(height: 16),
-            Text('Impossible de charger\nla commande',
+            Text(AppLocalizations.of(context).orderTrackingLoadError,
                 style: AmaraTextStyles.h3
                     .copyWith(fontWeight: FontWeight.w800),
                 textAlign: TextAlign.center),
@@ -2082,7 +2096,7 @@ class _ErrorView extends StatelessWidget {
                   color: AmaraColors.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text('Reessayer',
+                child: Text(AppLocalizations.of(context).orderTrackingRetry,
                     style: AmaraTextStyles.labelSmall.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700)),

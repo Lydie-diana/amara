@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../app/core/constants/app_colors.dart';
-
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/core/constants/app_text_styles.dart';
 import '../../app/models/restaurant_model.dart';
 import '../../app/providers/cart_provider.dart';
@@ -186,7 +186,7 @@ class _RestaurantDetailScreenState
             pinned: true,
             delegate: _CategoryTabsDelegate(
               categories: [
-                const MenuCategory(id: '__all__', name: 'Tous', items: []),
+                MenuCategory(id: '__all__', name: AppLocalizations.of(context).restaurantAllCategory, items: const []),
                 ...available,
               ],
               selectedIndex: _selectedCategoryIndex,
@@ -216,7 +216,7 @@ class _RestaurantDetailScreenState
                 children: [
                   const Text('🔍', style: TextStyle(fontSize: 36)),
                   const SizedBox(height: 12),
-                  Text('Aucun plat trouvé pour "$_searchQuery"',
+                  Text(AppLocalizations.of(context).restaurantNoDishFound(_searchQuery),
                       textAlign: TextAlign.center,
                       style: AmaraTextStyles.bodySmall
                           .copyWith(color: AmaraColors.textSecondary)),
@@ -263,8 +263,9 @@ class _RestaurantSliverAppBar extends StatelessWidget {
 
   void _share(BuildContext context) {
     HapticFeedback.lightImpact();
+    final l10n = AppLocalizations.of(context);
     final text = '${restaurant.name} — ${restaurant.cuisine}\n'
-        'Découvre ce restaurant sur Amara !';
+        '${l10n.restaurantShareText}';
     SharePlus.instance.share(ShareParams(text: text));
   }
 
@@ -400,7 +401,7 @@ class _MenuSearchBar extends StatelessWidget {
         onChanged: onChanged,
         style: AmaraTextStyles.bodySmall.copyWith(color: AmaraColors.textPrimary),
         decoration: InputDecoration(
-          hintText: 'Rechercher un plat...',
+          hintText: AppLocalizations.of(context).restaurantSearchDish,
           hintStyle: AmaraTextStyles.bodySmall
               .copyWith(color: AmaraColors.textSecondary),
           prefixIcon: const Icon(Icons.search_rounded,
@@ -559,7 +560,7 @@ class _ErrorState extends StatelessWidget {
           children: [
             const Text('😕', style: TextStyle(fontSize: 48)),
             const SizedBox(height: 16),
-            Text('Impossible de charger le restaurant',
+            Text(AppLocalizations.of(context).restaurantLoadError,
                 style: AmaraTextStyles.bodyMedium),
             const SizedBox(height: 20),
             GestureDetector(
@@ -571,7 +572,7 @@ class _ErrorState extends StatelessWidget {
                   color: AmaraColors.primary,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text('Réessayer',
+                child: Text(AppLocalizations.of(context).restaurantRetry,
                     style: AmaraTextStyles.labelMedium
                         .copyWith(color: Colors.white)),
               ),

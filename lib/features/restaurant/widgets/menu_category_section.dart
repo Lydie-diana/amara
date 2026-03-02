@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
+import '../../../app/core/l10n/app_localizations.dart';
 import '../../../app/models/restaurant_model.dart';
 import '../../../app/providers/cart_provider.dart';
 import '../../menu_item/menu_item_detail_screen.dart';
@@ -197,7 +198,7 @@ class _MenuItemTile extends ConsumerWidget {
                           if (item.orderCount > 0) ...[
                             if (item.likePercent > 0) const SizedBox(width: 6),
                             Text(
-                              '${item.formattedOrderCount} commandes',
+                              AppLocalizations.of(context).restaurantOrders(item.formattedOrderCount),
                               style: AmaraTextStyles.caption.copyWith(
                                 color: AmaraColors.textSecondary,
                                 fontWeight: FontWeight.w600,
@@ -265,7 +266,7 @@ class _MenuItemTile extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(color: AmaraColors.divider),
                             ),
-                            child: Text('Indisponible',
+                            child: Text(AppLocalizations.of(context).restaurantUnavailable,
                                 style: AmaraTextStyles.caption
                                     .copyWith(color: AmaraColors.muted, fontSize: 10)),
                           )

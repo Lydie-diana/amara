@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/models/restaurant_model.dart';
 import '../../app/providers/categories_provider.dart';
 import '../../app/providers/location_provider.dart';
@@ -81,6 +82,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final restaurantsAsync = ref.watch(restaurantListProvider);
     final location = ref.watch(locationProvider);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: AmaraColors.bg,
@@ -120,7 +122,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           color: AmaraColors.textPrimary,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'Chercher un restaurant, un plat...',
+                          hintText: l10n.homeSearchHint,
                           hintStyle: AmaraTextStyles.bodyMedium.copyWith(
                             color: AmaraColors.muted,
                           ),
@@ -194,8 +196,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: SectionHeader(
-                      title: 'Catégories',
-                      subtitle: 'Voir tout',
+                      title: l10n.homeCategories,
+                      subtitle: l10n.homeSeeAll,
                       onSubtitleTap: () =>
                           ref.read(shellIndexProvider.notifier).state = 1,
                     ),
@@ -222,7 +224,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Text(
-                  'Impossible de charger les restaurants. Vérifiez votre connexion.',
+                  l10n.homeErrorLoad,
                   style: AmaraTextStyles.bodySmall
                       .copyWith(color: AmaraColors.error),
                 ),
@@ -233,10 +235,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 return SliverToBoxAdapter(
                   child: _EmptyState(
                     icon: Icons.storefront_outlined,
-                    title: 'Aucun restaurant\ndans votre secteur',
-                    subtitle:
-                        'Essayez de modifier votre adresse\nou revenez plus tard.',
-                    action: 'Changer de secteur',
+                    title: l10n.homeEmptyTitle,
+                    subtitle: l10n.homeEmptySubtitle,
+                    action: l10n.homeEmptyAction,
                     onAction: () => showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
@@ -255,9 +256,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 return SliverToBoxAdapter(
                   child: _EmptyState(
                     icon: Icons.restaurant_rounded,
-                    title: 'Aucun restaurant\npour cette catégorie',
-                    subtitle: 'Essayez une autre catégorie',
-                    action: 'Voir tous les restaurants',
+                    title: l10n.homeEmptyCategoryTitle,
+                    subtitle: l10n.homeEmptyCategorySubtitle,
+                    action: l10n.homeEmptyCategoryAction,
                     onAction: () => ref
                         .read(selectedCategoryProvider.notifier)
                         .state = null,
@@ -275,8 +276,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                     child: SectionHeader(
-                      title: 'Populaires',
-                      subtitle: 'Voir tout',
+                      title: l10n.homePopular,
+                      subtitle: l10n.homeSeeAll,
                       onSubtitleTap: () =>
                           ref.read(shellIndexProvider.notifier).state = 1,
                     ),
@@ -310,8 +311,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
                       child: SectionHeader(
-                        title: 'Nouveaux arrivants',
-                        subtitle: 'Voir tout',
+                        title: l10n.homeNew,
+                        subtitle: l10n.homeSeeAll,
                         onSubtitleTap: () =>
                             ref.read(shellIndexProvider.notifier).state = 1,
                       ),
@@ -348,8 +349,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
                     child: SectionHeader(
-                      title: 'Tous les restaurants',
-                      subtitle: 'Voir tout',
+                      title: l10n.homeAllRestaurants,
+                      subtitle: l10n.homeSeeAll,
                       onSubtitleTap: () =>
                           ref.read(shellIndexProvider.notifier).state = 1,
                     ),

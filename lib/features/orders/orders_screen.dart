@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/core/widgets/error_dialog.dart';
 import '../../app/providers/auth_provider.dart';
 import '../../app/providers/restaurant_provider.dart';
@@ -152,7 +153,7 @@ class _OrdersBodyState extends ConsumerState<_OrdersBody>
           child: Row(
             children: [
               Text(
-                'Commandes',
+                AppLocalizations.of(context).ordersTitle,
                 style: AmaraTextStyles.h2.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
@@ -194,14 +195,14 @@ class _OrdersBodyState extends ConsumerState<_OrdersBody>
               fontWeight: FontWeight.w500,
             ),
             padding: const EdgeInsets.all(4),
-            tabs: const [
+            tabs: [
               Tab(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.shopping_bag_outlined, size: 15),
-                    SizedBox(width: 5),
-                    Text('Anciens articles'),
+                    const Icon(Icons.shopping_bag_outlined, size: 15),
+                    const SizedBox(width: 5),
+                    Text(AppLocalizations.of(context).ordersTabPastItems),
                   ],
                 ),
               ),
@@ -209,9 +210,9 @@ class _OrdersBodyState extends ConsumerState<_OrdersBody>
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.receipt_long_outlined, size: 15),
-                    SizedBox(width: 5),
-                    Text('Commandes'),
+                    const Icon(Icons.receipt_long_outlined, size: 15),
+                    const SizedBox(width: 5),
+                    Text(AppLocalizations.of(context).ordersTabOrders),
                   ],
                 ),
               ),
@@ -344,7 +345,7 @@ class _RestaurantSection extends ConsumerWidget {
                     ),
                     if (deliveryFee.isNotEmpty || deliveryTime.isNotEmpty)
                       Text(
-                        'Frais de livraison : $deliveryFee • $deliveryTime',
+                        AppLocalizations.of(context).ordersDeliveryFee(deliveryFee, deliveryTime),
                         style: AmaraTextStyles.caption.copyWith(
                           color: AmaraColors.textSecondary,
                         ),
@@ -567,17 +568,18 @@ class _OrderTile extends ConsumerWidget {
 
   String get _status => order['status'] as String? ?? '';
 
-  String get _statusLabel {
+  String _statusLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return switch (_status) {
-      'pending' => 'En attente',
-      'confirmed' => 'Confirmee',
-      'preparing' => 'En preparation',
-      'ready' => 'Prete',
-      'picked_up' => 'Recuperee',
-      'delivering' => 'En livraison',
-      'delivered' => 'Livree',
-      'cancelled' => 'Annulee',
-      _ => 'Inconnue',
+      'pending' => l10n.ordersStatusPending,
+      'confirmed' => l10n.ordersStatusConfirmed,
+      'preparing' => l10n.ordersStatusPreparing,
+      'ready' => l10n.ordersStatusReady,
+      'picked_up' => l10n.ordersStatusPickedUp,
+      'delivering' => l10n.ordersStatusDelivering,
+      'delivered' => l10n.ordersStatusDelivered,
+      'cancelled' => l10n.ordersStatusCancelled,
+      _ => l10n.ordersStatusUnknown,
     };
   }
 
@@ -595,14 +597,15 @@ class _OrderTile extends ConsumerWidget {
     return '${total.toStringAsFixed(0)} F';
   }
 
-  String get _formattedDate {
+  String _formattedDate(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final ts = order['createdAt'] as num?;
     if (ts == null) return '';
     final dt = DateTime.fromMillisecondsSinceEpoch(ts.toInt());
     final now = DateTime.now();
     final diff = now.difference(dt);
-    if (diff.inDays == 0) return 'Aujourd\'hui';
-    if (diff.inDays == 1) return 'Hier';
+    if (diff.inDays == 0) return l10n.ordersToday;
+    if (diff.inDays == 1) return l10n.ordersYesterday;
     return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
   }
 
@@ -620,17 +623,17 @@ class _OrderTile extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Annuler la commande ?',
+        title: Text(AppLocalizations.of(context).ordersCancelTitle,
             style: AmaraTextStyles.h3.copyWith(fontWeight: FontWeight.w700)),
         content: Text(
-          'Le restaurant n\'a pas encore accepte votre commande. Voulez-vous l\'annuler ?',
+          AppLocalizations.of(context).ordersCancelMessage,
           style: AmaraTextStyles.bodySmall
               .copyWith(color: AmaraColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Non',
+            child: Text(AppLocalizations.of(context).ordersCancelNo,
                 style: TextStyle(
                     color: AmaraColors.textSecondary,
                     fontWeight: FontWeight.w600)),
@@ -643,12 +646,12 @@ class _OrderTile extends ConsumerWidget {
               try {
                 final client = ref.read(convexClientProvider);
                 await client.cancelOrder(orderId,
-                    reason: 'Annulee par le client');
+                    reason: AppLocalizations.of(context).ordersCancelledByClient);
                 ref.invalidate(myOrdersProvider);
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('Commande annulee'),
+                      content: Text(AppLocalizations.of(context).ordersCancelledSuccess),
                       backgroundColor: AmaraColors.success,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
@@ -662,7 +665,7 @@ class _OrderTile extends ConsumerWidget {
                 }
               }
             },
-            child: Text('Oui, annuler',
+            child: Text(AppLocalizations.of(context).ordersCancelYes,
                 style: TextStyle(
                     color: AmaraColors.error, fontWeight: FontWeight.w700)),
           ),
@@ -747,7 +750,7 @@ class _OrderTile extends ConsumerWidget {
                       const SizedBox(height: 3),
                       // Date + prix + nb articles
                       Text(
-                        '$_formattedDate · $_formattedTotal · $_itemCount article${_itemCount > 1 ? 's' : ''}',
+                        '${_formattedDate(context)} · $_formattedTotal · ${AppLocalizations.of(context).ordersItemCount(_itemCount)}',
                         style: AmaraTextStyles.caption.copyWith(
                           color: AmaraColors.textSecondary,
                         ),
@@ -781,7 +784,7 @@ class _OrderTile extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              'Annuler',
+                              AppLocalizations.of(context).ordersCancelButton,
                               style: AmaraTextStyles.caption.copyWith(
                                 color: AmaraColors.error,
                                 fontWeight: FontWeight.w700,
@@ -797,7 +800,7 @@ class _OrderTile extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            _status == 'delivered' ? 'Commander' : _statusLabel,
+                            _status == 'delivered' ? AppLocalizations.of(context).ordersReorderButton : _statusLabel(context),
                             style: AmaraTextStyles.caption.copyWith(
                               color: AmaraColors.textPrimary,
                               fontWeight: FontWeight.w700,
@@ -849,12 +852,12 @@ class _NotLoggedIn extends StatelessWidget {
                   size: 36, color: AmaraColors.primary),
             ),
             const SizedBox(height: 20),
-            Text('Connexion requise',
+            Text(AppLocalizations.of(context).ordersLoginRequired,
                 style: AmaraTextStyles.h3
                     .copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Text(
-              'Connectez-vous pour voir vos commandes',
+              AppLocalizations.of(context).ordersLoginMessage,
               style: AmaraTextStyles.bodySmall
                   .copyWith(color: AmaraColors.textSecondary),
               textAlign: TextAlign.center,
@@ -890,12 +893,12 @@ class _EmptyOrders extends StatelessWidget {
                   size: 36, color: AmaraColors.primary),
             ),
             const SizedBox(height: 20),
-            Text('Aucune commande',
+            Text(AppLocalizations.of(context).ordersEmptyTitle,
                 style: AmaraTextStyles.h3
                     .copyWith(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
             Text(
-              'Vos futures commandes apparaitront ici',
+              AppLocalizations.of(context).ordersEmptyMessage,
               style: AmaraTextStyles.bodySmall
                   .copyWith(color: AmaraColors.textSecondary),
               textAlign: TextAlign.center,
@@ -924,7 +927,7 @@ class _ErrorState extends StatelessWidget {
             const Icon(Icons.wifi_off_rounded,
                 size: 48, color: AmaraColors.muted),
             const SizedBox(height: 16),
-            Text('Erreur de connexion', style: AmaraTextStyles.h3),
+            Text(AppLocalizations.of(context).ordersConnectionError, style: AmaraTextStyles.h3),
             const SizedBox(height: 8),
             Text(error,
                 style: AmaraTextStyles.bodySmall

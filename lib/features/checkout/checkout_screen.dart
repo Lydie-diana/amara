@@ -8,6 +8,7 @@ import 'package:latlong2/latlong.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/core/widgets/error_dialog.dart';
 import '../../app/providers/address_suggestions_provider.dart';
 import '../../app/models/cart_model.dart';
@@ -112,7 +113,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Code invalide',
+          content: Text(AppLocalizations.of(context).checkoutInvalidCode,
               style: AmaraTextStyles.bodySmall
                   .copyWith(color: Colors.white)),
           backgroundColor: AmaraColors.error,
@@ -285,13 +286,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         ),
                       ),
                     ),
-                    Text('Modifier les informations',
+                    Text(AppLocalizations.of(context).checkoutEditInfo,
                         style: AmaraTextStyles.labelLarge
                             .copyWith(fontWeight: FontWeight.w800)),
                     const SizedBox(height: 16),
 
                     // Adresse avec autocomplétion
-                    Text('Adresse de livraison',
+                    Text(AppLocalizations.of(context).checkoutDeliveryAddress,
                         style: AmaraTextStyles.caption
                             .copyWith(color: AmaraColors.textSecondary)),
                     const SizedBox(height: 6),
@@ -304,7 +305,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.search_rounded,
                             color: AmaraColors.primary, size: 20),
-                        hintText: 'Rechercher une adresse...',
+                        hintText: AppLocalizations.of(context).checkoutSearchAddress,
                         hintStyle: AmaraTextStyles.bodyMedium
                             .copyWith(color: AmaraColors.muted),
                         filled: true,
@@ -375,7 +376,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     const SizedBox(height: 14),
 
                     // Rue / Quartier
-                    Text('Rue / Quartier',
+                    Text(AppLocalizations.of(context).checkoutStreetDistrict,
                         style: AmaraTextStyles.caption
                             .copyWith(color: AmaraColors.textSecondary)),
                     const SizedBox(height: 6),
@@ -387,7 +388,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.signpost_rounded,
                             color: AmaraColors.primary, size: 20),
-                        hintText: 'Ex: Rue 123, à côté du marché...',
+                        hintText: AppLocalizations.of(context).checkoutStreetHint,
                         hintStyle: AmaraTextStyles.bodyMedium
                             .copyWith(color: AmaraColors.muted),
                         filled: true,
@@ -407,7 +408,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     const SizedBox(height: 14),
 
                     // Instructions pour le livreur
-                    Text('Instructions pour le livreur',
+                    Text(AppLocalizations.of(context).checkoutDriverInstructions,
                         style: AmaraTextStyles.caption
                             .copyWith(color: AmaraColors.textSecondary)),
                     const SizedBox(height: 6),
@@ -423,7 +424,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           child: Icon(Icons.info_outline_rounded,
                               color: AmaraColors.primary, size: 20),
                         ),
-                        hintText: 'Ex: Bâtiment B, 2ème étage, porte 5...',
+                        hintText: AppLocalizations.of(context).checkoutInstructionsHint,
                         hintStyle: AmaraTextStyles.bodyMedium
                             .copyWith(color: AmaraColors.muted),
                         filled: true,
@@ -443,7 +444,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     const SizedBox(height: 14),
 
                     // Téléphone
-                    Text('Numéro de téléphone',
+                    Text(AppLocalizations.of(context).checkoutPhoneNumber,
                         style: AmaraTextStyles.caption
                             .copyWith(color: AmaraColors.textSecondary)),
                     const SizedBox(height: 6),
@@ -499,7 +500,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Center(
-                          child: Text('Enregistrer',
+                          child: Text(AppLocalizations.of(context).checkoutSave,
                               style: AmaraTextStyles.labelMedium.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w700)),
@@ -585,7 +586,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Mode de service',
+                        AppLocalizations.of(context).checkoutServiceMode,
                         style: AmaraTextStyles.labelLarge
                             .copyWith(fontWeight: FontWeight.w800),
                       ),
@@ -593,7 +594,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       Row(
                         children: [
                           _buildServiceChip(
-                            label: 'Livraison',
+                            label: AppLocalizations.of(context).checkoutDeliveryMode,
                             icon: Icons.delivery_dining_rounded,
                             isSelected: _selectedService == 'Livraison',
                             enabled: deliveryEnabled,
@@ -602,7 +603,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           ),
                           const SizedBox(width: 10),
                           _buildServiceChip(
-                            label: 'À emporter',
+                            label: AppLocalizations.of(context).checkoutTakeawayMode,
                             icon: Icons.takeout_dining_rounded,
                             isSelected: _selectedService == 'À emporter',
                             enabled: takeawayEnabled,
@@ -693,8 +694,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                 children: [
                                   Text(
                                     _selectedService == 'Livraison'
-                                        ? 'Livrer à'
-                                        : 'À emporter chez',
+                                        ? AppLocalizations.of(context).checkoutDeliverTo
+                                        : AppLocalizations.of(context).checkoutPickupAt,
                                     style: AmaraTextStyles.caption
                                         .copyWith(
                                             color: AmaraColors.muted),
@@ -767,7 +768,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                     CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Téléphone',
+                                    AppLocalizations.of(context).checkoutPhone,
                                     style: AmaraTextStyles.caption
                                         .copyWith(
                                             color: AmaraColors.muted),
@@ -807,7 +808,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Récapitulatif de la commande',
+                        AppLocalizations.of(context).checkoutOrderSummary,
                         style: AmaraTextStyles.labelLarge
                             .copyWith(fontWeight: FontWeight.w800),
                       ),
@@ -851,7 +852,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                               fontWeight: FontWeight.w700),
                                     ),
                                     Text(
-                                      '${group.totalItems} article${group.totalItems > 1 ? 's' : ''}',
+                                      AppLocalizations.of(context).cartItemCount(group.totalItems),
                                       style: AmaraTextStyles.caption
                                           .copyWith(
                                               color: AmaraColors
@@ -990,7 +991,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                       CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Code "$_voucherCode" appliqué',
+                                      AppLocalizations.of(context).checkoutCodeApplied(_voucherCode),
                                       style: AmaraTextStyles.labelSmall
                                           .copyWith(
                                               color: AmaraColors.success,
@@ -999,7 +1000,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                     Text(
                                       _discount > 0
                                           ? '-${(_discount * 100).toStringAsFixed(0)}%'
-                                          : 'Livraison offerte',
+                                          : AppLocalizations.of(context).checkoutFreeDelivery,
                                       style: AmaraTextStyles.caption
                                           .copyWith(
                                               color: AmaraColors.success),
@@ -1009,7 +1010,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               ),
                               GestureDetector(
                                 onTap: _removeVoucher,
-                                child: Text('Retirer',
+                                child: Text(AppLocalizations.of(context).checkoutRemove,
                                     style: AmaraTextStyles.caption
                                         .copyWith(
                                             color: AmaraColors.error,
@@ -1035,7 +1036,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
-                                  'Ajouter un code promotionnel',
+                                  AppLocalizations.of(context).checkoutAddPromoCode,
                                   style: AmaraTextStyles.labelMedium
                                       .copyWith(
                                           fontWeight: FontWeight.w600),
@@ -1055,19 +1056,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   child: Column(
                     children: [
                       _PriceRow(
-                        label: 'Sous-total',
+                        label: AppLocalizations.of(context).checkoutSubtotal,
                         value: '${subtotal.toStringAsFixed(0)} F',
                       ),
                       const SizedBox(height: 10),
                       _PriceRow(
-                        label: 'Service',
+                        label: AppLocalizations.of(context).checkoutServiceFee,
                         value: '${serviceFee.toStringAsFixed(0)} F',
                       ),
                       const SizedBox(height: 10),
                       _PriceRow(
-                        label: 'Livraison',
+                        label: AppLocalizations.of(context).checkoutDeliveryFee,
                         value: deliveryFee == 0
-                            ? 'Gratuit'
+                            ? AppLocalizations.of(context).checkoutFree
                             : '${deliveryFee.toStringAsFixed(0)} F',
                         valueColor:
                             deliveryFee == 0 ? AmaraColors.success : null,
@@ -1075,7 +1076,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       if (_discount > 0) ...[
                         const SizedBox(height: 10),
                         _PriceRow(
-                          label: 'Réduction',
+                          label: AppLocalizations.of(context).checkoutDiscount,
                           value:
                               '-${discountAmount.toStringAsFixed(0)} F',
                           valueColor: AmaraColors.success,
@@ -1087,7 +1088,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       Row(
                         children: [
                           Text(
-                            'Total',
+                            AppLocalizations.of(context).checkoutTotal,
                             style: AmaraTextStyles.labelLarge
                                 .copyWith(fontWeight: FontWeight.w800),
                           ),
@@ -1122,7 +1123,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                'Mode de paiement',
+                                AppLocalizations.of(context).checkoutPaymentMethod,
                                 style: AmaraTextStyles.labelLarge
                                     .copyWith(
                                         fontWeight: FontWeight.w800),
@@ -1230,7 +1231,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                                               ),
                                               if (!isEnabled)
                                                 Text(
-                                                  'Non disponible',
+                                                  AppLocalizations.of(context).checkoutNotAvailable,
                                                   style: AmaraTextStyles
                                                       .caption
                                                       .copyWith(
@@ -1311,7 +1312,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       )
                     : Center(
                         child: Text(
-                          'Commander et payer · ${total.toStringAsFixed(0)} F',
+                          '${AppLocalizations.of(context).checkoutPlaceOrder} · ${total.toStringAsFixed(0)} F',
                           style: AmaraTextStyles.button,
                         ),
                       ),
@@ -1465,7 +1466,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   ),
                 ),
               ),
-              Text('Code promotionnel',
+              Text(AppLocalizations.of(context).checkoutPromoCode,
                   style: AmaraTextStyles.labelLarge
                       .copyWith(fontWeight: FontWeight.w800)),
               const SizedBox(height: 14),
@@ -1477,7 +1478,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     fontWeight: FontWeight.w600,
                     color: AmaraColors.textPrimary),
                 decoration: InputDecoration(
-                  hintText: 'Entrez votre code promo',
+                  hintText: AppLocalizations.of(context).checkoutPromoHint,
                   hintStyle: AmaraTextStyles.bodyMedium
                       .copyWith(color: AmaraColors.muted),
                   filled: true,
@@ -1505,7 +1506,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: Center(
-                    child: Text('Appliquer',
+                    child: Text(AppLocalizations.of(context).checkoutApply,
                         style: AmaraTextStyles.labelMedium.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w700)),
@@ -1546,7 +1547,7 @@ class _CheckoutHeader extends StatelessWidget {
           ),
           const SizedBox(width: 14),
           Text(
-            'Paiement',
+            AppLocalizations.of(context).checkoutTitle,
             style: AmaraTextStyles.h1.copyWith(
                 fontWeight: FontWeight.w800, color: Colors.white),
           ),

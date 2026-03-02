@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_images.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/router/app_routes.dart';
 import 'widgets/onboarding_slide.dart';
 import 'widgets/onboarding_indicator.dart';
@@ -20,33 +21,31 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _controller = PageController();
   int _currentPage = 0;
 
-  static const _slides = [
+  List<OnboardingData> _buildSlides(AppLocalizations l10n) => [
     OnboardingData(
       imageUrl: AmaraImages.onboarding1,
-      title: 'Vos plats\npréférés livrés',
-      description:
-          'Découvrez des centaines de plats authentiques préparés par les meilleurs restaurants africains de votre ville.',
+      title: l10n.onboardingSlide1Title,
+      description: l10n.onboardingSlide1Desc,
       accentColor: AmaraColors.primary,
     ),
     OnboardingData(
       imageUrl: AmaraImages.onboarding2,
-      title: 'Livraison\nrapide',
-      description:
-          'Suivez votre commande en temps réel et recevez vos plats chauds directement à votre porte en moins de 45 min.',
-      accentColor: Color(0xFFFF8C42),
+      title: l10n.onboardingSlide2Title,
+      description: l10n.onboardingSlide2Desc,
+      accentColor: const Color(0xFFFF8C42),
     ),
     OnboardingData(
       imageUrl: AmaraImages.onboarding3,
-      title: 'Paiement\nsimple & sécurisé',
-      description:
-          'Mobile Money, carte bancaire ou cash — choisissez le moyen de paiement qui vous convient le mieux.',
-      accentColor: Color(0xFF27AE60),
+      title: l10n.onboardingSlide3Title,
+      description: l10n.onboardingSlide3Desc,
+      accentColor: const Color(0xFF27AE60),
     ),
   ];
 
   void _nextPage() {
     HapticFeedback.lightImpact();
-    if (_currentPage < _slides.length - 1) {
+    final slides = _buildSlides(AppLocalizations.of(context));
+    if (_currentPage < slides.length - 1) {
       _controller.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOutCubic,
@@ -71,7 +70,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isLast = _currentPage == _slides.length - 1;
+    final l10n = AppLocalizations.of(context);
+    final slides = _buildSlides(l10n);
+    final isLast = _currentPage == slides.length - 1;
 
     return Scaffold(
       body: Stack(
@@ -81,10 +82,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           PageView.builder(
             controller: _controller,
             onPageChanged: (i) => setState(() => _currentPage = i),
-            itemCount: _slides.length,
+            itemCount: slides.length,
             itemBuilder: (context, index) {
               return OnboardingSlide(
-                data: _slides[index],
+                data: slides[index],
                 isActive: index == _currentPage,
               );
             },
@@ -101,7 +102,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 children: [
                   // Dots de pagination
                   OnboardingIndicator(
-                    count: _slides.length,
+                    count: slides.length,
                     current: _currentPage,
                     activeColor: Colors.white,
                   ),
@@ -123,7 +124,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              'Commencer',
+                              l10n.onboardingStartButton,
                               style: AmaraTextStyles.labelMedium
                                   .copyWith(color: Colors.white),
                             ),

@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
+import '../../../app/core/l10n/app_localizations.dart';
 import '../../../app/providers/location_provider.dart';
 import '../../../app/providers/restaurant_provider.dart';
 
@@ -20,6 +21,7 @@ class MovementBanner extends ConsumerWidget {
     }
 
     final newAddr = location.newPosition!.displayAddress;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -55,7 +57,7 @@ class MovementBanner extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Vous semblez être à',
+                  l10n.movementYouSeem,
                   style: AmaraTextStyles.caption.copyWith(
                       color: AmaraColors.muted),
                 ),
@@ -90,7 +92,7 @@ class MovementBanner extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    'Chercher ici',
+                    l10n.movementSearchHere,
                     style: AmaraTextStyles.caption.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
@@ -102,7 +104,7 @@ class MovementBanner extends ConsumerWidget {
               GestureDetector(
                 onTap: () => ref.read(locationProvider.notifier).dismissMovement(),
                 child: Text(
-                  'Ignorer',
+                  l10n.movementDismiss,
                   style: AmaraTextStyles.caption.copyWith(
                       color: AmaraColors.muted),
                 ),

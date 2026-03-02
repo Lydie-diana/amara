@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/models/restaurant_model.dart';
 import '../../app/providers/restaurant_provider.dart';
 import '../../app/router/app_routes.dart';
@@ -28,18 +29,18 @@ final _promoProvider = StateProvider<bool>((ref) => false);
 enum _SortOption { recommended, rating, distance, deliveryTime, price }
 
 extension _SortLabel on _SortOption {
-  String get label {
+  String label(AppLocalizations l10n) {
     switch (this) {
       case _SortOption.recommended:
-        return 'Recommandé';
+        return l10n.searchSortRecommended;
       case _SortOption.rating:
-        return 'Mieux notés';
+        return l10n.searchSortRating;
       case _SortOption.distance:
-        return 'Distance';
+        return l10n.searchSortDistance;
       case _SortOption.deliveryTime:
-        return 'Rapidité';
+        return l10n.searchSortDeliveryTime;
       case _SortOption.price:
-        return 'Prix livraison';
+        return l10n.searchSortPrice;
     }
   }
 
@@ -349,6 +350,8 @@ class _SearchHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final top = MediaQuery.of(context).padding.top;
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       color: AmaraColors.bg,
       padding: EdgeInsets.fromLTRB(20, top + 10, 20, 8),
@@ -356,11 +359,11 @@ class _SearchHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Titre + sous-titre
-          Text('Explorer',
+          Text(l10n.searchExplore,
               style: AmaraTextStyles.h2
                   .copyWith(fontWeight: FontWeight.w800)),
           const SizedBox(height: 2),
-          Text('Les meilleurs restaurants autour de vous',
+          Text(l10n.searchSubtitle,
               style: AmaraTextStyles.caption
                   .copyWith(color: AmaraColors.textSecondary)),
           const SizedBox(height: 12),
@@ -387,7 +390,7 @@ class _SearchHeader extends StatelessWidget {
                     style: AmaraTextStyles.bodyMedium
                         .copyWith(color: AmaraColors.textPrimary),
                     decoration: InputDecoration(
-                      hintText: 'Restaurant, plat, cuisine…',
+                      hintText: l10n.searchHint,
                       hintStyle: AmaraTextStyles.bodyMedium
                           .copyWith(color: AmaraColors.muted),
                       border: InputBorder.none,
@@ -479,6 +482,8 @@ class _FilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: SizedBox(
@@ -491,7 +496,7 @@ class _FilterChips extends StatelessWidget {
             if (hasFilters) ...[
               _Chip(
                 icon: Icons.close_rounded,
-                label: 'Reset',
+                label: l10n.searchFilterReset,
                 isActive: false,
                 isReset: true,
                 onTap: onResetFilters,
@@ -500,38 +505,38 @@ class _FilterChips extends StatelessWidget {
             ],
             _Chip(
               icon: Icons.swap_vert_rounded,
-              label: sort.label,
+              label: sort.label(l10n),
               isActive: sort != _SortOption.recommended,
               onTap: onSortTap,
             ),
             const SizedBox(width: 6),
             _Chip(
-              label: 'Livraison gratuite',
+              label: l10n.searchFilterFreeDelivery,
               isActive: freeOnly,
               onTap: onFreeTap,
             ),
             const SizedBox(width: 6),
             _Chip(
-              label: 'Ouvert',
+              label: l10n.searchFilterOpen,
               isActive: openOnly,
               onTap: onOpenTap,
             ),
             const SizedBox(width: 6),
             _Chip(
-              label: 'À emporter',
+              label: l10n.searchFilterTakeaway,
               isActive: takeaway,
               onTap: onTakeawayTap,
             ),
             const SizedBox(width: 6),
             _Chip(
-              label: 'Mieux notés',
+              label: l10n.searchFilterBestRated,
               isActive: sort == _SortOption.rating,
               onTap: onBestRatedTap,
             ),
             const SizedBox(width: 6),
             _Chip(
               icon: Icons.local_offer_rounded,
-              label: 'Promo',
+              label: l10n.searchFilterPromo,
               isActive: promo,
               onTap: onPromoTap,
             ),
@@ -620,6 +625,7 @@ class _DiscoverView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final topRated = [...restaurants]
       ..sort((a, b) => b.rating.compareTo(a.rating));
 
@@ -641,9 +647,9 @@ class _DiscoverView extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
-                const Text('⭐', style: TextStyle(fontSize: 20)),
+                const Text('\u2B50', style: TextStyle(fontSize: 20)),
                 const SizedBox(width: 6),
-                Text('Mieux notés',
+                Text(l10n.searchSectionTopRated,
                     style: AmaraTextStyles.h3
                         .copyWith(fontWeight: FontWeight.w800)),
               ],
@@ -674,9 +680,9 @@ class _DiscoverView extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  const Text('🔥', style: TextStyle(fontSize: 20)),
+                  const Text('\uD83D\uDD25', style: TextStyle(fontSize: 20)),
                   const SizedBox(width: 6),
-                  Text('Promo',
+                  Text(l10n.searchSectionPromo,
                       style: AmaraTextStyles.h3
                           .copyWith(fontWeight: FontWeight.w800)),
                 ],
@@ -708,9 +714,9 @@ class _DiscoverView extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
               children: [
-                const Text('🍽️', style: TextStyle(fontSize: 20)),
+                const Text('\uD83C\uDF7D\uFE0F', style: TextStyle(fontSize: 20)),
                 const SizedBox(width: 6),
-                Text('Tous les restaurants',
+                Text(l10n.searchSectionAll,
                     style: AmaraTextStyles.h3
                         .copyWith(fontWeight: FontWeight.w800)),
               ],
@@ -742,6 +748,8 @@ class _ResultsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       children: [
         Padding(
@@ -750,7 +758,7 @@ class _ResultsList extends StatelessWidget {
           child: Row(
             children: [
               Text(
-                  '${restaurants.length} restaurant${restaurants.length > 1 ? 's' : ''}',
+                  l10n.searchResultCount(restaurants.length),
                   style: AmaraTextStyles.caption.copyWith(
                     color: AmaraColors.textSecondary,
                     fontWeight: FontWeight.w600,
@@ -784,6 +792,8 @@ class _RestaurantCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return GestureDetector(
       onTap: () {
         HapticFeedback.selectionClick();
@@ -861,7 +871,7 @@ class _RestaurantCard extends StatelessWidget {
                             borderRadius:
                                 BorderRadius.circular(8),
                           ),
-                          child: Text('Livraison gratuite',
+                          child: Text(l10n.searchFreeDeliveryBadge,
                               style: AmaraTextStyles.caption
                                   .copyWith(
                                       color: Colors.white,
@@ -941,6 +951,7 @@ class _RestaurantListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final distance = _distanceLabel(restaurant);
     final isFree =
         restaurant.deliveryFee.toLowerCase().contains('gratuit');
@@ -1047,7 +1058,7 @@ class _RestaurantListTile extends StatelessWidget {
                           AmaraColors.success.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Text('Gratuit',
+                    child: Text(l10n.searchFreeDeliveryShort,
                         style: AmaraTextStyles.caption.copyWith(
                             color: AmaraColors.success,
                             fontWeight: FontWeight.w700,
@@ -1109,22 +1120,24 @@ class _NoResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('😔', style: TextStyle(fontSize: 48)),
+            const Text('\uD83D\uDE14', style: TextStyle(fontSize: 48)),
             const SizedBox(height: 16),
-            Text('Aucun résultat',
+            Text(l10n.searchNoResults,
                 style: AmaraTextStyles.h3
                     .copyWith(fontWeight: FontWeight.w800)),
             const SizedBox(height: 8),
             Text(
               query.isNotEmpty
-                  ? 'Aucun restaurant trouvé pour "$query"'
-                  : 'Aucun restaurant correspond à vos filtres',
+                  ? l10n.searchNoResultsQuery(query)
+                  : l10n.searchNoResultsFilters,
               style: AmaraTextStyles.bodySmall.copyWith(
                   color: AmaraColors.textSecondary, height: 1.5),
               textAlign: TextAlign.center,
@@ -1142,7 +1155,7 @@ class _NoResults extends StatelessWidget {
                   color: AmaraColors.primary,
                   borderRadius: BorderRadius.circular(24),
                 ),
-                child: Text('Réinitialiser',
+                child: Text(l10n.searchResetButton,
                     style: AmaraTextStyles.bodySmall.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
@@ -1164,6 +1177,8 @@ class _ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1171,7 +1186,7 @@ class _ErrorState extends StatelessWidget {
           const Icon(Icons.wifi_off_rounded,
               color: AmaraColors.muted, size: 48),
           const SizedBox(height: 12),
-          Text('Erreur de connexion',
+          Text(l10n.searchErrorConnection,
               style: AmaraTextStyles.labelMedium),
           const SizedBox(height: 4),
           Text(message,
@@ -1194,6 +1209,8 @@ class _SortSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -1216,7 +1233,7 @@ class _SortSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          Text('Trier par',
+          Text(l10n.searchSortBy,
               style: AmaraTextStyles.h3
                   .copyWith(fontWeight: FontWeight.w800)),
           const SizedBox(height: 16),
@@ -1249,7 +1266,7 @@ class _SortSheet extends StatelessWidget {
                             : AmaraColors.textSecondary),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(s.label,
+                      child: Text(s.label(l10n),
                           style: AmaraTextStyles.bodySmall
                               .copyWith(
                             fontWeight: isSelected
@@ -1314,7 +1331,9 @@ class _FilterSheetState extends State<_FilterSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final bottom = MediaQuery.of(context).viewInsets.bottom;
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -1338,7 +1357,7 @@ class _FilterSheetState extends State<_FilterSheet> {
           const SizedBox(height: 20),
 
           // Tri
-          Text('Trier par',
+          Text(l10n.searchSortBy,
               style: AmaraTextStyles.labelSmall.copyWith(
                   fontWeight: FontWeight.w800,
                   color: AmaraColors.textPrimary)),
@@ -1369,7 +1388,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                             : AmaraColors.divider,
                       ),
                     ),
-                    child: Text(s.label,
+                    child: Text(s.label(l10n),
                         style: AmaraTextStyles.caption.copyWith(
                           color: selected
                               ? Colors.white
@@ -1389,7 +1408,7 @@ class _FilterSheetState extends State<_FilterSheet> {
           const SizedBox(height: 12),
 
           // Filtres
-          Text('Filtres',
+          Text(l10n.searchFilters,
               style: AmaraTextStyles.labelSmall.copyWith(
                   fontWeight: FontWeight.w800,
                   color: AmaraColors.textPrimary)),
@@ -1397,8 +1416,8 @@ class _FilterSheetState extends State<_FilterSheet> {
 
           _FilterToggleRow(
             icon: Icons.delivery_dining_rounded,
-            label: 'Livraison gratuite',
-            subtitle: 'Uniquement avec livraison offerte',
+            label: l10n.searchFilterFreeDelivery,
+            subtitle: l10n.searchFilterFreeDeliverySubtitle,
             value: _freeOnly,
             onChanged: (v) => setState(() => _freeOnly = v),
           ),
@@ -1408,8 +1427,8 @@ class _FilterSheetState extends State<_FilterSheet> {
 
           _FilterToggleRow(
             icon: Icons.schedule_rounded,
-            label: 'Ouvert maintenant',
-            subtitle: 'Masquer les restaurants fermés',
+            label: l10n.searchFilterOpenNow,
+            subtitle: l10n.searchFilterOpenNowSubtitle,
             value: _openOnly,
             onChanged: (v) => setState(() => _openOnly = v),
           ),
@@ -1436,13 +1455,13 @@ class _FilterSheetState extends State<_FilterSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Note minimale',
+                    Text(l10n.searchFilterMinRating,
                         style: AmaraTextStyles.bodySmall
                             .copyWith(fontWeight: FontWeight.w700)),
                     Text(
                         _minRating == 0
-                            ? 'Toutes les notes'
-                            : '${_minRating.toStringAsFixed(1)} ★ et plus',
+                            ? l10n.searchFilterAllRatings
+                            : l10n.searchFilterRatingAndUp(_minRating.toStringAsFixed(1)),
                         style: AmaraTextStyles.caption
                             .copyWith(color: AmaraColors.muted)),
                   ],
@@ -1493,7 +1512,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                           Border.all(color: AmaraColors.divider),
                     ),
                     child: Center(
-                      child: Text('Réinitialiser',
+                      child: Text(l10n.searchResetButton,
                           style: AmaraTextStyles.bodySmall
                               .copyWith(
                                   fontWeight: FontWeight.w600)),
@@ -1514,7 +1533,7 @@ class _FilterSheetState extends State<_FilterSheet> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Center(
-                      child: Text('Appliquer',
+                      child: Text(l10n.searchFilterApply,
                           style: AmaraTextStyles.bodySmall
                               .copyWith(
                                   color: Colors.white,

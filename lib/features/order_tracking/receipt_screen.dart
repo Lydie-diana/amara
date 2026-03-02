@@ -4,6 +4,7 @@ import 'package:printing/printing.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/services/receipt_pdf_service.dart';
 
 /// Écran affichant le reçu d'une commande avec possibilité de télécharger en PDF.
@@ -50,16 +51,17 @@ class ReceiptScreen extends StatelessWidget {
     return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} à ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
-  String get _paymentLabel {
+  String _paymentLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     switch (_paymentMethod) {
       case 'mobile_money':
-        return 'Mobile Money';
+        return l10n.receiptPaymentMobileMoney;
       case 'card':
-        return 'Carte bancaire';
+        return l10n.receiptPaymentCard;
       case 'cash':
-        return 'Cash';
+        return l10n.receiptPaymentCash;
       default:
-        return _paymentMethod.isNotEmpty ? _paymentMethod : 'Non spécifié';
+        return _paymentMethod.isNotEmpty ? _paymentMethod : l10n.receiptPaymentNotSpecified;
     }
   }
 
@@ -80,7 +82,7 @@ class ReceiptScreen extends StatelessWidget {
         ),
         centerTitle: true,
         title: Text(
-          'Reçu',
+          AppLocalizations.of(context).receiptTitle,
           style: AmaraTextStyles.labelLarge.copyWith(
             fontWeight: FontWeight.w700,
             color: AmaraColors.textPrimary,
@@ -120,7 +122,7 @@ class ReceiptScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Livraison de cuisine africaine',
+                      AppLocalizations.of(context).receiptBrandSubtitle,
                       style: AmaraTextStyles.caption
                           .copyWith(color: AmaraColors.muted),
                     ),
@@ -131,7 +133,7 @@ class ReceiptScreen extends StatelessWidget {
 
                     // Titre
                     Text(
-                      'REÇU DE COMMANDE',
+                      AppLocalizations.of(context).receiptOrderTitle,
                       style: AmaraTextStyles.labelLarge.copyWith(
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1,
@@ -147,13 +149,13 @@ class ReceiptScreen extends StatelessWidget {
                     const SizedBox(height: 24),
 
                     // Infos
-                    _buildInfoRow('Date', _dateStr),
-                    _buildInfoRow('Restaurant', _restaurantName),
+                    _buildInfoRow(AppLocalizations.of(context).receiptDate, _dateStr),
+                    _buildInfoRow(AppLocalizations.of(context).receiptRestaurant, _restaurantName),
                     _buildInfoRow(
-                        'Mode', _isPickup ? 'À emporter' : 'Livraison'),
+                        AppLocalizations.of(context).receiptMode, _isPickup ? AppLocalizations.of(context).receiptModeTakeaway : AppLocalizations.of(context).receiptModeDelivery),
                     if (!_isPickup && _address.isNotEmpty)
-                      _buildInfoRow('Adresse', _address),
-                    _buildInfoRow('Paiement', _paymentLabel),
+                      _buildInfoRow(AppLocalizations.of(context).receiptAddress, _address),
+                    _buildInfoRow(AppLocalizations.of(context).receiptPayment, _paymentLabel(context)),
 
                     const SizedBox(height: 20),
                     const Divider(color: AmaraColors.divider),
@@ -164,18 +166,18 @@ class ReceiptScreen extends StatelessWidget {
                       children: [
                         SizedBox(
                           width: 36,
-                          child: Text('Qté',
+                          child: Text(AppLocalizations.of(context).receiptQty,
                               style: AmaraTextStyles.caption.copyWith(
                                   fontWeight: FontWeight.w700,
                                   color: AmaraColors.textPrimary)),
                         ),
                         Expanded(
-                          child: Text('Article',
+                          child: Text(AppLocalizations.of(context).receiptArticle,
                               style: AmaraTextStyles.caption.copyWith(
                                   fontWeight: FontWeight.w700,
                                   color: AmaraColors.textPrimary)),
                         ),
-                        Text('Prix',
+                        Text(AppLocalizations.of(context).receiptPrice,
                             style: AmaraTextStyles.caption.copyWith(
                                 fontWeight: FontWeight.w700,
                                 color: AmaraColors.textPrimary)),
@@ -227,13 +229,13 @@ class ReceiptScreen extends StatelessWidget {
                     const SizedBox(height: 12),
 
                     // Sous-total
-                    _buildTotalRow('Sous-total',
+                    _buildTotalRow(AppLocalizations.of(context).receiptSubtotal,
                         '${_subtotal.toStringAsFixed(0)} F'),
                     const SizedBox(height: 6),
                     _buildTotalRow(
-                      'Frais de livraison',
+                      AppLocalizations.of(context).receiptDeliveryFee,
                       _isPickup
-                          ? 'Gratuit'
+                          ? AppLocalizations.of(context).receiptFree
                           : '${_deliveryFee.toStringAsFixed(0)} F',
                     ),
                     const SizedBox(height: 12),
@@ -245,7 +247,7 @@ class ReceiptScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          'TOTAL',
+                          AppLocalizations.of(context).receiptTotal,
                           style: AmaraTextStyles.labelLarge.copyWith(
                             fontWeight: FontWeight.w800,
                           ),
@@ -266,7 +268,7 @@ class ReceiptScreen extends StatelessWidget {
 
                     // Footer
                     Text(
-                      'Merci pour votre commande !',
+                      AppLocalizations.of(context).receiptThankYou,
                       style: AmaraTextStyles.labelMedium.copyWith(
                         fontWeight: FontWeight.w700,
                         color: AmaraColors.primary,
@@ -274,7 +276,7 @@ class ReceiptScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Amara — La saveur de l\'Afrique livrée chez vous',
+                      AppLocalizations.of(context).receiptFooter,
                       style: AmaraTextStyles.caption
                           .copyWith(color: AmaraColors.muted, fontSize: 10),
                     ),
@@ -299,7 +301,7 @@ class ReceiptScreen extends StatelessWidget {
                 onPressed: () => _downloadPdf(context),
                 icon: const Icon(Icons.download_rounded, size: 20),
                 label: Text(
-                  'Télécharger le reçu',
+                  AppLocalizations.of(context).receiptDownload,
                   style: AmaraTextStyles.labelLarge.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -336,7 +338,7 @@ class ReceiptScreen extends StatelessWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Erreur lors de la génération du reçu'),
+            content: Text(AppLocalizations.of(context).receiptGenerationError),
             backgroundColor: AmaraColors.error,
           ),
         );

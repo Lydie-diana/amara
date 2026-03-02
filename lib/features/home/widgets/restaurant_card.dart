@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
+import '../../../app/core/l10n/app_localizations.dart';
 import '../../../app/models/restaurant_model.dart';
 import '../../../app/providers/favorites_provider.dart';
 import '../../../app/router/app_routes.dart';
@@ -25,6 +26,7 @@ class RestaurantCard extends StatelessWidget {
   }
 
   Widget _buildFull(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final isFree = restaurant.deliveryFee.toLowerCase().contains('gratuit');
 
     return GestureDetector(
@@ -98,7 +100,7 @@ class RestaurantCard extends StatelessWidget {
                                   color: Colors.white, shape: BoxShape.circle),
                             ),
                             const SizedBox(width: 4),
-                            Text(restaurant.isOpen ? 'Ouvert' : 'Fermé',
+                            Text(restaurant.isOpen ? l10n.restaurantOpen : l10n.restaurantClosed,
                                 style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 10,
@@ -117,7 +119,7 @@ class RestaurantCard extends StatelessWidget {
                             color: AmaraColors.primary,
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Text('⭐ Populaire',
+                          child: Text(l10n.restaurantFeatured,
                               style: AmaraTextStyles.caption.copyWith(
                                   color: Colors.white, fontWeight: FontWeight.w700)),
                         ),
@@ -216,7 +218,7 @@ class RestaurantCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 5),
-                        Text(_formatCustomers(restaurant.totalCustomers),
+                        Text(_formatCustomers(restaurant.totalCustomers, l10n),
                             style: AmaraTextStyles.caption.copyWith(
                                 color: AmaraColors.muted, fontSize: 10)),
                       ],
@@ -241,7 +243,7 @@ class RestaurantCard extends StatelessWidget {
                         const SizedBox(width: 8),
                         _InfoPill(
                           icon: Icons.shopping_bag_outlined,
-                          label: 'Min ${restaurant.minOrder.toStringAsFixed(0)} F',
+                          label: l10n.restaurantCardMin(restaurant.minOrder.toStringAsFixed(0)),
                           color: AmaraColors.muted,
                         ),
                       ],
@@ -419,8 +421,10 @@ class _InfoPill extends StatelessWidget {
   }
 }
 
-String _formatCustomers(int count) {
+String _formatCustomers(int count, AppLocalizations l10n) {
   if (count <= 0) return '';
-  if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}k clients';
-  return '$count clients';
+  final formatted = count >= 1000
+      ? '${(count / 1000).toStringAsFixed(1)}k'
+      : '$count';
+  return l10n.restaurantCardCustomers(formatted);
 }

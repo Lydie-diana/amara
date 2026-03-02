@@ -2,9 +2,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/core/widgets/error_dialog.dart';
 import '../../app/providers/auth_provider.dart';
 
@@ -43,12 +45,13 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
 
   Future<void> _pickBirthDate() async {
     if (!_isEditing) return;
+    final locale = Localizations.localeOf(context);
     final picked = await showDatePicker(
       context: context,
       initialDate: _birthDate ?? DateTime(2000, 1, 1),
       firstDate: DateTime(1930),
       lastDate: DateTime.now(),
-      locale: const Locale('fr', 'FR'),
+      locale: locale,
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
@@ -69,28 +72,15 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
   }
 
   String _formatDate(DateTime? date) {
-    if (date == null) return 'Non renseignée';
-    final months = [
-      '',
-      'janvier',
-      'février',
-      'mars',
-      'avril',
-      'mai',
-      'juin',
-      'juillet',
-      'août',
-      'septembre',
-      'octobre',
-      'novembre',
-      'décembre',
-    ];
-    return '${date.day} ${months[date.month]} ${date.year}';
+    if (date == null) return AppLocalizations.of(context).personalInfoBirthDateEmpty;
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.yMMMMd(locale).format(date);
   }
 
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(authProvider).user;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: AmaraColors.bg,
@@ -103,7 +93,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
-          'Informations personnelles',
+          l10n.personalInfoTitle,
           style: AmaraTextStyles.h3.copyWith(fontWeight: FontWeight.w700),
         ),
         centerTitle: true,
@@ -120,7 +110,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                 if (!mounted) return;
                 setState(() => _isSaving = false);
                 if (error != null) {
-                  showErrorDialog(context, error, title: 'Mise à jour échouée');
+                  showErrorDialog(context, error, title: l10n.personalInfoUpdateFailed);
                   return;
                 }
                 // Sync controllers avec les valeurs retournées par le serveur
@@ -131,7 +121,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
 
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Profil mis à jour',
+                    content: Text(l10n.personalInfoUpdated,
                         style: AmaraTextStyles.bodyMedium
                             .copyWith(color: Colors.white)),
                     backgroundColor: AmaraColors.success,
@@ -153,7 +143,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                     ),
                   )
                 : Text(
-                    _isEditing ? 'Enregistrer' : 'Modifier',
+                    _isEditing ? l10n.personalInfoSave : l10n.personalInfoEdit,
                     style: AmaraTextStyles.labelMedium.copyWith(
                       color: AmaraColors.primary,
                       fontWeight: FontWeight.w700,
@@ -171,20 +161,20 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
             const SizedBox(height: 32),
 
             _buildField(
-              label: 'Nom complet',
+              label: l10n.personalInfoFullName,
               icon: Icons.person_outline_rounded,
               controller: _nameController,
             ),
             const SizedBox(height: 20),
             _buildField(
-              label: 'Email',
+              label: l10n.personalInfoEmail,
               icon: Icons.email_outlined,
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 20),
             _buildField(
-              label: 'Téléphone',
+              label: l10n.personalInfoPhone,
               icon: Icons.phone_outlined,
               controller: _phoneController,
               keyboardType: TextInputType.phone,
@@ -195,7 +185,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
             GestureDetector(
               onTap: _pickBirthDate,
               child: _buildTapField(
-                label: 'Date de naissance',
+                label: l10n.personalInfoBirthDate,
                 value: _formatDate(_birthDate),
                 icon: Icons.cake_outlined,
                 showAction: _isEditing,
@@ -203,7 +193,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
             ),
             const SizedBox(height: 20),
             _buildTapField(
-              label: 'Membre depuis',
+              label: l10n.personalInfoMemberSince,
               value: _memberSince(user?.createdAt),
               icon: Icons.calendar_today_outlined,
               showAction: false,
@@ -323,6 +313,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
     required IconData icon,
     required bool showAction,
   }) {
+    final emptyText = AppLocalizations.of(context).personalInfoBirthDateEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -360,7 +351,7 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
                   value,
                   style: AmaraTextStyles.bodyLarge.copyWith(
                     fontWeight: FontWeight.w500,
-                    color: value == 'Non renseignée'
+                    color: value == emptyText
                         ? AmaraColors.muted
                         : AmaraColors.textSecondary,
                   ),
@@ -377,13 +368,10 @@ class _PersonalInfoScreenState extends ConsumerState<PersonalInfoScreen> {
   }
 
   String _memberSince(int? createdAt) {
-    if (createdAt == null) return 'Membre Amara';
+    if (createdAt == null) return AppLocalizations.of(context).personalInfoMemberAmara;
     final date = DateTime.fromMillisecondsSinceEpoch(createdAt);
-    final months = [
-      '', 'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
-      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
-    ];
-    return '${months[date.month]} ${date.year}';
+    final locale = Localizations.localeOf(context).toString();
+    return DateFormat.yMMMM(locale).format(date);
   }
 
   String _getInitials(String name) {

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pinput/pinput.dart';
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
+import '../../../app/core/l10n/app_localizations.dart';
 import '../../../app/core/widgets/error_dialog.dart';
 import '../../../app/providers/auth_provider.dart';
 import '../../../app/router/app_routes.dart';
@@ -81,7 +82,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
         setState(() {
           _isLoading = false;
           _hasError = true;
-          _errorMessage = authState.error ?? 'Code incorrect, réessayez';
+          _errorMessage = authState.error ?? AppLocalizations.of(context).authOtpIncorrect;
         });
         _pinController.clear();
         _focusNode.requestFocus();
@@ -91,7 +92,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       setState(() {
         _isLoading = false;
         _hasError = true;
-        _errorMessage = 'Une erreur est survenue. Vérifiez votre connexion et réessayez.';
+        _errorMessage = AppLocalizations.of(context).authOtpNetworkError;
       });
       _pinController.clear();
       _focusNode.requestFocus();
@@ -106,7 +107,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       _startTimer();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Code renvoyé à ${widget.email}',
+          content: Text(AppLocalizations.of(context).authCodeResent(widget.email),
               style: AmaraTextStyles.bodyMedium),
           backgroundColor: AmaraColors.success,
           behavior: SnackBarBehavior.floating,
@@ -117,7 +118,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-      showErrorDialog(context, e, title: 'Envoi échoué');
+      showErrorDialog(context, e, title: AppLocalizations.of(context).authSendFailed);
     }
   }
 
@@ -191,7 +192,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
                 // Header
                 Text(
-                  'Vérification',
+                  AppLocalizations.of(context).authVerification,
                   style: AmaraTextStyles.display2,
                 )
                     .animate()
@@ -200,22 +201,11 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
                 const SizedBox(height: 12),
 
-                RichText(
-                  text: TextSpan(
-                    style: AmaraTextStyles.bodyMedium.copyWith(
-                      color: AmaraColors.muted,
-                      height: 1.5,
-                    ),
-                    children: [
-                      const TextSpan(text: 'Code envoyé à\n'),
-                      TextSpan(
-                        text: widget.email,
-                        style: AmaraTextStyles.bodyLarge.copyWith(
-                          color: AmaraColors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
+                Text(
+                  AppLocalizations.of(context).authOtpSubtitleEmail(widget.email),
+                  style: AmaraTextStyles.bodyMedium.copyWith(
+                    color: AmaraColors.muted,
+                    height: 1.5,
                   ),
                 )
                     .animate()
@@ -237,7 +227,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                     errorPinTheme: errorPinTheme,
                     forceErrorState: _hasError,
                     errorText: _hasError
-                        ? (_errorMessage ?? 'Code incorrect, réessayez')
+                        ? (_errorMessage ?? AppLocalizations.of(context).authOtpIncorrect)
                         : null,
                     errorTextStyle: AmaraTextStyles.bodySmall.copyWith(
                       color: AmaraColors.error,
@@ -267,7 +257,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                           text: TextSpan(
                             style: AmaraTextStyles.bodySmall,
                             children: [
-                              const TextSpan(text: 'Renvoyer dans '),
+                              TextSpan(text: AppLocalizations.of(context).authResendIn),
                               TextSpan(
                                 text: '${_resendTimer}s',
                                 style: AmaraTextStyles.labelSmall.copyWith(
@@ -280,7 +270,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                       : TextButton(
                           onPressed: _resend,
                           child: Text(
-                            'Renvoyer le code',
+                            AppLocalizations.of(context).authResendCode,
                             style: AmaraTextStyles.labelMedium.copyWith(
                               color: AmaraColors.primary,
                             ),
@@ -307,7 +297,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : Text('Vérifier', style: AmaraTextStyles.button),
+                        : Text(AppLocalizations.of(context).authVerify, style: AmaraTextStyles.button),
                   ),
                 ).animate().fadeIn(delay: 700.ms, duration: 400.ms),
 

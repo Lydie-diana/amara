@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
+import '../../../app/core/l10n/app_localizations.dart';
 import '../../../app/providers/auth_provider.dart';
 import '../../../app/router/app_routes.dart';
 
@@ -30,7 +31,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   Future<void> _submit() async {
     final email = _emailCtrl.text.trim();
     if (email.isEmpty || !email.contains('@')) {
-      setState(() => _errorMsg = 'Veuillez entrer un email valide');
+      setState(() => _errorMsg = AppLocalizations.of(context).authEmailInvalid);
       return;
     }
 
@@ -91,7 +92,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
               // Header
               Text(
-                'Mot de passe oublié',
+                AppLocalizations.of(context).authForgotPasswordTitle,
                 style: AmaraTextStyles.display2.copyWith(
                   color: AmaraColors.textPrimary,
                 ),
@@ -103,7 +104,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               const SizedBox(height: 12),
 
               Text(
-                'Entrez votre adresse email pour recevoir un code de réinitialisation.',
+                AppLocalizations.of(context).authForgotPasswordDesc,
                 style: AmaraTextStyles.bodyMedium.copyWith(
                   color: AmaraColors.textSecondary,
                   height: 1.5,
@@ -203,7 +204,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           child: CircularProgressIndicator(
                               strokeWidth: 2.5, color: Colors.white),
                         )
-                      : Text('Envoyer le code',
+                      : Text(AppLocalizations.of(context).authSendCode,
                           style: AmaraTextStyles.labelLarge
                               .copyWith(color: Colors.white)),
                 ),

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/providers/cart_provider.dart';
 import '../../app/router/app_routes.dart';
 import '../home/home_screen.dart';
@@ -78,6 +79,8 @@ class _BottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -92,7 +95,7 @@ class _BottomNav extends StatelessWidget {
               _NavItem(
                 icon: Icons.home_rounded,
                 iconOutlined: Icons.home_outlined,
-                label: 'Accueil',
+                label: l10n.navHome,
                 index: 0,
                 currentIndex: currentIndex,
                 onTap: onTap,
@@ -100,7 +103,7 @@ class _BottomNav extends StatelessWidget {
               _NavItem(
                 icon: Icons.search_rounded,
                 iconOutlined: Icons.search_outlined,
-                label: 'Explorer',
+                label: l10n.navExplore,
                 index: 1,
                 currentIndex: currentIndex,
                 onTap: onTap,
@@ -117,7 +120,7 @@ class _BottomNav extends StatelessWidget {
               _NavItem(
                 icon: Icons.receipt_long_rounded,
                 iconOutlined: Icons.receipt_long_outlined,
-                label: 'Commandes',
+                label: l10n.navOrders,
                 index: 2,
                 currentIndex: currentIndex,
                 onTap: onTap,
@@ -126,7 +129,7 @@ class _BottomNav extends StatelessWidget {
               _NavItem(
                 icon: Icons.person_rounded,
                 iconOutlined: Icons.person_outline_rounded,
-                label: 'Profil',
+                label: l10n.navProfile,
                 index: 3,
                 currentIndex: currentIndex,
                 onTap: onTap,

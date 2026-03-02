@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
+import '../../app/core/l10n/app_localizations.dart';
 import '../../app/models/cart_model.dart';
 import '../../app/providers/cart_provider.dart';
 import '../../app/router/app_routes.dart';
@@ -145,7 +146,7 @@ class _CartPickerSheet extends StatelessWidget {
                     color: AmaraColors.primary, size: 22),
                 const SizedBox(width: 10),
                 Text(
-                  'Mon panier',
+                  AppLocalizations.of(context).cartMyCart,
                   style: AmaraTextStyles.h2
                       .copyWith(fontWeight: FontWeight.w800),
                 ),
@@ -158,7 +159,7 @@ class _CartPickerSheet extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    '${groups.length} restaurant${groups.length > 1 ? 's' : ''}',
+                    AppLocalizations.of(context).cartRestaurantCount(groups.length),
                     style: AmaraTextStyles.labelSmall.copyWith(
                       color: AmaraColors.primary,
                       fontWeight: FontWeight.w700,
@@ -253,7 +254,7 @@ class _RestaurantCartTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${group.totalItems} article${group.totalItems > 1 ? 's' : ''} · ${group.subtotal.toStringAsFixed(0)} F',
+                    '${AppLocalizations.of(context).cartItemCount(group.totalItems)} · ${group.subtotal.toStringAsFixed(0)} F',
                     style: AmaraTextStyles.labelSmall.copyWith(
                       color: AmaraColors.textSecondary,
                       fontWeight: FontWeight.w600,

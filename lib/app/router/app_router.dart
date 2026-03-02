@@ -25,6 +25,7 @@ import '../../features/profile/my_addresses_screen.dart';
 import '../../features/profile/help_faq_screen.dart';
 import '../../features/notifications/notifications_screen.dart';
 import '../../features/legal/legal_screen.dart';
+import '../../features/profile/language_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -212,6 +213,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => _buildSlideUpPage(
           state: state,
           child: const NotificationsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.language,
+        pageBuilder: (context, state) => _buildSlideUpPage(
+          state: state,
+          child: const LanguageScreen(),
         ),
       ),
       GoRoute(

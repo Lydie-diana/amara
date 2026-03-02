@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
+import '../../../app/core/l10n/app_localizations.dart';
 import '../../../app/providers/categories_provider.dart';
 
 class CategoryList extends ConsumerWidget {
@@ -12,6 +13,7 @@ class CategoryList extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final categoriesAsync = ref.watch(categoriesProvider);
     final selectedCat = ref.watch(selectedCategoryProvider);
+    final l10n = AppLocalizations.of(context);
 
     return categoriesAsync.when(
       loading: () => const SizedBox(height: 100),
@@ -73,7 +75,7 @@ class CategoryList extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        cat.label,
+                        _localizedLabel(cat.label, l10n),
                         style: AmaraTextStyles.caption.copyWith(
                           color: isSelected
                               ? AmaraColors.primary
@@ -97,3 +99,27 @@ class CategoryList extends ConsumerWidget {
     );
   }
 }
+
+/// Mapping des labels backend (français) vers les clés l10n.
+String _localizedLabel(String label, AppLocalizations l10n) {
+  return _categoryTranslations[label]?.call(l10n) ?? label;
+}
+
+final Map<String, String Function(AppLocalizations)> _categoryTranslations = {
+  'Tout': (l10n) => l10n.categoryAll,
+  'Poulet': (l10n) => l10n.categoryChicken,
+  'Poisson': (l10n) => l10n.categoryFish,
+  'Grillades': (l10n) => l10n.categoryGrill,
+  'Riz': (l10n) => l10n.categoryRice,
+  'Végétarien': (l10n) => l10n.categoryVegetarian,
+  'Pâtes': (l10n) => l10n.categoryPasta,
+  'Burgers': (l10n) => l10n.categoryBurger,
+  'Épicé': (l10n) => l10n.categorySpicy,
+  'Plats locaux': (l10n) => l10n.categoryLocal,
+  'Desserts': (l10n) => l10n.categoryDessert,
+  'Boissons': (l10n) => l10n.categoryDrink,
+  'Africain': (l10n) => l10n.categoryAfrican,
+  'Ragoût': (l10n) => l10n.categoryStew,
+  'Salade': (l10n) => l10n.categorySalad,
+  'Pizza': (l10n) => l10n.categoryPizza,
+};

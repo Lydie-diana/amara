@@ -2,13 +2,15 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_text_styles.dart';
+import '../l10n/app_localizations.dart';
 
 /// Affiche un popup d'erreur user-friendly.
 ///
 /// Traduit les erreurs techniques (DioException, etc.) en messages
 /// compréhensibles par l'utilisateur.
 void showErrorDialog(BuildContext context, dynamic error, {String? title}) {
-  final message = _userFriendlyMessage(error);
+  final l10n = AppLocalizations.of(context);
+  final message = _userFriendlyMessage(error, l10n);
 
   showDialog(
     context: context,
@@ -37,7 +39,7 @@ void showErrorDialog(BuildContext context, dynamic error, {String? title}) {
 
             // Titre
             Text(
-              title ?? 'Oups !',
+              title ?? l10n.errorDialogDefaultTitle,
               style: AmaraTextStyles.h3.copyWith(
                 color: AmaraColors.textPrimary,
                 fontWeight: FontWeight.w700,
@@ -72,7 +74,7 @@ void showErrorDialog(BuildContext context, dynamic error, {String? title}) {
                   elevation: 0,
                 ),
                 child: Text(
-                  'Compris',
+                  l10n.errorDialogDismiss,
                   style: AmaraTextStyles.button.copyWith(
                     color: AmaraColors.white,
                   ),
@@ -87,39 +89,25 @@ void showErrorDialog(BuildContext context, dynamic error, {String? title}) {
 }
 
 /// Convertit une erreur technique en message lisible.
-String _userFriendlyMessage(dynamic error) {
+String _userFriendlyMessage(dynamic error, AppLocalizations l10n) {
   final raw = _extractRawMessage(error);
 
   // Mapping des erreurs backend connues → messages user-friendly
   final mappings = <String, String>{
-    'Adresse de livraison requise':
-        'Veuillez renseigner votre adresse de livraison avant de commander.',
-    'deliveryAddress':
-        'Veuillez renseigner votre adresse de livraison avant de commander.',
-    'Restaurant introuvable':
-        'Ce restaurant n\'est plus disponible. Veuillez réessayer.',
-    'restaurant not found':
-        'Ce restaurant n\'est plus disponible. Veuillez réessayer.',
-    'Non authentifié':
-        'Votre session a expiré. Veuillez vous reconnecter.',
-    'non authentifié':
-        'Votre session a expiré. Veuillez vous reconnecter.',
-    'Unauthorized':
-        'Votre session a expiré. Veuillez vous reconnecter.',
-    'Token invalide':
-        'Votre session a expiré. Veuillez vous reconnecter.',
-    'déjà noté':
-        'Vous avez déjà donné votre avis sur cette commande.',
-    'already reviewed':
-        'Vous avez déjà donné votre avis sur cette commande.',
-    'Transition invalide':
-        'Cette action n\'est plus disponible. Rafraîchissez la page.',
-    'Invalid state transition':
-        'Cette action n\'est plus disponible. Rafraîchissez la page.',
-    'panier vide':
-        'Votre panier est vide. Ajoutez des articles avant de commander.',
-    'Commande introuvable':
-        'Cette commande est introuvable. Elle a peut-être été supprimée.',
+    'Adresse de livraison requise': l10n.errorDialogDeliveryAddress,
+    'deliveryAddress': l10n.errorDialogDeliveryAddress,
+    'Restaurant introuvable': l10n.errorDialogRestaurantNotFound,
+    'restaurant not found': l10n.errorDialogRestaurantNotFound,
+    'Non authentifié': l10n.errorDialogSessionExpired,
+    'non authentifié': l10n.errorDialogSessionExpired,
+    'Unauthorized': l10n.errorDialogSessionExpired,
+    'Token invalide': l10n.errorDialogSessionExpired,
+    'déjà noté': l10n.errorDialogAlreadyReviewed,
+    'already reviewed': l10n.errorDialogAlreadyReviewed,
+    'Transition invalide': l10n.errorDialogInvalidTransition,
+    'Invalid state transition': l10n.errorDialogInvalidTransition,
+    'panier vide': l10n.errorDialogEmptyCart,
+    'Commande introuvable': l10n.errorDialogOrderNotFound,
   };
 
   // Chercher un match partiel dans les clés
@@ -131,14 +119,12 @@ String _userFriendlyMessage(dynamic error) {
 
   // Erreurs réseau génériques
   if (_isNetworkError(error)) {
-    return 'Impossible de se connecter au serveur. '
-        'Vérifiez votre connexion internet et réessayez.';
+    return l10n.errorDialogNetwork;
   }
 
   // Timeout
   if (_isTimeoutError(error)) {
-    return 'La connexion a pris trop de temps. '
-        'Vérifiez votre connexion internet et réessayez.';
+    return l10n.errorDialogTimeout;
   }
 
   // Fallback : si le message backend est déjà propre (pas de stacktrace, etc.)
@@ -147,7 +133,7 @@ String _userFriendlyMessage(dynamic error) {
   }
 
   // Dernier recours
-  return 'Une erreur est survenue. Veuillez réessayer.';
+  return l10n.errorDialogFallback;
 }
 
 String _extractRawMessage(dynamic error) {
