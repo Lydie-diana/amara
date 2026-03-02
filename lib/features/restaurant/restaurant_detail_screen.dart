@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../app/core/constants/app_colors.dart';
 
@@ -251,28 +252,78 @@ class _RestaurantSliverAppBar extends StatelessWidget {
 
   void _share(BuildContext context) {
     HapticFeedback.lightImpact();
-    // TODO: intégrer share_plus pour partage natif
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Partager "${restaurant.name}" — bientôt disponible'),
-        backgroundColor: AmaraColors.dark,
-        behavior: SnackBarBehavior.floating,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    final text = '${restaurant.name} — ${restaurant.cuisine}\n'
+        'Découvre ce restaurant sur Amara !';
+    SharePlus.instance.share(ShareParams(text: text));
   }
 
   @override
   Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
     return SliverAppBar(
       expandedHeight: 200,
       pinned: true,
       backgroundColor: AmaraColors.bg,
       surfaceTintColor: Colors.transparent,
       automaticallyImplyLeading: false,
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 8),
+        child: Center(
+          child: GestureDetector(
+            onTap: () => context.pop(),
+            child: Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.35),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.arrow_back_ios_rounded,
+                  color: Colors.white, size: 16),
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        GestureDetector(
+          onTap: () => _share(context),
+          child: Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.share_rounded,
+                color: Colors.white, size: 16),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Consumer(
+          builder: (context, ref, _) {
+            final isFav = ref.watch(isFavoriteProvider(restaurant.id));
+            return GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                ref.read(favoritesProvider.notifier).toggleFavorite(restaurant.id);
+              },
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  color: isFav ? AmaraColors.primary : AmaraColors.textPrimary,
+                  size: 16,
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(width: 16),
+      ],
       flexibleSpace: FlexibleSpaceBar(
         collapseMode: CollapseMode.pin,
         background: Stack(
@@ -312,71 +363,6 @@ class _RestaurantSliverAppBar extends StatelessWidget {
                     ],
                   ),
                 ),
-              ),
-            ),
-            // Boutons en haut (back + actions)
-            Positioned(
-              top: topPadding + 8,
-              left: 16,
-              right: 16,
-              child: Row(
-                children: [
-                  // Retour
-                  GestureDetector(
-                    onTap: () => context.pop(),
-                    child: Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.35),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.arrow_back_ios_rounded,
-                          color: Colors.white, size: 16),
-                    ),
-                  ),
-                  const Spacer(),
-                  // Partage
-                  GestureDetector(
-                    onTap: () => _share(context),
-                    child: Container(
-                      width: 38,
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.35),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.share_rounded,
-                          color: Colors.white, size: 16),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  // Favoris
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final isFav = ref.watch(isFavoriteProvider(restaurant.id));
-                      return GestureDetector(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          ref.read(favoritesProvider.notifier).toggleFavorite(restaurant.id);
-                        },
-                        child: Container(
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                            color: isFav ? AmaraColors.primary : AmaraColors.textPrimary,
-                            size: 16,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ],
               ),
             ),
           ],

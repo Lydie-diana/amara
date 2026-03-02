@@ -104,6 +104,7 @@ class _MenuItemTile extends ConsumerWidget {
         _openDetail(context);
       },
       child: Container(
+        height: 140,
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
         decoration: BoxDecoration(
           color: AmaraColors.bgCard,
@@ -115,8 +116,7 @@ class _MenuItemTile extends ConsumerWidget {
             width: inCart ? 1.5 : 1,
           ),
         ),
-        child: IntrinsicHeight(
-          child: Row(
+        child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
             // ── Infos (gauche) ────────────────────────────────────────
@@ -125,7 +125,7 @@ class _MenuItemTile extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(13, 12, 8, 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: MainAxisSize.max,
                   children: [
                     // Nom + badges
                     Row(
@@ -151,7 +151,7 @@ class _MenuItemTile extends ConsumerWidget {
                           ]),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
 
                     // Description (2 lignes)
                     if (item.description.isNotEmpty)
@@ -159,76 +159,13 @@ class _MenuItemTile extends ConsumerWidget {
                         item.description,
                         style: AmaraTextStyles.caption.copyWith(
                           color: AmaraColors.textSecondary,
-                          height: 1.35,
+                          height: 1.3,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
 
-                    const SizedBox(height: 6),
-
-                    // % like + nb clients
-                    if (item.hasStats)
-                      Row(
-                        children: [
-                          if (item.likePercent > 0)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE74C3C).withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(6),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(Icons.thumb_up_rounded,
-                                      size: 10, color: Color(0xFFE74C3C)),
-                                  const SizedBox(width: 2),
-                                  Text(
-                                    '${item.likePercent}%',
-                                    style: AmaraTextStyles.caption.copyWith(
-                                        color: const Color(0xFFE74C3C),
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 9),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          if (item.likePercent > 0 && item.orderCount > 0)
-                            const SizedBox(width: 6),
-                          if (item.orderCount > 0) ...[
-                            const Icon(Icons.people_alt_rounded,
-                                size: 10, color: AmaraColors.textSecondary),
-                            const SizedBox(width: 2),
-                            Text(
-                              '${item.formattedOrderCount} clients',
-                              style: AmaraTextStyles.caption.copyWith(
-                                  color: AmaraColors.textSecondary,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 9),
-                            ),
-                          ],
-                        ],
-                      ),
-
-                    if (hasOptions) ...[
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(Icons.tune_rounded,
-                              size: 10, color: AmaraColors.primary),
-                          const SizedBox(width: 2),
-                          Text('Options',
-                              style: AmaraTextStyles.caption.copyWith(
-                                color: AmaraColors.primary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 10,
-                              )),
-                        ],
-                      ),
-                    ],
-
-                    const SizedBox(height: 10),
+                    const Spacer(),
 
                     // Prix + contrôle quantité
                     Row(
@@ -334,7 +271,6 @@ class _MenuItemTile extends ConsumerWidget {
               ),
             ),
           ],
-        ),
         ),
       ),
     );

@@ -472,6 +472,16 @@ class _FilterChips extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           physics: const BouncingScrollPhysics(),
           children: [
+            if (hasFilters) ...[
+              _Chip(
+                icon: Icons.close_rounded,
+                label: 'Reset',
+                isActive: false,
+                isReset: true,
+                onTap: onResetFilters,
+              ),
+              const SizedBox(width: 6),
+            ],
             _Chip(
               icon: Icons.swap_vert_rounded,
               label: sort.label,
@@ -502,16 +512,6 @@ class _FilterChips extends StatelessWidget {
               isActive: sort == _SortOption.rating,
               onTap: onBestRatedTap,
             ),
-            if (hasFilters) ...[
-              const SizedBox(width: 6),
-              _Chip(
-                icon: Icons.close_rounded,
-                label: 'Reset',
-                isActive: false,
-                isReset: true,
-                onTap: onResetFilters,
-              ),
-            ],
           ],
         ),
       ),
