@@ -254,15 +254,121 @@ class _MetricsBlock extends StatelessWidget {
             onDark: true,
           ),
           _MetricDivider(onDark: true),
-          // Temps livraison
-          _Metric(
+          // Temps livraison (tappable → popup)
+          _TappableMetric(
             value: restaurant.deliveryTime,
             label: 'Livraison',
             icon: Icons.access_time_rounded,
             iconColor: Colors.white,
             onDark: true,
+            onTap: () => _showDeliveryTimePopup(context, restaurant.deliveryTime),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showDeliveryTimePopup(BuildContext context, String deliveryTime) {
+    HapticFeedback.lightImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom +
+              MediaQuery.of(context).padding.bottom + 16,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Poignée
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AmaraColors.divider,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Titre
+            Text(
+              'Au plus tôt',
+              style: AmaraTextStyles.h2.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Illustration
+            Container(
+              width: 180,
+              height: 180,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF8E1),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: const Center(
+                child: Text('🕐🥗', style: TextStyle(fontSize: 64)),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Texte explicatif
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                'Remplissez votre panier pour obtenir une estimation '
+                'plus précise en fonction des articles sélectionnés, des '
+                'conditions en temps réel et des options de livraison '
+                'lors du paiement. Cette estimation correspond à '
+                "l'heure d'arrivée au plus tôt, avant la sélection "
+                "d'articles.",
+                textAlign: TextAlign.center,
+                style: AmaraTextStyles.bodySmall.copyWith(
+                  color: AmaraColors.textSecondary,
+                  height: 1.55,
+                ),
+              ),
+            ),
+            const SizedBox(height: 28),
+
+            // Bouton OK
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: SizedBox(
+                width: double.infinity,
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      color: AmaraColors.textPrimary,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'OK',
+                        style: AmaraTextStyles.labelMedium.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -307,6 +413,57 @@ class _Metric extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _TappableMetric extends StatelessWidget {
+  final String value;
+  final String label;
+  final IconData icon;
+  final Color iconColor;
+  final bool onDark;
+  final VoidCallback onTap;
+
+  const _TappableMetric({
+    required this.value,
+    required this.label,
+    required this.icon,
+    required this.iconColor,
+    required this.onTap,
+    this.onDark = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: Column(
+          children: [
+            Icon(icon, size: 18, color: iconColor),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: AmaraTextStyles.labelMedium.copyWith(
+                fontWeight: FontWeight.w800,
+                color: onDark ? Colors.white : AmaraColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: AmaraTextStyles.caption.copyWith(
+                color: onDark
+                    ? Colors.white.withValues(alpha: 0.7)
+                    : AmaraColors.muted,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

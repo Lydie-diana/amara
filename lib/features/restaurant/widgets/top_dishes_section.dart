@@ -259,7 +259,7 @@ class _TopDishCard extends ConsumerWidget {
                         if (item.orderCount > 0) ...[
                           const SizedBox(width: 5),
                           Text(
-                            '${item.formattedOrderCount} clients',
+                            '${item.formattedOrderCount} commandes',
                             style: AmaraTextStyles.caption.copyWith(
                               color: AmaraColors.textSecondary,
                               fontWeight: FontWeight.w600,
@@ -276,13 +276,50 @@ class _TopDishCard extends ConsumerWidget {
                   Row(
                     children: [
                       Expanded(
-                        child: Text(
-                          item.formattedPrice,
-                          style: AmaraTextStyles.caption.copyWith(
-                            color: AmaraColors.primary,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
+                        child: item.hasActiveDiscount
+                            ? Row(
+                                children: [
+                                  Text(
+                                    item.formattedPrice,
+                                    style: AmaraTextStyles.caption.copyWith(
+                                      color: AmaraColors.muted,
+                                      decoration: TextDecoration.lineThrough,
+                                      fontSize: 9,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    item.formattedEffectivePrice,
+                                    style: AmaraTextStyles.caption.copyWith(
+                                      color: AmaraColors.primary,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 3),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 1),
+                                    decoration: BoxDecoration(
+                                      color: AmaraColors.primary,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: Text(
+                                      '-${item.discountPercent!.toInt()}%',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 7,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Text(
+                                item.formattedPrice,
+                                style: AmaraTextStyles.caption.copyWith(
+                                  color: AmaraColors.primary,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
                       ),
                       if (inCart)
                         GestureDetector(

@@ -151,6 +151,40 @@ class ConvexClient {
     return Map<String, dynamic>.from(data as Map);
   }
 
+  // ─── MOT DE PASSE OUBLIÉ ─────────────────────────────────────────────────
+
+  /// Demande de réinitialisation de mot de passe
+  Future<Map<String, dynamic>> forgotPassword({required String email}) async {
+    final data = await post('/api/auth/forgot-password', body: {'email': email});
+    return Map<String, dynamic>.from(data as Map);
+  }
+
+  /// Vérification du code de réinitialisation
+  Future<Map<String, dynamic>> verifyResetCode({
+    required String email,
+    required String code,
+  }) async {
+    final data = await post('/api/auth/verify-reset-code', body: {
+      'email': email,
+      'code': code,
+    });
+    return Map<String, dynamic>.from(data as Map);
+  }
+
+  /// Réinitialisation du mot de passe
+  Future<Map<String, dynamic>> resetPassword({
+    required String email,
+    required String code,
+    required String newPassword,
+  }) async {
+    final data = await post('/api/auth/reset-password', body: {
+      'email': email,
+      'code': code,
+      'newPassword': newPassword,
+    });
+    return Map<String, dynamic>.from(data as Map);
+  }
+
   // ─── FAVORIS ─────────────────────────────────────────────────────────────
 
   /// Liste des IDs de restaurants favoris
@@ -224,6 +258,12 @@ class ConvexClient {
     return Map<String, dynamic>.from(data as Map);
   }
 
+  /// Stats d'un restaurant (clients uniques, total commandes)
+  Future<Map<String, dynamic>> getRestaurantStats(String id) async {
+    final data = await get('/api/restaurant/stats', params: {'id': id});
+    return Map<String, dynamic>.from(data as Map);
+  }
+
   // ─── MENU ─────────────────────────────────────────────────────────────────
 
   /// Menu items d'un restaurant
@@ -231,6 +271,23 @@ class ConvexClient {
     final data =
         await get('/api/menu', params: {'restaurantId': restaurantId});
     return List<dynamic>.from(data as List);
+  }
+
+  // ─── RECHERCHE PLATS ────────────────────────────────────────────────────
+
+  /// Recherche de plats par nom → retourne les restaurantIds ayant des plats correspondants
+  Future<List<Map<String, dynamic>>> searchDishes(String query) async {
+    if (query.trim().length < 2) return [];
+    final data = await get('/api/search', params: {'q': query.trim()});
+    return (data as List)
+        .map((e) => Map<String, dynamic>.from(e as Map))
+        .toList();
+  }
+
+  /// IDs des restaurants ayant des plats en promo/réduction
+  Future<List<String>> getPromoRestaurantIds() async {
+    final data = await get('/api/restaurants/promos');
+    return List<String>.from(data as List);
   }
 
   // ─── COMMANDES ────────────────────────────────────────────────────────────

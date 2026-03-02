@@ -144,8 +144,30 @@ List<MenuCategory> _menuFromConvex(List<dynamic> items) {
     byCategory.putIfAbsent(cat, () => []).add(item);
   }
   return byCategory.entries
-      .map((e) => MenuCategory(id: e.key, name: e.key, items: e.value))
+      .map((e) => MenuCategory(id: e.key, name: _translateCategory(e.key), items: e.value))
       .toList();
+}
+
+String _translateCategory(String cat) {
+  const map = {
+    'Dishes': 'Plats',
+    'Drinks': 'Boissons',
+    'Desserts': 'Desserts',
+    'Sides': 'Accompagnements',
+    'Appetizers': 'Entrées',
+    'Specials': 'Spéciaux',
+    'Starters': 'Entrées',
+    'Beverages': 'Boissons',
+    'Main Course': 'Plats principaux',
+    'Main': 'Plats principaux',
+    'Snacks': 'Snacks',
+    'Salads': 'Salades',
+    'Soups': 'Soupes',
+    'Breakfast': 'Petit-déjeuner',
+    'Lunch': 'Déjeuner',
+    'Dinner': 'Dîner',
+  };
+  return map[cat] ?? cat;
 }
 
 String _cuisineEmoji(String cuisine) {
@@ -249,5 +271,31 @@ final restaurantMenuProvider =
     } catch (_) {
       // Ignore les erreurs réseau ponctuelles
     }
+  }
+});
+
+/// Stats restaurant : clients uniques + total commandes
+final restaurantStatsProvider =
+    FutureProvider.family<Map<String, int>, String>((ref, restaurantId) async {
+  final client = ref.read(convexClientProvider);
+  try {
+    final data = await client.getRestaurantStats(restaurantId);
+    return {
+      'uniqueCustomers': (data['uniqueCustomers'] as num?)?.toInt() ?? 0,
+      'totalOrders': (data['totalOrders'] as num?)?.toInt() ?? 0,
+    };
+  } catch (_) {
+    return {'uniqueCustomers': 0, 'totalOrders': 0};
+  }
+});
+
+/// IDs des restaurants ayant des plats en promo/réduction active
+final promoRestaurantIdsProvider = FutureProvider<Set<String>>((ref) async {
+  final client = ref.read(convexClientProvider);
+  try {
+    final ids = await client.getPromoRestaurantIds();
+    return ids.toSet();
+  } catch (_) {
+    return {};
   }
 });

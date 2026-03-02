@@ -139,8 +139,13 @@ class _RestaurantDetailScreenState
       });
     final topItems = allItems.take(5).toList();
 
-    // Total clients = somme des orderCount de tous les plats (dédupliqué par plat)
-    final totalClients = allItems.fold<int>(0, (sum, item) => sum + item.orderCount);
+    // Clients uniques depuis le backend (via stats endpoint)
+    final statsAsync = ref.watch(restaurantStatsProvider(restaurant.id));
+    final totalClients = statsAsync.when(
+      data: (stats) => stats['uniqueCustomers'] ?? 0,
+      loading: () => 0,
+      error: (_, __) => 0,
+    );
 
     return CustomScrollView(
       controller: _scrollController,

@@ -165,6 +165,50 @@ class _MenuItemTile extends ConsumerWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
 
+                    // Stats : % like + nb commandes
+                    if (item.hasStats) ...[
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          if (item.likePercent > 0)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE74C3C).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.thumb_up_rounded,
+                                      size: 9, color: Color(0xFFE74C3C)),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    '${item.likePercent}%',
+                                    style: AmaraTextStyles.caption.copyWith(
+                                      color: const Color(0xFFE74C3C),
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 9,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          if (item.orderCount > 0) ...[
+                            if (item.likePercent > 0) const SizedBox(width: 6),
+                            Text(
+                              '${item.formattedOrderCount} commandes',
+                              style: AmaraTextStyles.caption.copyWith(
+                                color: AmaraColors.textSecondary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 9,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ],
+
                     const Spacer(),
 
                     // Prix + contrôle quantité
