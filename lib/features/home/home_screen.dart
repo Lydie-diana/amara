@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,7 @@ import '../../app/models/restaurant_model.dart';
 import '../../app/providers/categories_provider.dart';
 import '../../app/providers/location_provider.dart';
 import '../../app/providers/restaurant_provider.dart';
+import '../../app/services/convex_client.dart';
 import '../shell/main_shell.dart';
 import 'widgets/home_header.dart';
 import 'widgets/promo_banner.dart';
@@ -27,6 +29,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   int _currentBanner = 0;
   final _searchController = TextEditingController();
   String _homeSearchQuery = '';
+  Timer? _searchDebounce;
+  Set<String> _dishMatchRestaurantIds = {};
 
   @override
   void initState() {
@@ -46,8 +50,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    setState(() => _homeSearchQuery = value);
+    _searchDebounce?.cancel();
+    if (value.trim().length < 2) {
+      setState(() => _dishMatchRestaurantIds = {});
+      return;
+    }
+    _searchDebounce = Timer(const Duration(milliseconds: 400), () async {
+      try {
+        final client = ref.read(convexClientProvider);
+        final results = await client.searchDishes(value);
+        if (mounted && _homeSearchQuery == value) {
+          setState(() {
+            _dishMatchRestaurantIds = results
+                .map((r) => r['restaurantId'] as String)
+                .toSet();
+          });
+        }
+      } catch (_) {}
+    });
   }
 
   @override
@@ -87,7 +114,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Expanded(
                       child: TextField(
                         controller: _searchController,
-                        onChanged: (v) => setState(() => _homeSearchQuery = v),
+                        onChanged: _onSearchChanged,
                         textInputAction: TextInputAction.search,
                         style: AmaraTextStyles.bodyMedium.copyWith(
                           color: AmaraColors.textPrimary,
@@ -110,7 +137,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       GestureDetector(
                         onTap: () {
                           _searchController.clear();
-                          setState(() => _homeSearchQuery = '');
+                          _searchDebounce?.cancel();
+                          setState(() {
+                            _homeSearchQuery = '';
+                            _dishMatchRestaurantIds = {};
+                          });
                         },
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -372,9 +403,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (query.isEmpty) return restaurants;
     final q = query.toLowerCase().trim();
     return restaurants.where((r) {
-      return r.name.toLowerCase().contains(q) ||
+      // Match par nom/cuisine/tags du restaurant
+      if (r.name.toLowerCase().contains(q) ||
           r.cuisine.toLowerCase().contains(q) ||
-          r.tags.any((t) => t.toLowerCase().contains(q));
+          r.tags.any((t) => t.toLowerCase().contains(q))) {
+        return true;
+      }
+      // Match par plats (via recherche API)
+      if (_dishMatchRestaurantIds.contains(r.id)) {
+        return true;
+      }
+      return false;
     }).toList();
   }
 
