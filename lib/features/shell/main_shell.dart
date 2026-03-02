@@ -11,7 +11,6 @@ import '../home/home_screen.dart';
 import '../search/search_screen.dart';
 import '../orders/orders_screen.dart';
 import '../profile/profile_screen.dart';
-
 // Provider global pour l'index du shell (permet navigation cross-tab)
 final shellIndexProvider = StateProvider<int>((ref) => 0);
 

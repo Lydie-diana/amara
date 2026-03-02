@@ -9,8 +9,10 @@ import '../../app/core/constants/app_colors.dart';
 
 import '../../app/core/constants/app_text_styles.dart';
 import '../../app/models/restaurant_model.dart';
+import '../../app/providers/cart_provider.dart';
 import '../../app/providers/favorites_provider.dart';
 import '../../app/providers/restaurant_provider.dart';
+import '../shell/floating_cart_bar.dart';
 import 'widgets/menu_category_section.dart';
 import 'widgets/restaurant_info_header.dart';
 import 'widgets/top_dishes_section.dart';
@@ -46,33 +48,37 @@ class _RestaurantDetailScreenState
 
     return Scaffold(
       backgroundColor: AmaraColors.bg,
-      body: restaurantAsync.when(
-        loading: () => const _LoadingState(),
-        error: (e, _) => _ErrorState(onRetry: () {
-          ref.invalidate(restaurantDetailProvider(widget.restaurantId));
-        }),
-        data: (restaurant) => menuAsync.when(
-          loading: () => _buildContent(
-            context,
-            restaurant: restaurant,
-            categories: [],
-            isMenuLoading: true,
+      body: Stack(
+        children: [
+          restaurantAsync.when(
+            loading: () => const _LoadingState(),
+            error: (e, _) => _ErrorState(onRetry: () {
+              ref.invalidate(restaurantDetailProvider(widget.restaurantId));
+            }),
+            data: (restaurant) => menuAsync.when(
+              loading: () => _buildContent(
+                context,
+                restaurant: restaurant,
+                categories: [],
+                isMenuLoading: true,
+              ),
+              error: (e, st) => _buildContent(
+                context,
+                restaurant: restaurant,
+                categories: [],
+                isMenuLoading: false,
+              ),
+              data: (categories) => _buildContent(
+                context,
+                restaurant: restaurant,
+                categories: categories,
+                isMenuLoading: false,
+              ),
+            ),
           ),
-          error: (e, st) => _buildContent(
-            context,
-            restaurant: restaurant,
-            categories: [],
-            isMenuLoading: false,
-          ),
-          data: (categories) => _buildContent(
-            context,
-            restaurant: restaurant,
-            categories: categories,
-            isMenuLoading: false,
-          ),
-        ),
+          const FloatingCartBar(),
+        ],
       ),
-      bottomNavigationBar: null,
     );
   }
 
