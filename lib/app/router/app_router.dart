@@ -20,6 +20,7 @@ import '../../features/favorites/favorites_screen.dart';
 import '../../features/profile/personal_info_screen.dart';
 import '../../features/profile/my_addresses_screen.dart';
 import '../../features/profile/help_faq_screen.dart';
+import '../../features/notifications/notifications_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -166,6 +167,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) => _buildSlideUpPage(
           state: state,
           child: const HelpFaqScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.notifications,
+        pageBuilder: (context, state) => _buildSlideUpPage(
+          state: state,
+          child: const NotificationsScreen(),
         ),
       ),
 

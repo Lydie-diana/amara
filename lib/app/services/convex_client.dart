@@ -333,6 +333,41 @@ class ConvexClient {
     }
   }
 
+  // ─── NOTIFICATIONS ──────────────────────────────────────────────────────────
+
+  /// Liste des notifications de l'utilisateur
+  Future<List<Map<String, dynamic>>> getNotifications() async {
+    final data = await get('/api/notifications');
+    return (data as List)
+        .map((n) => Map<String, dynamic>.from(n as Map))
+        .toList();
+  }
+
+  /// Nombre de notifications non lues
+  Future<int> getUnreadNotificationCount() async {
+    final data = await get('/api/notifications/unread-count');
+    final result = Map<String, dynamic>.from(data as Map);
+    return (result['count'] as num?)?.toInt() ?? 0;
+  }
+
+  /// Marquer une notification comme lue
+  Future<void> markNotificationRead(String notificationId) async {
+    await post('/api/notifications/read', body: {
+      'notificationId': notificationId,
+    });
+  }
+
+  /// Marquer toutes les notifications comme lues
+  Future<void> markAllNotificationsRead() async {
+    await post('/api/notifications/read-all');
+  }
+
+  /// Supprimer une notification
+  Future<void> deleteNotification(String notificationId) async {
+    await post('/api/notifications/delete', body: {
+      'notificationId': notificationId,
+    });
+  }
 }
 
 // ─── Provider ─────────────────────────────────────────────────────────────────

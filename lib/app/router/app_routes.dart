@@ -43,4 +43,5 @@ class AppRoutes {
   static const String personalInfo = '/profile/personal-info';
   static const String myAddresses = '/profile/addresses';
   static const String helpFaq = '/profile/help-faq';
+  static const String notifications = '/profile/notifications';
 }

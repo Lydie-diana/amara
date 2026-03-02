@@ -215,6 +215,11 @@ class _TrackingBody extends StatelessWidget {
       return _DeliveredView(order: order, orderId: orderId);
     }
 
+    // ── Vue commande annulée ──────────────────────────────
+    if (_isCancelled) {
+      return _CancelledView(order: order, orderId: orderId);
+    }
+
     final restaurantName =
         order['restaurantName'] as String? ?? 'Restaurant';
     final estimatedTime = order['estimatedDeliveryTime'] as int? ?? 30;
@@ -811,6 +816,348 @@ class _DeliveredViewState extends State<_DeliveredView> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ─── Vue commande annulée (même layout que delivered) ─────────────────────────
+
+class _CancelledView extends StatelessWidget {
+  final Map<String, dynamic> order;
+  final String orderId;
+
+  const _CancelledView({required this.order, required this.orderId});
+
+  String _formatDate() {
+    final createdAt = order['createdAt'] as num?;
+    if (createdAt == null) return '';
+    final date = DateTime.fromMillisecondsSinceEpoch(createdAt.toInt());
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final orderDay = DateTime(date.year, date.month, date.day);
+    final diff = today.difference(orderDay).inDays;
+
+    final time =
+        '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    if (diff == 0) return 'aujourd\'hui a $time';
+    if (diff == 1) return 'hier a $time';
+    return 'le ${date.day}/${date.month} a $time';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final restaurantName =
+        order['restaurantName'] as String? ?? 'Restaurant';
+    final restaurantImageUrl =
+        order['restaurantImageUrl'] as String?;
+    final items = (order['items'] as List?) ?? [];
+    final total = (order['totalAmount'] as num?)?.toDouble() ??
+        (order['total'] as num?)?.toDouble() ??
+        0;
+    final address = order['deliveryAddress'] as String? ?? '';
+    final paymentMethod = order['paymentMethod'] as String? ?? '';
+    final isPickup = order['orderType'] == 'pickup' ||
+        address == 'À emporter';
+
+    String paymentLabel;
+    switch (paymentMethod) {
+      case 'mobile_money':
+        paymentLabel = 'Mobile Money';
+        break;
+      case 'card':
+        paymentLabel = 'Carte bancaire';
+        break;
+      case 'cash':
+        paymentLabel = 'Cash';
+        break;
+      default:
+        paymentLabel = paymentMethod.isNotEmpty ? paymentMethod : 'Non spécifié';
+    }
+
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Photo restaurant en bandeau ────────────────────────
+          SizedBox(
+            height: 200,
+            width: double.infinity,
+            child: restaurantImageUrl != null
+                ? Image.network(
+                    restaurantImageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) =>
+                        _buildFallback(restaurantName),
+                  )
+                : _buildFallback(restaurantName),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Nom restaurant + statut ────────────────────────
+                Text(
+                  restaurantName,
+                  style: AmaraTextStyles.h2.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AmaraColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AmaraColors.error,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Commande annulee · ${_formatDate()}',
+                      style: AmaraTextStyles.bodySmall.copyWith(
+                        color: AmaraColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // ── Badge annulée ─────────────────────────────────
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: AmaraColors.error.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: AmaraColors.error.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.cancel_rounded,
+                          color: AmaraColors.error, size: 20),
+                      const SizedBox(width: 10),
+                      Text(
+                        'Cette commande a ete annulee',
+                        style: AmaraTextStyles.labelMedium.copyWith(
+                          color: AmaraColors.error,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 28),
+
+                // ── Votre commande ──────────────────────────────────
+                Text(
+                  'Votre commande',
+                  style: AmaraTextStyles.labelLarge.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AmaraColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Liste d'items
+                ...items.map((item) {
+                  final d = item as Map<String, dynamic>;
+                  final name = d['name'] as String? ?? '';
+                  final qty = (d['quantity'] as num?)?.toInt() ?? 1;
+                  final unitPrice =
+                      (d['unitPrice'] as num?)?.toDouble() ?? 0;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            color: AmaraColors.bg,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AmaraColors.divider),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '$qty',
+                              style: AmaraTextStyles.labelSmall.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: AmaraColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            name,
+                            style: AmaraTextStyles.bodyMedium.copyWith(
+                              color: AmaraColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          '${(unitPrice * qty).toStringAsFixed(0)} F',
+                          style: AmaraTextStyles.bodySmall.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: AmaraColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+
+                // Infos commande
+                const Divider(color: AmaraColors.divider),
+                const SizedBox(height: 8),
+
+                if (!isPickup && address.isNotEmpty) ...[
+                  _cancelledInfoRow(
+                    Icons.location_on_outlined,
+                    'Livraison',
+                    address,
+                  ),
+                  const SizedBox(height: 8),
+                ],
+                _cancelledInfoRow(
+                  Icons.payment_rounded,
+                  'Paiement',
+                  paymentLabel,
+                ),
+
+                const SizedBox(height: 12),
+                const Divider(color: AmaraColors.divider),
+                const SizedBox(height: 8),
+
+                // Total
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Total',
+                      style: AmaraTextStyles.labelLarge.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: AmaraColors.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      '${total.toStringAsFixed(0)} F CFA',
+                      style: AmaraTextStyles.labelLarge.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: AmaraColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+
+                // ── Bouton recommander ──────────────────────────────
+                const SizedBox(height: 28),
+                SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final restaurantId =
+                          order['restaurantId'] as String?;
+                      if (restaurantId != null) {
+                        context.push('/restaurant/$restaurantId');
+                      } else {
+                        context.go(AppRoutes.home);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AmaraColors.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Commander a nouveau',
+                      style: AmaraTextStyles.labelLarge.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFallback(String name) {
+    return Container(
+      color: AmaraColors.error.withValues(alpha: 0.06),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.restaurant_rounded,
+              size: 48,
+              color: AmaraColors.error.withValues(alpha: 0.3),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              name,
+              style: AmaraTextStyles.h3.copyWith(
+                color: AmaraColors.error.withValues(alpha: 0.5),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _cancelledInfoRow(IconData icon, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Icon(icon, size: 18, color: AmaraColors.muted),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: AmaraTextStyles.bodySmall.copyWith(
+              color: AmaraColors.textSecondary,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              value,
+              style: AmaraTextStyles.bodyMedium.copyWith(
+                color: AmaraColors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.right,
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../app/core/constants/app_colors.dart';
 import '../../../app/core/constants/app_text_styles.dart';
 import '../../../app/providers/auth_provider.dart';
 import '../../../app/providers/location_provider.dart';
+import '../../../app/providers/notification_provider.dart';
+import '../../../app/router/app_routes.dart';
 import 'location_picker_sheet.dart';
 
 class HomeHeader extends ConsumerWidget {
@@ -95,36 +98,59 @@ class HomeHeader extends ConsumerWidget {
                   ],
                 ),
               ),
-              GestureDetector(
-                onTap: () {},
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: AmaraColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(Icons.notifications_outlined,
-                          color: AmaraColors.primary, size: 21),
-                    ),
-                    Positioned(
-                      top: -1,
-                      right: -1,
-                      child: Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: AmaraColors.primary,
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 1.5),
+              Builder(
+                builder: (context) {
+                  final unreadAsync =
+                      ref.watch(unreadNotificationCountProvider);
+                  final unread = unreadAsync.valueOrNull ?? 0;
+
+                  return GestureDetector(
+                    onTap: () => context.push(AppRoutes.notifications),
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color:
+                                AmaraColors.primary.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Icon(Icons.notifications_outlined,
+                              color: AmaraColors.primary, size: 21),
                         ),
-                      ),
+                        if (unread > 0)
+                          Positioned(
+                            top: -4,
+                            right: -4,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 1),
+                              constraints: const BoxConstraints(
+                                  minWidth: 18, minHeight: 18),
+                              decoration: BoxDecoration(
+                                color: AmaraColors.primary,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                    color: Colors.white, width: 1.5),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  unread > 99 ? '99+' : '$unread',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ],
           ),

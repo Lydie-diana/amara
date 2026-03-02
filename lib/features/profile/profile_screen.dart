@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/core/constants/app_colors.dart';
 import '../../app/core/constants/app_text_styles.dart';
 import '../../app/providers/auth_provider.dart';
+import '../../app/providers/notification_provider.dart';
 import '../../app/router/app_routes.dart';
 import '../shell/main_shell.dart';
 
@@ -70,12 +71,6 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                     const _MenuDivider(),
                     _ProfileMenuItem(
-                      icon: Icons.receipt_long_rounded,
-                      label: 'Mes commandes',
-                      onTap: () => ref.read(shellIndexProvider.notifier).state = 2,
-                    ),
-                    const _MenuDivider(),
-                    _ProfileMenuItem(
                       icon: Icons.favorite_rounded,
                       label: 'Mes favoris',
                       onTap: () => context.push(AppRoutes.favorites),
@@ -87,10 +82,19 @@ class ProfileScreen extends ConsumerWidget {
                       onTap: () => context.push(AppRoutes.myAddresses),
                     ),
                     const _MenuDivider(),
-                    _ProfileMenuItem(
-                      icon: Icons.notifications_rounded,
-                      label: 'Notifications',
-                      onTap: () {},
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final unreadAsync =
+                            ref.watch(unreadNotificationCountProvider);
+                        final unreadCount = unreadAsync.valueOrNull ?? 0;
+                        return _ProfileMenuItem(
+                          icon: Icons.notifications_rounded,
+                          label: 'Notifications',
+                          onTap: () =>
+                              context.push(AppRoutes.notifications),
+                          badgeCount: unreadCount,
+                        );
+                      },
                     ),
                     const _MenuDivider(),
                     _ProfileMenuItem(
@@ -215,11 +219,13 @@ class _ProfileMenuItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final int badgeCount;
 
   const _ProfileMenuItem({
     required this.icon,
     required this.label,
     required this.onTap,
+    this.badgeCount = 0,
   });
 
   @override
@@ -251,6 +257,24 @@ class _ProfileMenuItem extends StatelessWidget {
                     .copyWith(fontWeight: FontWeight.w500),
               ),
             ),
+            if (badgeCount > 0)
+              Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: AmaraColors.primary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  badgeCount > 99 ? '99+' : '$badgeCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
             const Icon(Icons.chevron_right_rounded,
                 color: AmaraColors.muted, size: 22),
           ],
